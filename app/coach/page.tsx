@@ -38,12 +38,13 @@ export default function CoachDashboard() {
       if (!profiles || profiles.length === 0) { setLoading(false); return }
 
       const enriched = await Promise.all((profiles as Profile[]).map(async p => {
-        const { data: entries } = await supabase
+        const { data: rawEntries } = await supabase
           .from("journal_entries")
           .select("*")
           .eq("user_id", p.id)
           .order("created_at", { ascending: false })
 
+        const entries = rawEntries as JournalEntry[] | null
         const last_entry = entries?.[0] ?? null
         const avg_energie = entries?.length
           ? Math.round(entries.reduce((s, e) => s + e.energie, 0) / entries.length * 10) / 10
