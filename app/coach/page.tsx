@@ -35,9 +35,9 @@ export default function CoachDashboard() {
         .eq("role", "collaborateur")
         .order("created_at", { ascending: false })
 
-      if (!profiles) { setLoading(false); return }
+      if (!profiles || profiles.length === 0) { setLoading(false); return }
 
-      const enriched = await Promise.all(profiles.map(async p => {
+      const enriched = await Promise.all((profiles as Profile[]).map(async p => {
         const { data: entries } = await supabase
           .from("journal_entries")
           .select("*")
