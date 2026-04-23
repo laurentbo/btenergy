@@ -1,6 +1,5 @@
 "use client"
 import { useEffect, useState } from "react"
-import { createClient } from "@/lib/supabase/client"
 import type { Database } from "@/lib/supabase/types"
 import { WEEK_THEMES } from "@/data/program"
 import ProgramEditor from "@/components/ProgramEditor"
@@ -20,41 +19,21 @@ export default function CoachDashboard() {
   const [filter, setFilter]   = useState<"tous" | "actifs" | "inactifs">("tous")
   const [selected, setSelected] = useState<CollabWithJournal | null>(null)
   const [editing, setEditing]   = useState<CollabWithJournal | null>(null)
-  const supabase = createClient()
 
   useEffect(() => {
     async function load() {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
+      // Profil coach via API sécurisée
+      const meRes = await fetch("/api/me")
+      if (!meRes.ok) return
+      const me = await meRes.json()
+      setCoachProfile({ prenom: me.prenom, role: me.role } as any)
 
-      const { data: cp } = await supabase.from("profiles").select("*").eq("id", user.id).single()
-      setCoachProfile(cp)
-
-      const { data: profiles } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("coach_id", user.id)
-        .eq("role", "collaborateur")
-        .order("created_at", { ascending: false })
-
-      if (!profiles || profiles.length === 0) { setLoading(false); return }
-
-      const enriched = await Promise.all((profiles as Profile[]).map(async p => {
-        const { data: rawEntries } = await supabase
-          .from("journal_entries")
-          .select("*")
-          .eq("user_id", p.id)
-          .order("created_at", { ascending: false })
-
-        const entries = rawEntries as JournalEntry[] | null
-        const last_entry = entries?.[0] ?? null
-        const avg_energie = entries?.length
-          ? Math.round(entries.reduce((s, e) => s + e.energie, 0) / entries.length * 10) / 10
-          : null
-        return { ...p, last_entry, avg_energie }
-      }))
-
-      setCollabs(enriched)
+      // Collaborateurs via API sécurisée (service_role, bypass RLS)
+      const collabRes = await fetch("/api/collabs")
+      if (collabRes.ok) {
+        const data = await collabRes.json()
+        setCollabs(data as CollabWithJournal[])
+      }
       setLoading(false)
     }
     load()
