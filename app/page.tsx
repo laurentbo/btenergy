@@ -34,27 +34,25 @@ export default function Dashboard() {
 
   useEffect(() => {
     async function init() {
-      try {
-        const { data: { user } } = await supabase.auth.getUser()
+      // Vérifie le rôle via API route sécurisée (service_role, bypass RLS)
+      const res = await fetch("/api/me")
+      if (res.status === 401) { window.location.href = "/login"; return }
 
-        // Pas connecté → login
-        if (!user) { window.location.href = "/login"; return }
+      const { role } = await res.json()
 
-        // Récupère le rôle via service (bypass RLS avec la clé anon en fallback)
-        const { data: p } = await supabase
-          .from("profiles").select("role").eq("id", user.id).single()
+      // Coach → dashboard coach
+      if (role === "coach" || role === "admin") {
+        window.location.href = "/coach"; return
+      }
 
-        // Coach → dashboard coach
-        if (p?.role === "coach" || p?.role === "admin") {
-          window.location.href = "/coach"; return
-        }
+      // Collaborateur → charge son profil local
+      const saved = localStorage.getItem("btenergy_profile")
+      if (saved) setProfile(JSON.parse(saved))
+      else setShowProfileSetup(true)
 
-        // Collaborateur → charge son profil local
-        const saved = localStorage.getItem("btenergy_profile")
-        if (saved) setProfile(JSON.parse(saved))
-        else setShowProfileSetup(true)
-
-        // Charge les personnalisations du coach pour ce jour
+      // Charge les personnalisations du coach pour ce jour
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
         const { data: ov } = await supabase
           .from("program_overrides")
           .select("*")
@@ -62,13 +60,9 @@ export default function Dashboard() {
           .eq("day", CURRENT_DAY)
           .maybeSingle()
         if (ov) setOverride(ov as Override)
-
-      } catch (e) {
-        console.error(e)
-        setShowProfileSetup(true)
-      } finally {
-        setChecking(false)
       }
+
+      setChecking(false)
     }
     init()
   }, []) // eslint-disable-line
