@@ -26,40 +26,51 @@ export default function Dashboard() {
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [showProfileSetup, setShowProfileSetup] = useState(false)
   const [override, setOverride] = useState<Override | null>(null)
+  const [checking, setChecking] = useState(true)
   const supabase = createClient()
 
   const day = PROGRAM[CURRENT_DAY - 1]
   const weekInfo = WEEK_THEMES[day.week]
 
   useEffect(() => {
-    // Vérifie le rôle — redirige le coach vers /coach
-    async function checkRole() {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
-      const { data: p } = await supabase.from("profiles").select("role").eq("id", user.id).single()
-      if (p?.role === "coach" || p?.role === "admin") {
-        window.location.href = "/coach"
-        return
-      }
-      const saved = localStorage.getItem("btenergy_profile")
-      if (saved) setProfile(JSON.parse(saved))
-      else setShowProfileSetup(true)
-    }
-    checkRole()
+    async function init() {
+      try {
+        const { data: { user } } = await supabase.auth.getUser()
 
-    // Charge les personnalisations du coach pour ce jour
-    async function loadOverride() {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
-      const { data } = await supabase
-        .from("program_overrides")
-        .select("*")
-        .eq("collaborateur_id", user.id)
-        .eq("day", CURRENT_DAY)
-        .single()
-      if (data) setOverride(data as Override)
+        // Pas connecté → login
+        if (!user) { window.location.href = "/login"; return }
+
+        // Récupère le rôle via service (bypass RLS avec la clé anon en fallback)
+        const { data: p } = await supabase
+          .from("profiles").select("role").eq("id", user.id).single()
+
+        // Coach → dashboard coach
+        if (p?.role === "coach" || p?.role === "admin") {
+          window.location.href = "/coach"; return
+        }
+
+        // Collaborateur → charge son profil local
+        const saved = localStorage.getItem("btenergy_profile")
+        if (saved) setProfile(JSON.parse(saved))
+        else setShowProfileSetup(true)
+
+        // Charge les personnalisations du coach pour ce jour
+        const { data: ov } = await supabase
+          .from("program_overrides")
+          .select("*")
+          .eq("collaborateur_id", user.id)
+          .eq("day", CURRENT_DAY)
+          .maybeSingle()
+        if (ov) setOverride(ov as Override)
+
+      } catch (e) {
+        console.error(e)
+        setShowProfileSetup(true)
+      } finally {
+        setChecking(false)
+      }
     }
-    loadOverride()
+    init()
   }, []) // eslint-disable-line
 
   const handleSaveProfile = (p: UserProfile) => {
@@ -71,6 +82,20 @@ export default function Dashboard() {
 
   const imc = profile ? calcIMC(profile.poids, profile.taille) : null
   const imcInfo = imc ? imcLabel(imc) : null
+
+  // ─── CHARGEMENT ──────────────────────────────────────────────────────────────
+  if (checking) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--bg-primary)" }}>
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-xl font-black"
+            style={{ background: "linear-gradient(135deg, var(--green-dim), var(--blue-dim))", color: "#070d0f" }}>B</div>
+          <div className="w-6 h-6 rounded-full border-2 border-t-transparent animate-spin"
+            style={{ borderColor: "var(--green)", borderTopColor: "transparent" }} />
+        </div>
+      </div>
+    )
+  }
 
   // ─── ONBOARDING ──────────────────────────────────────────────────────────────
   if (showProfileSetup) {
