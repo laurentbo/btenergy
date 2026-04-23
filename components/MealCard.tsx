@@ -8,7 +8,7 @@ const MOMENT_CONFIG: Record<Meal["moment"], { label: string; icon: string; color
   soir:         { label: "Dîner",       icon: "🌙", colorClass: "meal-soir",  time: "19h – 20h" },
 }
 
-export default function MealCard({ meal }: { meal: Meal }) {
+export default function MealCard({ meal, isCustomized }: { meal: Meal; isCustomized?: boolean }) {
   const cfg = MOMENT_CONFIG[meal.moment]
   return (
     <div className={`card ${cfg.colorClass} p-4 fade-up`} style={{ paddingLeft: "18px" }}>
@@ -18,6 +18,12 @@ export default function MealCard({ meal }: { meal: Meal }) {
           <span className="font-semibold" style={{ color: "var(--text-primary)", fontSize: "14px" }}>
             {cfg.label}
           </span>
+          {isCustomized && (
+            <span className="text-xs px-2 py-0.5 rounded-full font-semibold"
+              style={{ background: "rgba(45,228,164,0.15)", color: "var(--green)", border: "1px solid rgba(45,228,164,0.3)" }}>
+              ✦ Coach
+            </span>
+          )}
         </div>
         <span className="tag">{cfg.time}</span>
       </div>

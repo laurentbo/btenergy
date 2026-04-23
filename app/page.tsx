@@ -1,15 +1,23 @@
 "use client"
 import { useState, useEffect } from "react"
-import { PROGRAM, WEEK_THEMES, calcIMC, imcLabel, type UserProfile } from "@/data/program"
+import { PROGRAM, WEEK_THEMES, calcIMC, imcLabel, type UserProfile, type Meal } from "@/data/program"
 import MealCard from "@/components/MealCard"
 import RitualCard from "@/components/RitualCard"
 import JournalForm from "@/components/JournalForm"
 import Timeline21 from "@/components/Timeline21"
 import ProfilForm from "@/components/ProfilForm"
 import PrincipesSection from "@/components/PrincipesSection"
+import { createClient } from "@/lib/supabase/client"
 
 const CURRENT_DAY = 1
 const COMPLETED_DAYS = [1]
+
+type Override = {
+  coach_note: string | null
+  tip_override: string | null
+  intention_override: string | null
+  meal_overrides: Record<string, string[]> | null
+}
 
 type Tab = "programme" | "journal" | "progression" | "principes" | "profil"
 
@@ -17,6 +25,8 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState<Tab>("programme")
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [showProfileSetup, setShowProfileSetup] = useState(false)
+  const [override, setOverride] = useState<Override | null>(null)
+  const supabase = createClient()
 
   const day = PROGRAM[CURRENT_DAY - 1]
   const weekInfo = WEEK_THEMES[day.week]
@@ -25,7 +35,21 @@ export default function Dashboard() {
     const saved = localStorage.getItem("btenergy_profile")
     if (saved) setProfile(JSON.parse(saved))
     else setShowProfileSetup(true)
-  }, [])
+
+    // Charge les personnalisations du coach pour ce jour
+    async function loadOverride() {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+      const { data } = await supabase
+        .from("program_overrides")
+        .select("*")
+        .eq("collaborateur_id", user.id)
+        .eq("day", CURRENT_DAY)
+        .single()
+      if (data) setOverride(data as Override)
+    }
+    loadOverride()
+  }, []) // eslint-disable-line
 
   const handleSaveProfile = (p: UserProfile) => {
     setProfile(p)
@@ -178,6 +202,20 @@ export default function Dashboard() {
         {/* ── Programme ── */}
         {activeTab === "programme" && (
           <div className="space-y-4">
+            {/* Note personnalisée du coach */}
+            {override?.coach_note && (
+              <div className="rounded-xl p-4 fade-up flex gap-3"
+                style={{ background: "rgba(45,228,164,0.07)", border: "1px solid rgba(45,228,164,0.25)" }}>
+                <span className="text-lg flex-shrink-0">💬</span>
+                <div>
+                  <p className="text-xs font-bold mb-1" style={{ color: "var(--green)" }}>Message de votre coach</p>
+                  <p className="text-sm" style={{ color: "var(--text-secondary)", lineHeight: "1.7" }}>
+                    {override.coach_note}
+                  </p>
+                </div>
+              </div>
+            )}
+
             {/* Adaptation profil */}
             {profile && (
               <div className="rounded-xl p-3 flex items-center gap-3 fade-up"
@@ -189,9 +227,19 @@ export default function Dashboard() {
                 </p>
               </div>
             )}
+
+            {/* Repas — override ou défaut */}
             <div className="space-y-3">
-              {day.meals.map((meal, i) => <MealCard key={i} meal={meal} />)}
+              {day.meals.map((meal, i) => {
+                const overrideMeals = override?.meal_overrides?.[meal.moment]
+                if (overrideMeals && overrideMeals.length > 0) {
+                  const customMeal: Meal = { ...meal, items: overrideMeals }
+                  return <MealCard key={i} meal={customMeal} isCustomized />
+                }
+                return <MealCard key={i} meal={meal} />
+              })}
             </div>
+
             <RitualCard matin={day.ritual.matin} soir={day.ritual.soir} />
           </div>
         )}

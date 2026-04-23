@@ -3,6 +3,7 @@ import { useEffect, useState } from "react"
 import { createClient } from "@/lib/supabase/client"
 import type { Database } from "@/lib/supabase/types"
 import { WEEK_THEMES } from "@/data/program"
+import ProgramEditor from "@/components/ProgramEditor"
 
 type Profile = Database["public"]["Tables"]["profiles"]["Row"]
 type JournalEntry = Database["public"]["Tables"]["journal_entries"]["Row"]
@@ -18,6 +19,7 @@ export default function CoachDashboard() {
   const [coachProfile, setCoachProfile] = useState<Profile | null>(null)
   const [filter, setFilter]   = useState<"tous" | "actifs" | "inactifs">("tous")
   const [selected, setSelected] = useState<CollabWithJournal | null>(null)
+  const [editing, setEditing]   = useState<CollabWithJournal | null>(null)
   const supabase = createClient()
 
   useEffect(() => {
@@ -72,6 +74,16 @@ export default function CoachDashboard() {
 
   return (
     <div className="min-h-screen" style={{ background: "var(--bg-primary)" }}>
+
+      {/* Éditeur programme plein écran */}
+      {editing && (
+        <ProgramEditor
+          collaborateurId={editing.id}
+          collaborateurPrenom={editing.prenom ?? "Collaborateur"}
+          coachId={coachProfile?.id ?? ""}
+          onClose={() => setEditing(null)}
+        />
+      )}
 
       {/* Header */}
       <header className="sticky top-0 z-50 px-4 py-3"
@@ -216,6 +228,14 @@ export default function CoachDashboard() {
                           )}
                         </div>
                       )}
+
+                      {/* Bouton personnaliser */}
+                      <button
+                        onClick={e => { e.stopPropagation(); setEditing(c) }}
+                        className="btn-primary w-full text-xs mt-3"
+                        style={{ padding: "8px" }}>
+                        ✏️ Personnaliser le programme
+                      </button>
                     </div>
                   )}
                 </button>
