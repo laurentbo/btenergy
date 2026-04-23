@@ -33,11 +33,17 @@ export async function middleware(request: NextRequest) {
   // Route coach protégée
   if (pathname.startsWith("/coach")) {
     if (!user) return NextResponse.redirect(new URL("/login/coach", request.url))
-    const { data: profile } = await supabase
+    // Utilise service_role pour bypass RLS lors de la vérification du rôle
+    const admin = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      { cookies: { getAll: () => [], setAll: () => {} } }
+    )
+    const { data: profile } = await admin
       .from("profiles")
       .select("role")
       .eq("id", user.id)
-      .single()
+      .maybeSingle()
     if (profile?.role !== "coach" && profile?.role !== "admin") {
       return NextResponse.redirect(new URL("/", request.url))
     }
