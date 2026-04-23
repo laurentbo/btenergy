@@ -7,6 +7,7 @@ import JournalForm from "@/components/JournalForm"
 import Timeline21 from "@/components/Timeline21"
 import ProfilForm from "@/components/ProfilForm"
 import PrincipesSection from "@/components/PrincipesSection"
+import WeightTracker from "@/components/WeightTracker"
 import { createClient } from "@/lib/supabase/client"
 
 
@@ -313,6 +314,7 @@ export default function Dashboard() {
         {activeTab === "progression" && (
           <div className="space-y-4">
             <Timeline21 totalDays={21} currentDay={currentDay} completedDays={completedDays} />
+            <WeightTracker initialWeight={profile?.poids} />
 
             {/* Résumé semaines */}
             <div className="space-y-3">
