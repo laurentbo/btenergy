@@ -4,34 +4,25 @@ import { createClient } from "@/lib/supabase/client"
 import Link from "next/link"
 
 export default function LoginCollaborateur() {
-  const [email, setEmail]   = useState("")
-  const [code, setCode]     = useState("")
-  const [step, setStep]     = useState<"form" | "otp" | "done">("form")
-  const [otp, setOtp]       = useState("")
-  const [error, setError]   = useState("")
-  const [loading, setLoading] = useState(false)
+  const [email, setEmail]       = useState("")
+  const [password, setPassword] = useState("")
+  const [code, setCode]         = useState("")
+  const [error, setError]       = useState("")
+  const [loading, setLoading]   = useState(false)
   const supabase = createClient()
 
-  async function handleSendOTP() {
+  async function handleLogin() {
     setError(""); setLoading(true)
+
     // Vérifie le code entreprise
     const { data: company } = await supabase
       .from("companies").select("id").eq("code", code.toUpperCase()).single()
     if (!company) { setError("Code entreprise invalide."); setLoading(false); return }
 
-    const { error: e } = await supabase.auth.signInWithOtp({
-      email,
-      options: { shouldCreateUser: true, data: { company_code: code.toUpperCase() } },
-    })
-    if (e) { setError(e.message); setLoading(false); return }
-    setStep("otp"); setLoading(false)
-  }
+    // Connexion email + mot de passe
+    const { error: e } = await supabase.auth.signInWithPassword({ email, password })
+    if (e) { setError("Email ou mot de passe incorrect."); setLoading(false); return }
 
-  async function handleVerifyOTP() {
-    setError(""); setLoading(true)
-    const { error: e } = await supabase.auth.verifyOtp({ email, token: otp, type: "email" })
-    if (e) { setError(e.message); setLoading(false); return }
-    setStep("done"); setLoading(false)
     window.location.href = "/"
   }
 
@@ -51,70 +42,49 @@ export default function LoginCollaborateur() {
         </div>
 
         <div className="card p-6">
-          {step === "form" && (
-            <>
-              <h2 className="font-bold text-base mb-4" style={{ color: "var(--text-primary)" }}>
-                Accéder à mon programme
-              </h2>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-xs uppercase tracking-widest mb-2" style={{ color: "var(--text-muted)" }}>Email</label>
-                  <input
-                    type="email" value={email} onChange={e => setEmail(e.target.value)}
-                    placeholder="votre@email.com"
-                    className="w-full rounded-xl px-4 py-2.5 text-sm outline-none"
-                    style={{ background: "var(--bg-secondary)", border: "1px solid var(--border)", color: "var(--text-primary)" }}
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs uppercase tracking-widest mb-2" style={{ color: "var(--text-muted)" }}>
-                    Code entreprise
-                  </label>
-                  <input
-                    type="text" value={code} onChange={e => setCode(e.target.value)}
-                    placeholder="EX: CORP2024"
-                    className="w-full rounded-xl px-4 py-2.5 text-sm outline-none uppercase"
-                    style={{ background: "var(--bg-secondary)", border: "1px solid var(--border)", color: "var(--text-primary)", letterSpacing: "0.1em" }}
-                  />
-                </div>
-                {error && <p className="text-xs text-red-400">{error}</p>}
-                <button
-                  onClick={handleSendOTP}
-                  disabled={!email || !code || loading}
-                  className="btn-primary w-full text-sm"
-                  style={{ opacity: (!email || !code || loading) ? 0.5 : 1 }}>
-                  {loading ? "Envoi..." : "Recevoir mon code →"}
-                </button>
-              </div>
-            </>
-          )}
-
-          {step === "otp" && (
-            <>
-              <h2 className="font-bold text-base mb-2" style={{ color: "var(--text-primary)" }}>Code envoyé ✉️</h2>
-              <p className="text-sm mb-4" style={{ color: "var(--text-secondary)" }}>
-                Un code à 6 chiffres a été envoyé à <strong>{email}</strong>
-              </p>
-              <div className="space-y-4">
-                <input
-                  type="text" maxLength={6} value={otp} onChange={e => setOtp(e.target.value)}
-                  placeholder="000000"
-                  className="w-full rounded-xl px-4 py-3 text-2xl font-black text-center outline-none tracking-widest"
-                  style={{ background: "var(--bg-secondary)", border: "1px solid var(--border)", color: "var(--green)" }}
-                />
-                {error && <p className="text-xs text-red-400">{error}</p>}
-                <button onClick={handleVerifyOTP} disabled={otp.length < 6 || loading}
-                  className="btn-primary w-full text-sm"
-                  style={{ opacity: (otp.length < 6 || loading) ? 0.5 : 1 }}>
-                  {loading ? "Vérification..." : "Accéder à mon programme →"}
-                </button>
-                <button onClick={() => setStep("form")} className="w-full text-center text-xs"
-                  style={{ color: "var(--text-muted)" }}>
-                  ← Recommencer
-                </button>
-              </div>
-            </>
-          )}
+          <h2 className="font-bold text-base mb-4" style={{ color: "var(--text-primary)" }}>
+            Accéder à mon programme
+          </h2>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-xs uppercase tracking-widest mb-2" style={{ color: "var(--text-muted)" }}>
+                Code entreprise
+              </label>
+              <input
+                type="text" value={code} onChange={e => setCode(e.target.value)}
+                placeholder="EX: BTENERGY2025"
+                className="w-full rounded-xl px-4 py-2.5 text-sm outline-none uppercase"
+                style={{ background: "var(--bg-secondary)", border: "1px solid var(--border)", color: "var(--text-primary)", letterSpacing: "0.1em" }}
+              />
+            </div>
+            <div>
+              <label className="block text-xs uppercase tracking-widest mb-2" style={{ color: "var(--text-muted)" }}>Email</label>
+              <input
+                type="email" value={email} onChange={e => setEmail(e.target.value)}
+                placeholder="votre@email.com"
+                className="w-full rounded-xl px-4 py-2.5 text-sm outline-none"
+                style={{ background: "var(--bg-secondary)", border: "1px solid var(--border)", color: "var(--text-primary)" }}
+              />
+            </div>
+            <div>
+              <label className="block text-xs uppercase tracking-widest mb-2" style={{ color: "var(--text-muted)" }}>Mot de passe</label>
+              <input
+                type="password" value={password} onChange={e => setPassword(e.target.value)}
+                placeholder="••••••••"
+                onKeyDown={e => e.key === "Enter" && handleLogin()}
+                className="w-full rounded-xl px-4 py-2.5 text-sm outline-none"
+                style={{ background: "var(--bg-secondary)", border: "1px solid var(--border)", color: "var(--text-primary)" }}
+              />
+            </div>
+            {error && <p className="text-xs text-red-400">{error}</p>}
+            <button
+              onClick={handleLogin}
+              disabled={!email || !password || !code || loading}
+              className="btn-primary w-full text-sm"
+              style={{ opacity: (!email || !password || !code || loading) ? 0.5 : 1 }}>
+              {loading ? "Connexion..." : "Accéder à mon programme →"}
+            </button>
+          </div>
         </div>
 
         <div className="text-center mt-4">

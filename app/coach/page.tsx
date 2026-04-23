@@ -212,13 +212,21 @@ export default function CoachDashboard() {
                         </div>
                       )}
 
-                      {/* Bouton personnaliser */}
-                      <button
-                        onClick={e => { e.stopPropagation(); setEditing(c) }}
-                        className="btn-primary w-full text-xs mt-3"
-                        style={{ padding: "8px" }}>
-                        ✏️ Personnaliser le programme
-                      </button>
+                      {/* Boutons actions */}
+                      <div className="grid grid-cols-2 gap-2 mt-3">
+                        <button
+                          onClick={e => { e.stopPropagation(); setEditing(c) }}
+                          className="btn-primary text-xs"
+                          style={{ padding: "8px" }}>
+                          ✏️ Personnaliser
+                        </button>
+                        <button
+                          onClick={e => { e.stopPropagation(); window.open(`/coach/preview/${c.id}`, "_blank") }}
+                          className="text-xs rounded-xl font-semibold transition-all"
+                          style={{ padding: "8px", background: "var(--bg-secondary)", border: "1px solid var(--border)", color: "var(--text-secondary)" }}>
+                          👁 Voir l&apos;espace
+                        </button>
+                      </div>
                     </div>
                   )}
                 </button>
