@@ -49,7 +49,11 @@ export default function CoachDashboard() {
     ? Math.round(collabs.reduce((s, c) => s + (c.avg_energie ?? 0), 0) / collabs.filter(c => c.avg_energie).length * 10) / 10
     : null
 
-  const signOut = async () => { await supabase.auth.signOut(); window.location.href = "/login/coach" }
+  const signOut = async () => {
+    const { createClient } = await import("@/lib/supabase/client")
+    await createClient().auth.signOut()
+    window.location.href = "/login/coach"
+  }
 
   return (
     <div className="min-h-screen" style={{ background: "var(--bg-primary)" }}>
