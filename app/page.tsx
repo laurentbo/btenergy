@@ -32,9 +32,20 @@ export default function Dashboard() {
   const weekInfo = WEEK_THEMES[day.week]
 
   useEffect(() => {
-    const saved = localStorage.getItem("btenergy_profile")
-    if (saved) setProfile(JSON.parse(saved))
-    else setShowProfileSetup(true)
+    // Vérifie le rôle — redirige le coach vers /coach
+    async function checkRole() {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+      const { data: p } = await supabase.from("profiles").select("role").eq("id", user.id).single()
+      if (p?.role === "coach" || p?.role === "admin") {
+        window.location.href = "/coach"
+        return
+      }
+      const saved = localStorage.getItem("btenergy_profile")
+      if (saved) setProfile(JSON.parse(saved))
+      else setShowProfileSetup(true)
+    }
+    checkRole()
 
     // Charge les personnalisations du coach pour ce jour
     async function loadOverride() {
