@@ -21,6 +21,17 @@ export type UserProfile = {
   age: number
   taille: number   // cm
   poids: number    // kg
+  start_date?: string  // ISO date YYYY-MM-DD
+}
+
+export function calcCurrentDay(startDate: string | null | undefined): number {
+  if (!startDate) return 1
+  const start = new Date(startDate)
+  const today = new Date()
+  start.setHours(0, 0, 0, 0)
+  today.setHours(0, 0, 0, 0)
+  const diff = Math.floor((today.getTime() - start.getTime()) / (1000 * 60 * 60 * 24))
+  return Math.min(21, Math.max(1, diff + 1))
 }
 
 export type PrincipalKey = {

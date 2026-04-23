@@ -1,6 +1,6 @@
 "use client"
 import { useState, useEffect } from "react"
-import { PROGRAM, WEEK_THEMES, calcIMC, imcLabel, type UserProfile, type Meal } from "@/data/program"
+import { PROGRAM, WEEK_THEMES, calcIMC, imcLabel, calcCurrentDay, type UserProfile, type Meal } from "@/data/program"
 import MealCard from "@/components/MealCard"
 import RitualCard from "@/components/RitualCard"
 import JournalForm from "@/components/JournalForm"
@@ -9,8 +9,6 @@ import ProfilForm from "@/components/ProfilForm"
 import PrincipesSection from "@/components/PrincipesSection"
 import { createClient } from "@/lib/supabase/client"
 
-const CURRENT_DAY = 1
-const COMPLETED_DAYS = [1]
 
 type Override = {
   coach_note: string | null
@@ -27,10 +25,8 @@ export default function Dashboard() {
   const [showProfileSetup, setShowProfileSetup] = useState(false)
   const [override, setOverride] = useState<Override | null>(null)
   const [checking, setChecking] = useState(true)
+  const [currentDay, setCurrentDay] = useState(1)
   const supabase = createClient()
-
-  const day = PROGRAM[CURRENT_DAY - 1]
-  const weekInfo = WEEK_THEMES[day.week]
 
   useEffect(() => {
     async function init() {
@@ -47,17 +43,42 @@ export default function Dashboard() {
 
       // Collaborateur → charge son profil local
       const saved = localStorage.getItem("btenergy_profile")
-      if (saved) setProfile(JSON.parse(saved))
-      else setShowProfileSetup(true)
+      const localProfile: UserProfile | null = saved ? JSON.parse(saved) : null
+
+      // Récupère start_date depuis Supabase
+      const { data: { user } } = await supabase.auth.getUser()
+      let computedDay = 1
+      if (user) {
+        const { data: dbProfile } = await supabase
+          .from("profiles").select("start_date").eq("id", user.id).maybeSingle()
+        const startDate = dbProfile?.start_date ?? localProfile?.start_date
+        computedDay = calcCurrentDay(startDate)
+        setCurrentDay(computedDay)
+        // Merge start_date dans le profil local si pas encore là
+        if (localProfile && !localProfile.start_date && startDate) {
+          const merged = { ...localProfile, start_date: startDate }
+          localStorage.setItem("btenergy_profile", JSON.stringify(merged))
+          setProfile(merged)
+        } else if (localProfile) {
+          setProfile(localProfile)
+        } else {
+          setShowProfileSetup(true)
+        }
+      } else if (localProfile) {
+        setProfile(localProfile)
+        computedDay = calcCurrentDay(localProfile.start_date)
+        setCurrentDay(computedDay)
+      } else {
+        setShowProfileSetup(true)
+      }
 
       // Charge les personnalisations du coach pour ce jour
-      const { data: { user } } = await supabase.auth.getUser()
       if (user) {
         const { data: ov } = await supabase
           .from("program_overrides")
           .select("*")
           .eq("collaborateur_id", user.id)
-          .eq("day", CURRENT_DAY)
+          .eq("day", computedDay)
           .maybeSingle()
         if (ov) setOverride(ov as Override)
       }
@@ -67,12 +88,23 @@ export default function Dashboard() {
     init()
   }, []) // eslint-disable-line
 
-  const handleSaveProfile = (p: UserProfile) => {
+  const handleSaveProfile = async (p: UserProfile) => {
     setProfile(p)
     localStorage.setItem("btenergy_profile", JSON.stringify(p))
+    // Sauvegarde start_date dans Supabase
+    const { data: { user } } = await supabase.auth.getUser()
+    if (user && p.start_date) {
+      await supabase.from("profiles").update({ start_date: p.start_date }).eq("id", user.id)
+      setCurrentDay(calcCurrentDay(p.start_date))
+    }
     setShowProfileSetup(false)
     setActiveTab("programme")
   }
+
+  const day = PROGRAM[currentDay - 1]
+  const weekInfo = WEEK_THEMES[day.week]
+  // Jours complétés = tous les jours jusqu'à currentDay - 1
+  const completedDays = Array.from({ length: currentDay - 1 }, (_, i) => i + 1)
 
   const imc = profile ? calcIMC(profile.poids, profile.taille) : null
   const imcInfo = imc ? imcLabel(imc) : null
@@ -143,7 +175,7 @@ export default function Dashboard() {
             <div className="tag" style={{ borderColor: weekInfo.color + "40", color: weekInfo.color }}>
               Semaine {day.week}
             </div>
-            <div className="tag">J{CURRENT_DAY}/21</div>
+            <div className="tag">J{currentDay}/21</div>
             <button
               onClick={() => setActiveTab("profil")}
               className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold"
@@ -175,13 +207,13 @@ export default function Dashboard() {
               </p>
             </div>
             <div className="text-right flex-shrink-0">
-              <div className="text-3xl font-black gradient-text">{CURRENT_DAY}</div>
+              <div className="text-3xl font-black gradient-text">{currentDay}</div>
               <div className="text-xs" style={{ color: "var(--text-muted)" }}>/ 21</div>
             </div>
           </div>
 
           <div className="progress-bar mt-4">
-            <div className="progress-fill" style={{ width: `${(CURRENT_DAY / 21) * 100}%` }} />
+            <div className="progress-fill" style={{ width: `${(currentDay / 21) * 100}%` }} />
           </div>
 
           <div className="flex gap-2 mt-3">
@@ -280,14 +312,14 @@ export default function Dashboard() {
         {/* ── Progression ── */}
         {activeTab === "progression" && (
           <div className="space-y-4">
-            <Timeline21 totalDays={21} currentDay={CURRENT_DAY} completedDays={COMPLETED_DAYS} />
+            <Timeline21 totalDays={21} currentDay={currentDay} completedDays={completedDays} />
 
             {/* Résumé semaines */}
             <div className="space-y-3">
               {([1, 2, 3] as const).map(w => {
                 const wInfo = WEEK_THEMES[w]
                 const wDays = PROGRAM.filter(d => d.week === w)
-                const done  = wDays.filter(d => COMPLETED_DAYS.includes(d.day)).length
+                const done  = wDays.filter(d => completedDays.includes(d.day)).length
                 return (
                   <div key={w} className="card p-4">
                     <div className="flex items-center justify-between mb-2">
@@ -311,9 +343,9 @@ export default function Dashboard() {
             {/* Stats */}
             <div className="grid grid-cols-3 gap-3">
               {[
-                { label: "Jours actifs", value: COMPLETED_DAYS.length.toString(), icon: "🔥" },
+                { label: "Jours actifs", value: completedDays.length.toString(), icon: "🔥" },
                 { label: "Semaine en cours", value: `S${day.week}`, icon: "📅" },
-                { label: "Série actuelle", value: `${COMPLETED_DAYS.length}j`, icon: "🎯" },
+                { label: "Série actuelle", value: `${completedDays.length}j`, icon: "🎯" },
               ].map(({ label, value, icon }) => (
                 <div key={label} className="card p-3 text-center">
                   <div className="text-lg mb-1">{icon}</div>

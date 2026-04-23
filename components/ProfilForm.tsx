@@ -118,9 +118,27 @@ export default function ProfilForm({ onSave, initial }: Props) {
         </div>
       )}
 
+      {/* Date de démarrage */}
+      <div>
+        <label className="block text-xs uppercase tracking-widest mb-2" style={{ color: "var(--text-muted)" }}>
+          Date de démarrage du programme
+        </label>
+        <input
+          type="date"
+          value={form.start_date ?? new Date().toISOString().split("T")[0]}
+          min={new Date(Date.now() - 21 * 86400000).toISOString().split("T")[0]}
+          max={new Date(Date.now() + 30 * 86400000).toISOString().split("T")[0]}
+          onChange={e => set("start_date", e.target.value)}
+          style={{ ...INPUT_STYLE, colorScheme: "dark" }}
+        />
+        <p className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>
+          Jour 1 de votre programme de 21 jours
+        </p>
+      </div>
+
       <button
         disabled={!isValid}
-        onClick={() => isValid && onSave(form as UserProfile)}
+        onClick={() => isValid && onSave({ ...form, start_date: form.start_date ?? new Date().toISOString().split("T")[0] } as UserProfile)}
         className="btn-primary w-full text-sm"
         style={{ opacity: isValid ? 1 : 0.4, cursor: isValid ? "pointer" : "not-allowed" }}
       >
