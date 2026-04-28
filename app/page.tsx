@@ -12,6 +12,13 @@ import ShoppingList from "@/components/ShoppingList"
 import { createClient } from "@/lib/supabase/client"
 import { useAuth } from "@/lib/auth-context"
 
+// ─── Labels des moments ────────────────────────────────────────────────────────
+const MEAL_META: Record<string, { icon: string; label: string; horaire: string }> = {
+  "matin":        { icon: "🌅", label: "Petit-déjeuner", horaire: "7h – 9h" },
+  "midi":         { icon: "🌞", label: "Déjeuner",       horaire: "12h – 14h" },
+  "après-midi":   { icon: "🌤",  label: "Collation",      horaire: "15h – 17h" },
+  "soir":         { icon: "🌙", label: "Dîner",           horaire: "18h – 20h" },
+}
 
 type Override = {
   coach_note: string | null
@@ -26,14 +33,22 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState<Tab>("programme")
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [showProfileSetup, setShowProfileSetup] = useState(false)
+  // NOUVEAU — onboarding J1 (affiché une seule fois le premier jour)
+  const [showJ1Onboarding, setShowJ1Onboarding] = useState(false)
   const [override, setOverride] = useState<Override | null>(null)
   const [checking, setChecking] = useState(true)
   const [currentDay, setCurrentDay] = useState(1)
   const [viewDay, setViewDay] = useState(1)
   const [mealLogs, setMealLogs] = useState<Record<string, string[]>>({})
+  // NOUVEAU — état accordéon : "matin" ouvert par défaut
+  const [openMoments, setOpenMoments] = useState<Set<string>>(new Set(["matin"]))
+  // NOUVEAU — tracker d'hydratation partagé hero ↔ journal
+  const [hydrationLiters, setHydrationLiters] = useState<number>(0)
+
   const supabase = createClient()
   const { signOut } = useAuth()
 
+  // Déconnexion — accessible uniquement depuis l'onglet Profil désormais
   const handleSignOut = async () => {
     await signOut()
     window.location.href = "/login"
@@ -43,20 +58,25 @@ export default function Dashboard() {
     ? profile.prenom.charAt(0).toUpperCase() + profile.prenom.slice(1).toLowerCase()
     : null
 
+  // Toggle accordéon
+  const toggleMoment = (moment: string) => {
+    setOpenMoments(prev => {
+      const next = new Set(prev)
+      next.has(moment) ? next.delete(moment) : next.add(moment)
+      return next
+    })
+  }
+
   useEffect(() => {
     async function init() {
-      // Vérifie le rôle via API route sécurisée (service_role, bypass RLS)
       const res = await fetch("/api/me")
       if (res.status === 401) { window.location.href = "/login"; return }
 
       const { role } = await res.json()
-
-      // Coach → dashboard coach
       if (role === "coach" || role === "admin") {
         window.location.href = "/coach"; return
       }
 
-      // Récupère le profil complet depuis Supabase
       const { data: { user } } = await supabase.auth.getUser()
       let computedDay = 1
       if (user) {
@@ -73,7 +93,6 @@ export default function Dashboard() {
         setCurrentDay(computedDay)
         setViewDay(computedDay)
 
-        // Supabase est la source de vérité si le profil y est enregistré
         const supabaseProfile: UserProfile | null = dbProfile?.prenom
           ? {
               prenom: dbProfile.prenom,
@@ -105,14 +124,23 @@ export default function Dashboard() {
         }
       }
 
-      // Déclenche l'email du jour si pas encore envoyé (dédoublonné côté serveur)
+      // NOUVEAU — Onboarding J1 : affiché seulement si c'est le jour 1 et jamais vu
+      if (computedDay === 1 && !localStorage.getItem("btenergy_onboarding_done")) {
+        setShowJ1Onboarding(true)
+      }
+
+      // Email du jour (fire-and-forget)
       if (computedDay >= 1 && computedDay <= 21) {
         fetch("/api/send-step-email", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ day: computedDay }),
-        }).catch(() => {}) // fire-and-forget, pas bloquant
+        }).catch(() => {})
       }
+
+      // NOUVEAU — Restaure l'hydratation du jour depuis localStorage
+      const savedHydration = localStorage.getItem(`btenergy_hydration_day_${computedDay}`)
+      if (savedHydration) setHydrationLiters(parseFloat(savedHydration))
 
       setChecking(false)
     }
@@ -143,7 +171,6 @@ export default function Dashboard() {
     async function loadViewDay() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
-      // Override coach
       const { data: ov } = await supabase
         .from("program_overrides")
         .select("*")
@@ -151,7 +178,6 @@ export default function Dashboard() {
         .eq("day", viewDay)
         .maybeSingle()
       setOverride(ov as Override ?? null)
-      // Meal logs coachée
       const { data: logs } = await supabase
         .from("meal_logs")
         .select("moment, items")
@@ -163,6 +189,12 @@ export default function Dashboard() {
     }
     loadViewDay()
   }, [viewDay, checking]) // eslint-disable-line
+
+  // NOUVEAU — Sauvegarde hydratation dans localStorage + state
+  const handleHydrationChange = (liters: number) => {
+    setHydrationLiters(liters)
+    localStorage.setItem(`btenergy_hydration_day_${currentDay}`, liters.toString())
+  }
 
   const saveMealLog = async (moment: string, items: string[]) => {
     const { data: { user } } = await supabase.auth.getUser()
@@ -178,7 +210,6 @@ export default function Dashboard() {
   const weekInfo = WEEK_THEMES[day.week]
   const viewDayData = PROGRAM[viewDay - 1]
   const viewWeekInfo = WEEK_THEMES[viewDayData.week]
-  // Jours complétés = tous les jours jusqu'à currentDay - 1
   const completedDays = Array.from({ length: currentDay - 1 }, (_, i) => i + 1)
 
   const imc = profile ? calcIMC(profile.poids, profile.taille) : null
@@ -198,7 +229,7 @@ export default function Dashboard() {
     )
   }
 
-  // ─── ONBOARDING ──────────────────────────────────────────────────────────────
+  // ─── ONBOARDING PROFIL ────────────────────────────────────────────────────────
   if (showProfileSetup) {
     return (
       <div className="min-h-screen flex flex-col" style={{ background: "var(--bg-primary)" }}>
@@ -211,7 +242,6 @@ export default function Dashboard() {
             <h1 className="text-2xl font-black gradient-text mb-1">BTENERGY</h1>
             <p className="text-sm" style={{ color: "var(--text-secondary)" }}>Programme 21 Jours · Détox & Énergie</p>
           </div>
-
           <div className="card p-5 mb-4">
             <h2 className="font-bold text-base mb-1" style={{ color: "var(--text-primary)" }}>Bienvenue 👋</h2>
             <p className="text-sm mb-5" style={{ color: "var(--text-secondary)" }}>
@@ -219,7 +249,6 @@ export default function Dashboard() {
             </p>
             <ProfilForm onSave={handleSaveProfile} initial={profile} />
           </div>
-
           <button
             onClick={() => { setShowProfileSetup(false); setProfile({ prenom: "Collaborateur", genre: "homme", age: 35, taille: 170, poids: 70 }) }}
             className="w-full text-center text-xs py-2"
@@ -231,11 +260,62 @@ export default function Dashboard() {
     )
   }
 
+  // ─── ONBOARDING JOUR 1 ────────────────────────────────────────────────────────
+  if (showJ1Onboarding) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center px-4"
+        style={{ background: "linear-gradient(160deg, #0b1e38 0%, #07111e 55%, #050e1a 100%)" }}>
+        <div className="max-w-sm w-full text-center">
+          <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl font-black mx-auto mb-6"
+            style={{ background: "linear-gradient(135deg, var(--green-dim), var(--blue-dim))", color: "#050e1a" }}>
+            B
+          </div>
+          <h1 className="text-3xl font-black gradient-text mb-2">BTENERGY</h1>
+          <p className="text-sm mb-8" style={{ color: "var(--text-secondary)" }}>Programme 21 Jours · Détox & Énergie</p>
+
+          <div className="card p-6 mb-6 text-left"
+            style={{ border: "1px solid rgba(45,212,160,0.25)", background: "rgba(4,10,22,0.72)" }}>
+            <p className="font-bold mb-3" style={{ color: "var(--text-primary)", fontSize: "16px" }}>
+              Bienvenue {prenom ? `, ${prenom}` : ""} 🌿
+            </p>
+            <p className="text-sm mb-4" style={{ color: "var(--text-secondary)", lineHeight: "1.75" }}>
+              Votre programme de 21 jours commence aujourd'hui. Voici les 3 règles d'or pour bien démarrer :
+            </p>
+            {[
+              { icon: "💧", text: "Eau citronnée à jeun chaque matin, 15 min avant de manger" },
+              { icon: "🍽️", text: "Protéines uniquement avec des légumes — jamais avec des céréales" },
+              { icon: "🌙", text: "Dîner avant 20h, jeûne nocturne de 12h minimum" },
+            ].map(({ icon, text }) => (
+              <div key={text} className="flex items-start gap-3 mb-3">
+                <span style={{ fontSize: "16px", flexShrink: 0 }}>{icon}</span>
+                <p className="text-sm" style={{ color: "rgba(255,255,255,0.7)", lineHeight: "1.6" }}>{text}</p>
+              </div>
+            ))}
+          </div>
+
+          <button
+            onClick={() => {
+              localStorage.setItem("btenergy_onboarding_done", "1")
+              setShowJ1Onboarding(false)
+            }}
+            className="w-full py-4 rounded-2xl font-black text-base transition-all"
+            style={{
+              background: "linear-gradient(135deg, #2dd4a0, #4cc9f0)",
+              color: "#050e1a",
+              letterSpacing: "0.04em",
+            }}>
+            Commencer le Jour 1 →
+          </button>
+        </div>
+      </div>
+    )
+  }
+
   // ─── APP PRINCIPALE ───────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen" style={{ background: "linear-gradient(160deg, #0b1e38 0%, #07111e 55%, #050e1a 100%)" }}>
 
-      {/* Header */}
+      {/* Header — MODIFIÉ : bouton Déco retiré (disponible dans l'onglet Profil) */}
       <header className="sticky top-0 z-50 px-5 py-3.5"
         style={{ background: "rgba(5,14,26,0.82)", backdropFilter: "blur(28px)", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
         <div className="max-w-2xl mx-auto flex items-center justify-between">
@@ -250,18 +330,14 @@ export default function Dashboard() {
             <div className="tag" style={{ borderColor: `${weekInfo.color}40`, color: weekInfo.color }}>
               S{day.week} · J{currentDay}
             </div>
+            {/* Bouton profil — mène à l'onglet Profil où se trouve la déconnexion */}
             <button
               onClick={() => setActiveTab("profil")}
               className="flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold transition-all"
               style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.75)" }}>
-              {prenom ?? "Profil"}
+              {prenom ?? "Profil"} ↗
             </button>
-            <button
-              onClick={handleSignOut}
-              className="flex items-center rounded-xl px-3 py-1.5 text-xs font-semibold transition-all"
-              style={{ background: "rgba(255,70,70,0.1)", border: "1px solid rgba(255,70,70,0.2)", color: "rgba(255,120,120,0.9)" }}>
-              Déco
-            </button>
+            {/* Bouton Déco RETIRÉ du header — se connecte depuis Profil uniquement */}
           </div>
         </div>
       </header>
@@ -279,7 +355,6 @@ export default function Dashboard() {
             boxShadow: `0 1px 0 rgba(255,255,255,0.06) inset, 0 16px 48px rgba(0,0,0,0.4), 0 0 60px ${weekInfo.color}08`,
           }}>
 
-          {/* Badges */}
           <div className="flex items-center gap-2 mb-5">
             <div className="rounded-lg px-3 py-1 text-xs font-bold tracking-widest uppercase"
               style={{ background: `${weekInfo.color}14`, color: weekInfo.color, border: `1px solid ${weekInfo.color}22`, letterSpacing: "0.1em" }}>
@@ -291,7 +366,6 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Greeting + compteur */}
           <div className="flex items-start justify-between gap-4 mb-5">
             <div className="flex-1">
               <h1 className="font-black mb-2 leading-tight" style={{ color: "var(--text-primary)", fontSize: "26px" }}>
@@ -308,7 +382,6 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Progress */}
           <div className="mb-4">
             <div className="flex justify-between mb-2">
               <span style={{ color: "var(--text-muted)", fontSize: "12px" }}>Progression du programme</span>
@@ -319,11 +392,44 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Hydratation */}
-          <div className="rounded-xl px-4 py-3 flex items-center gap-3"
+          {/* MODIFIÉ — Hydratation avec tracker cliquable synchronisé avec le Journal */}
+          <div className="rounded-xl px-4 py-3"
             style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}>
-            <span style={{ fontSize: "15px" }}>💧</span>
-            <span style={{ color: "rgba(255,255,255,0.62)", fontSize: "13px" }}>{day.hydration}</span>
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <span style={{ fontSize: "15px" }}>💧</span>
+                <span style={{ color: "rgba(255,255,255,0.62)", fontSize: "13px" }}>{day.hydration}</span>
+              </div>
+              <span className="font-bold text-sm" style={{ color: "var(--blue)" }}>
+                {hydrationLiters.toFixed(1)}L
+              </span>
+            </div>
+            {/* Boutons rapides +0.25L */}
+            <div className="flex gap-2">
+              {[0.25, 0.5, 1].map(v => (
+                <button
+                  key={v}
+                  onClick={() => handleHydrationChange(Math.min(3, hydrationLiters + v))}
+                  className="flex-1 py-1.5 rounded-lg text-xs font-semibold transition-all"
+                  style={{
+                    background: "rgba(76,201,240,0.1)",
+                    border: "1px solid rgba(76,201,240,0.2)",
+                    color: "var(--blue)",
+                  }}>
+                  +{v}L
+                </button>
+              ))}
+              <button
+                onClick={() => handleHydrationChange(0)}
+                className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
+                style={{
+                  background: "rgba(255,255,255,0.05)",
+                  border: "1px solid rgba(255,255,255,0.08)",
+                  color: "var(--text-muted)",
+                }}>
+                ↺
+              </button>
+            </div>
           </div>
         </div>
 
@@ -338,11 +444,11 @@ export default function Dashboard() {
         <div className="flex gap-1 mb-6 p-1.5 rounded-2xl"
           style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}>
           {([
-            { key: "programme",  label: "Repas" },
-            { key: "journal",    label: "Journal" },
-            { key: "courses",    label: "Courses" },
-            { key: "progression",label: "Progrès" },
-            { key: "principes",  label: "💡" },
+            { key: "programme",   label: "Repas" },
+            { key: "journal",     label: "Journal" },
+            { key: "courses",     label: "Courses" },
+            { key: "progression", label: "Progrès" },
+            { key: "principes",   label: "💡" },
           ] as const).map(({ key, label }) => (
             <button key={key} onClick={() => setActiveTab(key)}
               className="flex-1 py-2.5 rounded-xl font-semibold transition-all"
@@ -404,7 +510,7 @@ export default function Dashboard() {
                 }}>→</button>
             </div>
 
-            {/* Note personnalisée du coach */}
+            {/* Note coach */}
             {override?.coach_note && (
               <div className="rounded-xl p-4 fade-up flex gap-3"
                 style={{ background: "rgba(76,201,240,0.07)", border: "1px solid rgba(76,201,240,0.25)" }}>
@@ -418,19 +524,57 @@ export default function Dashboard() {
               </div>
             )}
 
-            {/* Repas — override ou défaut */}
-            <div className="space-y-3">
+            {/* MODIFIÉ — Repas en accordéon */}
+            <div className="space-y-2">
               {viewDayData.meals.map((meal, i) => {
                 const overrideMeals = override?.meal_overrides?.[meal.moment]
                 const baseMeal = overrideMeals?.length ? { ...meal, items: overrideMeals } : meal
+                const meta = MEAL_META[meal.moment] ?? { icon: "🍴", label: meal.moment, horaire: "" }
+                const isOpen = openMoments.has(meal.moment)
+
                 return (
-                  <MealCard
-                    key={i}
-                    meal={baseMeal}
-                    isCustomized={!!overrideMeals?.length}
-                    mealLog={mealLogs[meal.moment]}
-                    onSaveLog={items => saveMealLog(meal.moment, items)}
-                  />
+                  <div key={i} className="rounded-2xl overflow-hidden transition-all"
+                    style={{ border: "1px solid rgba(255,255,255,0.08)", background: "rgba(4,10,22,0.6)" }}>
+
+                    {/* En-tête accordéon */}
+                    <button
+                      onClick={() => toggleMoment(meal.moment)}
+                      className="w-full flex items-center justify-between px-4 py-3.5 transition-all"
+                      style={{ background: isOpen ? "rgba(255,255,255,0.05)" : "transparent" }}>
+                      <div className="flex items-center gap-3">
+                        <span style={{ fontSize: "18px" }}>{meta.icon}</span>
+                        <div className="text-left">
+                          <p className="font-bold text-sm" style={{ color: "var(--text-primary)" }}>{meta.label}</p>
+                          <p className="text-xs" style={{ color: "var(--text-muted)" }}>{meta.horaire}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="rounded-full px-2 py-0.5 text-xs font-semibold"
+                          style={{ background: "rgba(255,255,255,0.07)", color: "var(--text-muted)" }}>
+                          {baseMeal.items.length} aliments
+                        </span>
+                        <span style={{
+                          color: "var(--text-muted)",
+                          fontSize: "12px",
+                          transform: isOpen ? "rotate(180deg)" : "rotate(0deg)",
+                          transition: "transform 0.2s",
+                          display: "inline-block",
+                        }}>▾</span>
+                      </div>
+                    </button>
+
+                    {/* Contenu accordéon */}
+                    {isOpen && (
+                      <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+                        <MealCard
+                          meal={baseMeal}
+                          isCustomized={!!overrideMeals?.length}
+                          mealLog={mealLogs[meal.moment]}
+                          onSaveLog={items => saveMealLog(meal.moment, items)}
+                        />
+                      </div>
+                    )}
+                  </div>
                 )
               })}
             </div>
@@ -440,7 +584,13 @@ export default function Dashboard() {
         )}
 
         {/* ── Journal ── */}
-        {activeTab === "journal" && <JournalForm currentDay={currentDay} />}
+        {activeTab === "journal" && (
+          <JournalForm
+            currentDay={currentDay}
+            hydrationLiters={hydrationLiters}
+            onHydrationChange={handleHydrationChange}
+          />
+        )}
 
         {/* ── Progression ── */}
         {activeTab === "progression" && (
@@ -448,7 +598,6 @@ export default function Dashboard() {
             <WeightTracker initialWeight={profile?.poids} />
             <Timeline21 totalDays={21} currentDay={currentDay} completedDays={completedDays} />
 
-            {/* Résumé semaines */}
             <div className="space-y-3">
               {([1, 2, 3] as const).map(w => {
                 const wInfo = WEEK_THEMES[w]
@@ -474,7 +623,6 @@ export default function Dashboard() {
               })}
             </div>
 
-            {/* Stats */}
             <div className="grid grid-cols-3 gap-3">
               {[
                 { label: "Jours actifs", value: completedDays.length.toString(), icon: "🔥" },
@@ -508,12 +656,15 @@ export default function Dashboard() {
               <h2 className="font-bold text-base mb-4" style={{ color: "var(--text-primary)" }}>Mon Profil</h2>
               <ProfilForm onSave={handleSaveProfile} initial={profile} />
             </div>
+            {/* Déconnexion — ici uniquement, plus dans le header */}
             <div className="card p-5">
+              <p className="text-xs mb-3" style={{ color: "var(--text-muted)" }}>
+                Se déconnecter ferme votre session sur cet appareil. Vos données sont sauvegardées.
+              </p>
               <button
                 onClick={handleSignOut}
                 className="w-full py-2 rounded-lg font-semibold text-sm"
-                style={{ background: "rgba(220,53,69,0.15)", color: "#ff6b7a", border: "1px solid rgba(220,53,69,0.3)" }}
-              >
+                style={{ background: "rgba(220,53,69,0.15)", color: "#ff6b7a", border: "1px solid rgba(220,53,69,0.3)" }}>
                 Se déconnecter
               </button>
             </div>

@@ -26,7 +26,7 @@ export async function middleware(request: NextRequest) {
 
   // Routes publiques
   const publicApis = ["/api/verify-company", "/api/send-magic-link", "/api/send-reset-password"]
-  if (pathname.startsWith("/login") || pathname.startsWith("/auth") || publicApis.includes(pathname)) {
+  if (pathname.startsWith("/login") || pathname.startsWith("/auth") || pathname.startsWith("/email-preview") || publicApis.includes(pathname)) {
     if (user) return NextResponse.redirect(new URL("/", request.url))
     return supabaseResponse
   }

@@ -5,10 +5,9 @@ import Link from "next/link"
 type Step = "form" | "sent"
 
 export default function LoginCollaborateur() {
-  const [email, setEmail]   = useState("")
-  const [code, setCode]     = useState("")
-  const [step, setStep]     = useState<Step>("form")
-  const [error, setError]   = useState("")
+  const [email, setEmail]     = useState("")
+  const [step, setStep]       = useState<Step>("form")
+  const [error, setError]     = useState("")
   const [loading, setLoading] = useState(false)
 
   async function handleSend() {
@@ -17,7 +16,7 @@ export default function LoginCollaborateur() {
     const res = await fetch("/api/send-magic-link", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: email.trim(), company_code: code.trim() }),
+      body: JSON.stringify({ email: email.trim() }),
     })
 
     const { error: err } = await res.json()
@@ -32,14 +31,13 @@ export default function LoginCollaborateur() {
       style={{ background: "var(--bg-primary)" }}>
 
       <div className="w-full max-w-sm">
-        {/* Logo */}
         <div className="text-center mb-8">
           <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl font-black mx-auto mb-3"
             style={{ background: "linear-gradient(135deg, var(--green-dim), var(--blue-dim))", color: "#070d0f" }}>
             B
           </div>
           <h1 className="text-2xl font-black gradient-text">BTENERGY</h1>
-          <p className="text-sm mt-1" style={{ color: "var(--text-secondary)" }}>Espace collaborateur</p>
+          <p className="text-sm mt-1" style={{ color: "var(--text-secondary)" }}>Back to Energy</p>
         </div>
 
         {step === "form" ? (
@@ -53,23 +51,12 @@ export default function LoginCollaborateur() {
             <div className="space-y-4">
               <div>
                 <label className="block text-xs uppercase tracking-widest mb-2" style={{ color: "var(--text-muted)" }}>
-                  Code entreprise
-                </label>
-                <input
-                  type="text" value={code} onChange={e => setCode(e.target.value)}
-                  placeholder="EX: BTENERGY2025"
-                  className="w-full rounded-xl px-4 py-2.5 text-sm outline-none uppercase"
-                  style={{ background: "var(--bg-secondary)", border: "1px solid var(--border)", color: "var(--text-primary)", letterSpacing: "0.1em" }}
-                />
-              </div>
-              <div>
-                <label className="block text-xs uppercase tracking-widest mb-2" style={{ color: "var(--text-muted)" }}>
                   Email
                 </label>
                 <input
                   type="email" value={email} onChange={e => setEmail(e.target.value)}
                   placeholder="votre@email.com"
-                  onKeyDown={e => e.key === "Enter" && !(!email || !code || loading) && handleSend()}
+                  onKeyDown={e => e.key === "Enter" && !(!email || loading) && handleSend()}
                   className="w-full rounded-xl px-4 py-2.5 text-sm outline-none"
                   style={{ background: "var(--bg-secondary)", border: "1px solid var(--border)", color: "var(--text-primary)" }}
                 />
@@ -77,9 +64,9 @@ export default function LoginCollaborateur() {
               {error && <p className="text-xs text-red-400">{error}</p>}
               <button
                 onClick={handleSend}
-                disabled={!email || !code || loading}
+                disabled={!email || loading}
                 className="btn-primary w-full text-sm"
-                style={{ opacity: (!email || !code || loading) ? 0.5 : 1 }}>
+                style={{ opacity: (!email || loading) ? 0.5 : 1 }}>
                 {loading ? "Envoi en cours..." : "Recevoir mon lien de connexion →"}
               </button>
             </div>

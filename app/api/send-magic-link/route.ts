@@ -14,31 +14,20 @@ function admin() {
 }
 
 export async function POST(request: NextRequest) {
-  const { email, company_code } = await request.json()
+  const { email } = await request.json()
 
-  if (!email || !company_code) {
+  if (!email) {
     return NextResponse.json({ error: "Paramètres manquants." }, { status: 400 })
   }
 
   const db = admin()
 
-  // 1. Vérifie le code entreprise
-  const { data: company } = await db
-    .from("companies")
-    .select("id")
-    .eq("code", company_code.toUpperCase())
-    .maybeSingle()
-
-  if (!company) {
-    return NextResponse.json({ error: "Code entreprise invalide." }, { status: 400 })
-  }
-
-  // 2. Vérifie que le collaborateur existe dans cette entreprise
+  // Vérifie que le collaborateur existe
   const { data: profile } = await db
     .from("profiles")
     .select("prenom")
     .eq("email", email.toLowerCase())
-    .eq("company_id", company.id)
+    .eq("role", "collaborateur")
     .maybeSingle()
 
   if (!profile) {

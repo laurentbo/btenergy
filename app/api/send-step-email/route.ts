@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
 import { createClient as createAdmin } from "@supabase/supabase-js"
 import { resend, FROM } from "@/lib/resend"
-import { stepEmail } from "@/lib/email-templates"
+import { stepEmail, midpointEmail, postCureEmail } from "@/lib/email-templates"
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? "https://backtoenergy.fr"
 
@@ -44,6 +44,55 @@ export async function POST(request: NextRequest) {
 
   const prenom = profile?.prenom ?? "vous"
 
+  // Day 22: Send post-cure email only
+  if (day === 22) {
+    const { error: sendError } = await resend.emails.send({
+      from: FROM,
+      to: user.email!,
+      subject: "Félicitations — Programme BTENERGY complété 🎉",
+      html: postCureEmail(prenom, SITE),
+    })
+
+    if (sendError) {
+      await db.from("email_logs").delete().eq("user_id", user.id).eq("type", type)
+      console.error("Resend post-cure error:", sendError)
+      return NextResponse.json({ error: "Erreur envoi email." }, { status: 500 })
+    }
+
+    return NextResponse.json({ ok: true })
+  }
+
+  // Day 10: Send step email + midpoint email
+  if (day === 10) {
+    const { error: stepErr } = await resend.emails.send({
+      from: FROM,
+      to: user.email!,
+      subject: `Jour ${day} · Programme BTENERGY`,
+      html: stepEmail(prenom, day, SITE),
+    })
+
+    if (stepErr) {
+      await db.from("email_logs").delete().eq("user_id", user.id).eq("type", type)
+      console.error("Resend step error:", stepErr)
+      return NextResponse.json({ error: "Erreur envoi email." }, { status: 500 })
+    }
+
+    const { error: midErr } = await resend.emails.send({
+      from: FROM,
+      to: user.email!,
+      subject: "Jour 10 — Halfway There 🏔️",
+      html: midpointEmail(prenom, SITE),
+    })
+
+    if (midErr) {
+      console.error("Resend midpoint error:", midErr)
+      // Log the error but don't fail — step email was sent
+    }
+
+    return NextResponse.json({ ok: true })
+  }
+
+  // Default: Send regular step email
   const { error: sendError } = await resend.emails.send({
     from: FROM,
     to: user.email!,
@@ -52,7 +101,6 @@ export async function POST(request: NextRequest) {
   })
 
   if (sendError) {
-    // Rollback du log pour pouvoir réessayer
     await db.from("email_logs").delete().eq("user_id", user.id).eq("type", type)
     console.error("Resend step error:", sendError)
     return NextResponse.json({ error: "Erreur envoi email." }, { status: 500 })

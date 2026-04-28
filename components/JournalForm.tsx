@@ -17,9 +17,17 @@ const SLIDERS = [
   { key: "sommeil",     label: "Sommeil",     icon: "🌙", color: "#818cf8" },
 ] as const
 
-export default function JournalForm({ currentDay = 1 }: { currentDay?: number }) {
+export default function JournalForm({
+  currentDay = 1,
+  hydrationLiters = 0,
+  onHydrationChange,
+}: {
+  currentDay?: number
+  hydrationLiters?: number
+  onHydrationChange?: (liters: number) => void
+}) {
   const [values, setValues] = useState<JournalEntry>({
-    energie: 5, humeur: 5, hydratation: 5, sommeil: 5, note: "",
+    energie: 5, humeur: 5, hydratation: Math.round((hydrationLiters / 3) * 10) || 5, sommeil: 5, note: "",
   })
   const [status, setStatus] = useState<"idle" | "saving" | "saved" | "error">("idle")
   const [errorMsg, setErrorMsg] = useState<string>("")
@@ -28,6 +36,11 @@ export default function JournalForm({ currentDay = 1 }: { currentDay?: number })
   const handleSlider = (key: keyof Omit<JournalEntry, "note">, val: number) => {
     setValues(v => ({ ...v, [key]: val }))
     if (status === "saved") setStatus("idle")
+    // Sync hydration liters with parent
+    if (key === "hydratation" && onHydrationChange) {
+      const liters = (val / 10) * 3
+      onHydrationChange(liters)
+    }
   }
 
   const handleSave = async () => {

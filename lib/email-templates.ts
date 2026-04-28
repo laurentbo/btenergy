@@ -63,10 +63,10 @@ export function magicLinkEmail(prenom: string, url: string): string {
     <p style="margin:0 0 6px;font-size:13px;font-weight:600;letter-spacing:0.12em;color:#4cc9f0;text-transform:uppercase;">Connexion sécurisée</p>
     <h1 style="margin:0 0 16px;font-size:24px;font-weight:900;color:#ffffff;line-height:1.2;">Bonjour ${nom} 👋</h1>
     <p style="margin:0 0 24px;font-size:15px;color:rgba(255,255,255,0.65);line-height:1.7;">
-      Cliquez sur le bouton ci-dessous pour accéder à votre programme BTENERGY.<br>
+      Appuyez sur ce bouton pour accéder à votre programme <strong style="color:#ffffff;">Back to Energy</strong>.<br>
       Ce lien est valable <strong style="color:#ffffff;">1 heure</strong> et ne peut être utilisé qu'une seule fois.
     </p>
-    ${btn(url, "Accéder à mon programme →")}
+    ${btn(url, "Accéder à Back to Energy →")}
     <p style="margin:24px 0 0;font-size:12px;color:rgba(255,255,255,0.35);text-align:center;">
       Si vous n'avez pas demandé ce lien, ignorez cet email.
     </p>
@@ -80,17 +80,44 @@ export function welcomeEmail(prenom: string, appUrl: string): string {
   return BASE + header() + card(`
     <p style="margin:0 0 6px;font-size:13px;font-weight:600;letter-spacing:0.12em;color:#2dd4a0;text-transform:uppercase;">Accès confirmé</p>
     <h1 style="margin:0 0 16px;font-size:24px;font-weight:900;color:#ffffff;line-height:1.2;">Bienvenue ${nom} 🌱</h1>
-    <p style="margin:0 0 20px;font-size:15px;color:rgba(255,255,255,0.65);line-height:1.7;">
-      Votre accès au programme <strong style="color:#ffffff;">BTENERGY 21 Jours</strong> est activé.<br>
-      Votre parcours Détox &amp; Énergie commence maintenant.
+    <p style="margin:0 0 24px;font-size:15px;color:rgba(255,255,255,0.65);line-height:1.8;">
+      Votre programme <strong style="color:#ffffff;">Back to Energy — 21 jours</strong> commence maintenant.<br>
+      Pendant 3 semaines, vous allez retrouver une énergie durable, un corps plus léger et une clarté mentale que vous n'avez peut-être plus ressentie depuis longtemps.
     </p>
-    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
-      ${["🌅 Semaine 1 — Détox &amp; Purification", "⚡ Semaine 2 — Énergie &amp; Vitalité", "🏔️ Semaine 3 — Ancrage &amp; Performance"].map(s => `
-        <tr><td style="padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.06);">
-          <span style="font-size:14px;color:rgba(255,255,255,0.7);">${s}</span>
+
+    <p style="margin:0 0 10px;font-size:12px;font-weight:700;letter-spacing:0.1em;color:rgba(255,255,255,0.4);text-transform:uppercase;">Votre parcours</p>
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
+      ${[
+        ["🌅", "Semaine 1", "Détox &amp; Purification", "On libère le corps de ce qui l'encombre."],
+        ["⚡", "Semaine 2", "Énergie &amp; Vitalité", "On relance la machine, profondément."],
+        ["🏔️", "Semaine 3", "Ancrage &amp; Performance", "On installe des habitudes qui durent."],
+      ].map(([emoji, week, title, desc]) => `
+        <tr><td style="padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.06);">
+          <span style="font-size:15px;font-weight:700;color:#ffffff;">${emoji} ${week} — ${title}</span><br>
+          <span style="font-size:13px;color:rgba(255,255,255,0.5);line-height:1.6;">${desc}</span>
         </td></tr>
       `).join("")}
     </table>
+
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:rgba(45,212,160,0.07);border:1px solid rgba(45,212,160,0.2);border-radius:14px;margin-bottom:20px;">
+      <tr><td style="padding:20px;">
+        <p style="margin:0 0 10px;font-size:12px;font-weight:700;letter-spacing:0.1em;color:#2dd4a0;text-transform:uppercase;">Les grands principes</p>
+        <p style="margin:0 0 8px;font-size:13px;color:rgba(255,255,255,0.7);line-height:1.7;">
+          🥗 <strong style="color:#ffffff;">Associations alimentaires :</strong> fruits seuls, protéines et légumes ensemble, féculents sans protéines animales — votre digestion va vous remercier.
+        </p>
+        <p style="margin:0 0 8px;font-size:13px;color:rgba(255,255,255,0.7);line-height:1.7;">
+          💧 <strong style="color:#ffffff;">Hydratation :</strong> eau, tisanes, jus de légumes frais — votre meilleur carburant pendant ces 21 jours.
+        </p>
+        <p style="margin:0;font-size:13px;color:rgba(255,255,255,0.7);line-height:1.7;">
+          ✨ <strong style="color:#ffffff;">Pour que la cure agisse pleinement :</strong> on met de côté le sucre raffiné, les produits laitiers animaux et le blé — pas pour toujours, juste le temps de laisser votre corps respirer et se régénérer.
+        </p>
+      </td></tr>
+    </table>
+
+    <p style="margin:0 0 24px;font-size:14px;color:rgba(255,255,255,0.5);line-height:1.7;text-align:center;font-style:italic;">
+      Chaque jour, votre programme vous attend dans l'app.<br>Faites-vous confiance — les résultats arrivent quand on s'y engage vraiment. 💪
+    </p>
+
     ${btn(appUrl, "Démarrer mon programme →")}
   `) + footer() + CLOSE
 }
@@ -170,6 +197,71 @@ export function stepEmail(prenom: string, day: number, appUrl: string): string {
     ${btn(`${appUrl}`, "Voir mon programme du jour →")}
     <p style="margin:20px 0 0;text-align:center;font-size:12px;color:rgba(255,255,255,0.3);">
       ${nom}, vous êtes au jour ${day}/21. Continuez 💪
+    </p>
+  `) + footer() + CLOSE
+}
+
+// ─── MIDPOINT EMAIL (DAY 10) ─────────────────────────────────────────────────
+
+export function midpointEmail(prenom: string, appUrl: string): string {
+  const nom = prenom.charAt(0).toUpperCase() + prenom.slice(1).toLowerCase()
+  return BASE + header() + card(`
+    <p style="margin:0 0 6px;font-size:13px;font-weight:600;letter-spacing:0.12em;color:#4cc9f0;text-transform:uppercase;">Mi-parcours</p>
+    <h1 style="margin:0 0 16px;font-size:24px;font-weight:900;color:#ffffff;line-height:1.2;">Jour 10 — Halfway There 🏔️</h1>
+    <p style="margin:0 0 24px;font-size:15px;color:rgba(255,255,255,0.65);line-height:1.7;">
+      ${nom}, vous avez atteint la moitié du programme ! C'est le moment de faire un bilan et de reconnaître votre engagement.
+    </p>
+
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:rgba(45,212,160,0.07);border:1px solid rgba(45,212,160,0.2);border-radius:14px;margin-bottom:20px;">
+      <tr><td style="padding:20px;">
+        <p style="margin:0 0 10px;font-size:12px;font-weight:700;letter-spacing:0.1em;color:#2dd4a0;text-transform:uppercase;">Comment vous vous sentez ?</p>
+        <p style="margin:0;font-size:13px;color:rgba(255,255,255,0.7);line-height:1.7;">
+          Vous avez passé la première semaine de détox et commencez la seconde phase d'énergie. C'est normal de sentir des changements dans votre corps et votre esprit. Écoutez-vous.
+        </p>
+      </td></tr>
+    </table>
+
+    <p style="margin:0 0 16px;font-size:14px;color:rgba(255,255,255,0.65);line-height:1.7;">
+      Il vous reste 11 jours pour consolider ces habitudes et sentir la transformation s'approfondir.
+    </p>
+
+    ${btn(appUrl, "Continuer mon programme →")}
+    <p style="margin:20px 0 0;text-align:center;font-size:12px;color:rgba(255,255,255,0.3);">
+      ${nom}, vous êtes à la mi-chemin. Vous avez déjà réussi la moitié 💪
+    </p>
+  `) + footer() + CLOSE
+}
+
+// ─── POST-CURE EMAIL (DAY 22) ────────────────────────────────────────────────
+
+export function postCureEmail(prenom: string, appUrl: string): string {
+  const nom = prenom.charAt(0).toUpperCase() + prenom.slice(1).toLowerCase()
+  return BASE + header() + card(`
+    <p style="margin:0 0 6px;font-size:13px;font-weight:600;letter-spacing:0.12em;color:#2dd4a0;text-transform:uppercase;">Programme Terminé</p>
+    <h1 style="margin:0 0 16px;font-size:24px;font-weight:900;color:#ffffff;line-height:1.2;">${nom}, vous avez réussi ! 🎉</h1>
+    <p style="margin:0 0 24px;font-size:15px;color:rgba(255,255,255,0.65);line-height:1.7;">
+      Félicitations pour avoir complété le programme Back to Energy. Les 21 jours sont derrière vous — ce qui vient maintenant, c'est de maintenir et renforcer ce que vous avez construit.
+    </p>
+
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:rgba(129,140,248,0.07);border:1px solid rgba(129,140,248,0.2);border-radius:14px;margin-bottom:20px;">
+      <tr><td style="padding:20px;">
+        <p style="margin:0 0 10px;font-size:12px;font-weight:700;letter-spacing:0.1em;color:#818cf8;text-transform:uppercase;">Et maintenant ?</p>
+        <p style="margin:0 0 8px;font-size:13px;color:rgba(255,255,255,0.7);line-height:1.7;">
+          Les principes d'alimentation que vous avez appris peuvent devenir votre mode de vie. Les rituels du matin et du soir : conservez-les quand vous pouvez.
+        </p>
+        <p style="margin:0;font-size:13px;color:rgba(255,255,255,0.7);line-height:1.7;">
+          L'important ? Rester à l'écoute de votre corps. Vous avez maintenant les outils pour savoir ce qui vous convient.
+        </p>
+      </td></tr>
+    </table>
+
+    <p style="margin:0 0 16px;font-size:14px;color:rgba(255,255,255,0.65);line-height:1.7;">
+      Si vous souhaitez lancer un nouveau cycle ou obtenir du coaching personnalisé, nous sommes là pour vous.
+    </p>
+
+    ${btn(appUrl, "Voir mon bilan →")}
+    <p style="margin:20px 0 0;text-align:center;font-size:12px;color:rgba(255,255,255,0.3);">
+      Merci d'avoir suivi le programme Back to Energy. Votre wellbeing commence ici 🌿
     </p>
   `) + footer() + CLOSE
 }
