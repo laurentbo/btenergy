@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Preview fond</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: system-ui, sans-serif; display: flex; gap: 0; }
+
+  :root {
+    --bg-card: #163350;
+    --border-accent: #3a80a8;
+    --green: #2de4a4;
+    --green-dim: #1fb87e;
+    --blue: #5ce0f8;
+    --blue-dim: #30b8d8;
+    --text-primary: #e8f8ff;
+    --text-secondary: #a8ddf0;
+    --text-muted: #5fa8c8;
+    --border: #2a5f80;
+  }
+
+  .col { flex: 1; min-height: 100vh; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+  .label { color: #fff; font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.6; margin-bottom: 4px; }
+
+  /* Option A — actuel (trop clair) */
+  .a { background: linear-gradient(180deg, #1a56db 0%, #1243a8 100%); }
+  /* Option B — doux harmonisé */
+  .b { background: linear-gradient(180deg, #0e2d54 0%, #091e3a 100%); }
+  /* Option C — un cran plus clair */
+  .c { background: linear-gradient(180deg, #122f5c 0%, #0a2040 100%); }
+
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-accent);
+    border-radius: 20px;
+    padding: 16px;
+    box-shadow: 0 2px 20px rgba(10,80,130,0.35);
+  }
+  .badge {
+    display: inline-block;
+    background: var(--bg-card);
+    border: 1px solid var(--border-accent);
+    border-radius: 8px;
+    padding: 3px 10px;
+    font-size: 11px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 600;
+  }
+  .header {
+    background: rgba(10,28,44,0.96);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(58,128,168,0.7);
+    border-radius: 14px;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .logo {
+    width: 32px; height: 32px; border-radius: 10px;
+    background: linear-gradient(135deg, var(--green-dim), var(--blue-dim));
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 900; font-size: 14px; color: #060c0e;
+  }
+  .brand { font-weight: 900; font-size: 13px; background: linear-gradient(135deg, var(--green), var(--blue)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .day-card {
+    border-radius: 20px;
+    padding: 20px;
+    background: linear-gradient(160deg, #174060 0%, #0e2840 100%);
+    border: 1px solid rgba(58,128,168,0.5);
+  }
+  .tag-week { border-radius: 8px; padding: 3px 10px; font-size: 11px; font-weight: 700; }
+  .title { color: var(--text-primary); font-size: 18px; font-weight: 900; margin: 8px 0 4px; }
+  .intention { color: var(--green); font-size: 13px; font-style: italic; }
+  .progress-bar { height: 4px; background: var(--border); border-radius: 2px; margin: 12px 0; overflow: hidden; }
+  .progress-fill { height: 100%; width: 38%; background: linear-gradient(90deg, var(--green), var(--blue)); border-radius: 2px; }
+  .hydration { flex: 1; border-radius: 12px; padding: 10px 12px; font-size: 12px; color: var(--text-secondary); background: rgba(45,228,164,0.06); border: 1px solid rgba(45,228,164,0.12); }
+  .tab-bar { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 4px; display: flex; gap: 4px; }
+  .tab { flex: 1; padding: 8px; border-radius: 12px; text-align: center; font-size: 11px; font-weight: 600; color: var(--text-muted); cursor: pointer; }
+  .tab.active { background: linear-gradient(135deg, var(--green-dim), var(--blue-dim)); color: #060c0e; }
+</style>
+</head>
+<body>
+
+<!-- A : actuel (trop clair) -->
+<div class="col a">
+  <div class="label">A — actuel (trop clair)</div>
+  <div class="header">
+    <div style="display:flex;align-items:center;gap:8px"><div class="logo">B</div><span class="brand">BTENERGY</span></div>
+    <div style="display:flex;gap:6px;align-items:center"><span class="badge">S2 · J8/21</span><span class="badge" style="color:#e8f8ff">C</span></div>
+  </div>
+  <div class="day-card">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div>
+        <div style="font-size:10px;color:var(--text-muted);font-weight:700;letter-spacing:.1em">ÉNERGIE & VITALITÉ · JOUR 8</div>
+        <div class="title">Bonjour, Cécile 👋</div>
+        <div class="intention">"Alimenter la machine avec précision."</div>
+      </div>
+      <div style="background:rgba(45,228,164,0.1);border:1px solid rgba(45,228,164,0.2);border-radius:16px;width:52px;height:52px;display:flex;flex-direction:column;align-items:center;justify-content:center">
+        <div style="font-size:22px;font-weight:900;color:var(--green)">8</div>
+        <div style="font-size:10px;color:var(--text-muted)">/21</div>
+      </div>
+    </div>
+    <div class="progress-bar"><div class="progress-fill"></div></div>
+    <div class="hydration">💧 Eau + jus de citron vert + menthe fraîche</div>
+  </div>
+  <div class="tab-bar">
+    <div class="tab active">Repas</div>
+    <div class="tab">Journal</div>
+    <div class="tab">Progrès</div>
+    <div class="tab">💡</div>
+  </div>
+  <div class="card">
+    <div style="font-size:12px;color:var(--text-secondary)">🍽️ Exemple de contenu repas...</div>
+  </div>
+</div>
+
+<!-- B : doux harmonisé -->
+<div class="col b">
+  <div class="label">B — doux harmonisé ✓</div>
+  <div class="header">
+    <div style="display:flex;align-items:center;gap:8px"><div class="logo">B</div><span class="brand">BTENERGY</span></div>
+    <div style="display:flex;gap:6px;align-items:center"><span class="badge">S2 · J8/21</span><span class="badge" style="color:#e8f8ff">C</span></div>
+  </div>
+  <div class="day-card">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div>
+        <div style="font-size:10px;color:var(--text-muted);font-weight:700;letter-spacing:.1em">ÉNERGIE & VITALITÉ · JOUR 8</div>
+        <div class="title">Bonjour, Cécile 👋</div>
+        <div class="intention">"Alimenter la machine avec précision."</div>
+      </div>
+      <div style="background:rgba(45,228,164,0.1);border:1px solid rgba(45,228,164,0.2);border-radius:16px;width:52px;height:52px;display:flex;flex-direction:column;align-items:center;justify-content:center">
+        <div style="font-size:22px;font-weight:900;color:var(--green)">8</div>
+        <div style="font-size:10px;color:var(--text-muted)">/21</div>
+      </div>
+    </div>
+    <div class="progress-bar"><div class="progress-fill"></div></div>
+    <div class="hydration">💧 Eau + jus de citron vert + menthe fraîche</div>
+  </div>
+  <div class="tab-bar">
+    <div class="tab active">Repas</div>
+    <div class="tab">Journal</div>
+    <div class="tab">Progrès</div>
+    <div class="tab">💡</div>
+  </div>
+  <div class="card">
+    <div style="font-size:12px;color:var(--text-secondary)">🍽️ Exemple de contenu repas...</div>
+  </div>
+</div>
+
+<!-- C : un cran plus clair -->
+<div class="col c">
+  <div class="label">C — un cran plus lumineux</div>
+  <div class="header">
+    <div style="display:flex;align-items:center;gap:8px"><div class="logo">B</div><span class="brand">BTENERGY</span></div>
+    <div style="display:flex;gap:6px;align-items:center"><span class="badge">S2 · J8/21</span><span class="badge" style="color:#e8f8ff">C</span></div>
+  </div>
+  <div class="day-card">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div>
+        <div style="font-size:10px;color:var(--text-muted);font-weight:700;letter-spacing:.1em">ÉNERGIE & VITALITÉ · JOUR 8</div>
+        <div class="title">Bonjour, Cécile 👋</div>
+        <div class="intention">"Alimenter la machine avec précision."</div>
+      </div>
+      <div style="background:rgba(45,228,164,0.1);border:1px solid rgba(45,228,164,0.2);border-radius:16px;width:52px;height:52px;display:flex;flex-direction:column;align-items:center;justify-content:center">
+        <div style="font-size:22px;font-weight:900;color:var(--green)">8</div>
+        <div style="font-size:10px;color:var(--text-muted)">/21</div>
+      </div>
+    </div>
+    <div class="progress-bar"><div class="progress-fill"></div></div>
+    <div class="hydration">💧 Eau + jus de citron vert + menthe fraîche</div>
+  </div>
+  <div class="tab-bar">
+    <div class="tab active">Repas</div>
+    <div class="tab">Journal</div>
+    <div class="tab">Progrès</div>
+    <div class="tab">💡</div>
+  </div>
+  <div class="card">
+    <div style="font-size:12px;color:var(--text-secondary)">🍽️ Exemple de contenu repas...</div>
+  </div>
+</div>
+
+</body>
+</html>

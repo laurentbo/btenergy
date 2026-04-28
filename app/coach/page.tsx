@@ -1,8 +1,9 @@
 "use client"
 import { useEffect, useState } from "react"
 import type { Database } from "@/lib/supabase/types"
-import { WEEK_THEMES } from "@/data/program"
+import { WEEK_THEMES, PROGRAM } from "@/data/program"
 import ProgramEditor from "@/components/ProgramEditor"
+import { createClient } from "@/lib/supabase/client"
 
 type Profile = Database["public"]["Tables"]["profiles"]["Row"]
 type JournalEntry = Database["public"]["Tables"]["journal_entries"]["Row"]
@@ -12,6 +13,12 @@ type CollabWithJournal = Profile & {
   avg_energie: number | null
 }
 
+type MealLog = { day: number; moment: string; items: string[]; created_at: string }
+
+const MOMENT_LABEL: Record<string, string> = {
+  matin: "Petit-déjeuner", midi: "Déjeuner", "après-midi": "Collation", soir: "Dîner"
+}
+
 export default function CoachDashboard() {
   const [collabs, setCollabs] = useState<CollabWithJournal[]>([])
   const [loading, setLoading] = useState(true)
@@ -19,6 +26,9 @@ export default function CoachDashboard() {
   const [filter, setFilter]   = useState<"tous" | "actifs" | "inactifs">("tous")
   const [selected, setSelected] = useState<CollabWithJournal | null>(null)
   const [editing, setEditing]   = useState<CollabWithJournal | null>(null)
+  const [mealLogs, setMealLogs] = useState<Record<string, MealLog[]>>({})
+  const [logsLoading, setLogsLoading] = useState(false)
+  const supabase = createClient()
 
   useEffect(() => {
     async function load() {
@@ -48,6 +58,20 @@ export default function CoachDashboard() {
   const avgEnergie = collabs.filter(c => c.avg_energie).length
     ? Math.round(collabs.reduce((s, c) => s + (c.avg_energie ?? 0), 0) / collabs.filter(c => c.avg_energie).length * 10) / 10
     : null
+
+  const selectCollab = async (c: CollabWithJournal) => {
+    const isDeselect = selected?.id === c.id
+    setSelected(isDeselect ? null : c)
+    if (isDeselect || mealLogs[c.id]) return
+    setLogsLoading(true)
+    const { data } = await supabase
+      .from("meal_logs")
+      .select("day, moment, items, created_at")
+      .eq("user_id", c.id)
+      .order("day", { ascending: true })
+    setMealLogs(prev => ({ ...prev, [c.id]: (data ?? []) as MealLog[] }))
+    setLogsLoading(false)
+  }
 
   const signOut = async () => {
     const { createClient } = await import("@/lib/supabase/client")
@@ -145,7 +169,7 @@ export default function CoachDashboard() {
                 : "Jamais"
 
               return (
-                <button key={c.id} onClick={() => setSelected(selected?.id === c.id ? null : c)}
+                <button key={c.id} onClick={() => selectCollab(c)}
                   className="card w-full p-4 text-left transition-all"
                   style={{ borderColor: selected?.id === c.id ? wInfo.color + "50" : undefined }}>
                   <div className="flex items-center gap-3">
@@ -189,7 +213,7 @@ export default function CoachDashboard() {
                       </div>
 
                       {c.last_entry && (
-                        <div className="rounded-xl p-3" style={{ background: "rgba(45,228,164,0.05)", border: "1px solid rgba(45,228,164,0.15)" }}>
+                        <div className="rounded-xl p-3" style={{ background: "rgba(76,201,240,0.05)", border: "1px solid rgba(76,201,240,0.15)" }}>
                           <p className="text-xs mb-2 font-semibold" style={{ color: "var(--green)" }}>Dernier journal ({lastSeen})</p>
                           <div className="grid grid-cols-4 gap-2 text-center">
                             {[
@@ -211,6 +235,61 @@ export default function CoachDashboard() {
                           )}
                         </div>
                       )}
+
+                      {/* Modifications repas */}
+                      {(() => {
+                        const logs = mealLogs[c.id]
+                        if (logsLoading && !logs) return (
+                          <p className="text-xs text-center py-2" style={{ color: "var(--text-muted)" }}>Chargement des repas…</p>
+                        )
+                        if (!logs || logs.length === 0) return null
+                        return (
+                          <div className="rounded-xl overflow-hidden" style={{ border: "1px solid rgba(167,139,250,0.2)" }}>
+                            <div className="px-3 py-2.5 flex items-center gap-2"
+                              style={{ background: "rgba(167,139,250,0.08)", borderBottom: "1px solid rgba(167,139,250,0.15)" }}>
+                              <span style={{ fontSize: "13px" }}>✎</span>
+                              <p className="text-xs font-bold" style={{ color: "#a78bfa" }}>
+                                Modifications repas — {logs.length} entrée{logs.length > 1 ? "s" : ""}
+                              </p>
+                            </div>
+                            <div className="divide-y divide-white/5">
+                              {logs.map((log, i) => {
+                                const planned = PROGRAM[log.day - 1]?.meals.find(m => m.moment === log.moment)
+                                return (
+                                  <div key={i} className="px-3 py-3 space-y-2">
+                                    <div className="flex items-center justify-between">
+                                      <span className="text-xs font-semibold" style={{ color: "#a78bfa" }}>
+                                        J{log.day} · {MOMENT_LABEL[log.moment] ?? log.moment}
+                                      </span>
+                                      <span className="text-xs" style={{ color: "var(--text-muted)" }}>
+                                        {new Date(log.created_at).toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}
+                                      </span>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-2">
+                                      <div>
+                                        <p className="text-xs mb-1.5" style={{ color: "var(--text-muted)" }}>Prévu</p>
+                                        <ul className="space-y-0.5">
+                                          {planned?.items.map((it, j) => (
+                                            <li key={j} className="text-xs" style={{ color: "rgba(240,246,255,0.45)" }}>· {it}</li>
+                                          ))}
+                                        </ul>
+                                      </div>
+                                      <div>
+                                        <p className="text-xs mb-1.5" style={{ color: "#a78bfa" }}>Mangé</p>
+                                        <ul className="space-y-0.5">
+                                          {log.items.map((it, j) => (
+                                            <li key={j} className="text-xs" style={{ color: "rgba(240,246,255,0.8)" }}>· {it}</li>
+                                          ))}
+                                        </ul>
+                                      </div>
+                                    </div>
+                                  </div>
+                                )
+                              })}
+                            </div>
+                          </div>
+                        )
+                      })()}
 
                       {/* Boutons actions */}
                       <div className="grid grid-cols-2 gap-2 mt-3">

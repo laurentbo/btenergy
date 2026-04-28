@@ -25,7 +25,8 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   // Routes publiques
-  if (pathname.startsWith("/login") || pathname.startsWith("/auth")) {
+  const publicApis = ["/api/verify-company", "/api/send-magic-link", "/api/send-reset-password"]
+  if (pathname.startsWith("/login") || pathname.startsWith("/auth") || publicApis.includes(pathname)) {
     if (user) return NextResponse.redirect(new URL("/", request.url))
     return supabaseResponse
   }
@@ -57,5 +58,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|html)$).*)"],
 }

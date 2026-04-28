@@ -52,7 +52,7 @@ export const PRINCIPES: PrincipalKey[] = [
     icon: "🌿",
     title: "Manger vivant",
     body: "50 % de l'assiette en crudités ou légumes légèrement cuits. Les enzymes vivantes nourrissent les cellules et soutiennent l'immunité.",
-    color: "#2de4a4",
+    color: "#4cc9f0",
   },
   {
     icon: "⏱️",
@@ -93,7 +93,7 @@ const WEEK1: DayProgram[] = [
     theme: "Éveil & Purification",
     intention: "Nettoyer, alléger, recommencer.",
     meals: [
-      { moment: "matin", items: ["Fruits de saison", "Oléagineux (amandes, noix)", "Miel brut", "Eau citronnée tiède"], conseil: "Commencez par l'eau citronnée à jeun — 15 min avant de manger." },
+      { moment: "matin", items: ["Fruits de saison", "Amandes & noix", "Abricots secs & raisins", "Miel brut", "Jus de citron"], conseil: "Commencez par le jus de citron à jeun — 15 min avant de manger." },
       { moment: "midi", items: ["Crudités variées", "Pommes de terre vapeur", "Œufs mollets", "Café"], conseil: "Mastiquez lentement. Le calme digestif commence par la lenteur." },
       { moment: "après-midi", items: ["Un fruit (pomme, poire ou agrume)"], conseil: "Attendez 30 min après votre café." },
       { moment: "soir", items: ["Crudités en salade", "Volaille grillée", "Riz complet", "Courgettes vapeur"], conseil: "Dîner léger, avant 20h si possible." },
@@ -107,7 +107,7 @@ const WEEK1: DayProgram[] = [
     theme: "Ancrage & Énergie Durable",
     intention: "Construire un socle solide pour la journée.",
     meals: [
-      { moment: "matin", items: ["Fruits rouges", "Amandes & noisettes", "Miel de fleurs", "Eau citronnée + gingembre"], conseil: "Ajoutez une tranche de gingembre frais dans votre eau." },
+      { moment: "matin", items: ["Fruits de saison", "Noisettes & amandes", "Dattes & figues sèches", "Miel de fleurs", "Jus de citron"], conseil: "Faites tremper les fruits secs la veille pour une meilleure assimilation." },
       { moment: "midi", items: ["Carottes râpées", "Betterave crue", "Lentilles tièdes", "Huile d'olive & citron"], conseil: "Les légumineuses nourrissent le microbiote — à intégrer régulièrement." },
       { moment: "après-midi", items: ["Kiwi ou orange"] },
       { moment: "soir", items: ["Soupe de légumes maison", "Quinoa", "Saumon vapeur"], conseil: "Les oméga-3 du poisson gras soutiennent le cerveau et l'énergie." },
@@ -121,7 +121,7 @@ const WEEK1: DayProgram[] = [
     theme: "Légèreté & Clarté Mentale",
     intention: "Alléger le corps pour clarifier l'esprit.",
     meals: [
-      { moment: "matin", items: ["Papaye ou ananas frais", "Noix du Brésil (3 max)", "Miel + curcuma", "Eau citronnée"], conseil: "Papaye et ananas contiennent des enzymes digestives naturelles." },
+      { moment: "matin", items: ["Fruits de saison", "Noix du Brésil (3 max)", "Pruneaux & raisins secs", "Miel + cannelle", "Jus de citron"], conseil: "La cannelle régule la glycémie — saupoudrez généreusement." },
       { moment: "midi", items: ["Salade verte", "Avocat", "Œufs durs", "Tomates cerises", "Graines de courge"] },
       { moment: "après-midi", items: ["Pomme verte"] },
       { moment: "soir", items: ["Velouté de brocolis", "Riz basmati", "Blanc de poulet grillé aux herbes"] },
@@ -135,7 +135,7 @@ const WEEK1: DayProgram[] = [
     theme: "Douceur & Régénération",
     intention: "Nourrir sans alourdir.",
     meals: [
-      { moment: "matin", items: ["Banane", "Noix de cajou", "Miel + cannelle", "Eau citronnée"], conseil: "La banane apporte du tryptophane — précurseur de la sérotonine." },
+      { moment: "matin", items: ["Fruits de saison", "Noix de cajou", "Dattes Medjool & abricots secs", "Miel", "Copeaux de noix de coco", "Jus de citron"], conseil: "Les dattes Medjool apportent du magnésium et du potassium — énergie immédiate." },
       { moment: "midi", items: ["Taboulé de quinoa aux légumes crus", "Sardines à l'huile d'olive", "Roquette"], conseil: "Rincez le quinoa pour enlever la saponine amère." },
       { moment: "après-midi", items: ["Poire ou raisin frais"] },
       { moment: "soir", items: ["Potage de poireaux", "Patate douce rôtie", "Dinde en escalope"], conseil: "La patate douce a un IG modéré et rassasie durablement." },
@@ -149,7 +149,7 @@ const WEEK1: DayProgram[] = [
     theme: "Force Tranquille",
     intention: "L'énergie vient de l'intérieur.",
     meals: [
-      { moment: "matin", items: ["Myrtilles & framboises", "Amandes grillées", "Miel de châtaignier", "Eau chaude + citron + gingembre"] },
+      { moment: "matin", items: ["Fruits de saison", "Amandes effilées", "Figues sèches & abricots", "Miel de châtaignier", "Jus de citron"], conseil: "Les amandes effilées sont plus faciles à digérer — idéal en milieu de semaine." },
       { moment: "midi", items: ["Salade de chou rouge râpé", "Pois chiches rôtis", "Tomates & concombre", "Huile de noix"], conseil: "Le chou rouge est riche en anthocyanes — puissants antioxydants." },
       { moment: "après-midi", items: ["Abricots frais ou secs (3)"] },
       { moment: "soir", items: ["Wok de légumes (brocolis, carottes, champignons)", "Riz thaï", "Blanc de poisson au citron"] },
@@ -163,7 +163,7 @@ const WEEK1: DayProgram[] = [
     theme: "Équilibre & Sérénité",
     intention: "Trouver le calme dans la constance.",
     meals: [
-      { moment: "matin", items: ["Mangue ou melon", "Noix de macadamia", "Miel brut + pollen", "Eau citronnée"], conseil: "Le pollen est un superaliment complet — énergie, immunité, vitalité." },
+      { moment: "matin", items: ["Fruits de saison", "Fruits exotiques (mangue, papaye…)", "Pistaches & noix de macadamia", "Raisins secs & dattes", "Miel brut", "Cannelle", "Jus de citron"], conseil: "Les pistaches sont riches en protéines végétales — satiété durable jusqu'à midi." },
       { moment: "midi", items: ["Gaspacho maison (tomates, poivrons, concombre)", "Riz complet", "Œufs pochés"] },
       { moment: "après-midi", items: ["Figues fraîches ou kakis"] },
       { moment: "soir", items: ["Velouté de courge butternut", "Quinoa soufflé", "Gambas poêlées à l'ail"], conseil: "La courge est riche en bêta-carotène — beauté de la peau et immunité." },
@@ -177,7 +177,7 @@ const WEEK1: DayProgram[] = [
     theme: "Bilan & Célébration",
     intention: "Une semaine de transformé — honorer le chemin parcouru.",
     meals: [
-      { moment: "matin", items: ["Smoothie détox (épinards, banane, pomme verte, gingembre, eau de coco)"], conseil: "Consommez le smoothie immédiatement après préparation pour préserver les enzymes." },
+      { moment: "matin", items: ["Fruits de saison", "Mélange oléagineux (amandes, noix, cajou)", "Fruits secs variés (abricots, figues, dattes)", "Miel", "Copeaux de noix de coco", "Jus de citron"], conseil: "Fin de semaine 1 — prenez le temps de préparer ce bol avec soin, c'est votre récompense." },
       { moment: "midi", items: ["Grande salade composée (quinoa, avocat, tomates, graines)", "Filet de truite vapeur"] },
       { moment: "après-midi", items: ["Compote de pommes sans sucre + noix"] },
       { moment: "soir", items: ["Soupe miso légère", "Galettes de riz", "Légumes sautés au sésame"], conseil: "Repas léger pour une nuit réparatrice — transition vers la semaine 2." },
@@ -195,7 +195,7 @@ const WEEK2: DayProgram[] = [
     theme: "Réveil de l'Énergie",
     intention: "Alimenter la machine avec précision.",
     meals: [
-      { moment: "matin", items: ["Œufs brouillés aux herbes", "Pain de seigle grillé", "Avocat", "Eau citronnée + curcuma"], conseil: "Les protéines au petit-déjeuner stabilisent la glycémie jusqu'à midi." },
+      { moment: "matin", items: ["Fruits de saison", "Noix de cajou", "Dattes & figues sèches", "Miel", "Jus de citron"], conseil: "Les agrumes activent le foie le matin — parfaits pour bien démarrer la semaine 2." },
       { moment: "midi", items: ["Salade niçoise (thon, œufs, haricots verts, olives)", "Pommes de terre vapeur"] },
       { moment: "après-midi", items: ["Poignée d'amandes + carré de chocolat noir 85%"], conseil: "Le chocolat noir > 85% est riche en magnésium — anti-stress et anti-fatigue." },
       { moment: "soir", items: ["Risotto d'épeautre aux champignons", "Escalope de veau grillée"] },
@@ -209,7 +209,7 @@ const WEEK2: DayProgram[] = [
     theme: "Concentration & Acuité",
     intention: "Nourrir le cerveau pour performer.",
     meals: [
-      { moment: "matin", items: ["Noix (cerneaux)", "Myrtilles fraîches", "Miel de forêt", "Thé vert sencha"], conseil: "Les noix sont la nourriture du cerveau — riches en oméga-3 ALA." },
+      { moment: "matin", items: ["Fruits de saison", "Cerneaux de noix", "Raisins secs & abricots", "Miel de forêt", "Cannelle", "Jus de citron"], conseil: "Les cerneaux de noix nourrissent le cerveau — riches en oméga-3 ALA et en vitamine E." },
       { moment: "midi", items: ["Sardines fraîches grillées", "Tabulé de boulgour aux herbes fraîches", "Salade de roquette"] },
       { moment: "après-midi", items: ["Kiwi + noix de cajou"] },
       { moment: "soir", items: ["Lentilles corail au lait de coco", "Riz basmati", "Épinards sautés à l'ail"] },
@@ -223,7 +223,7 @@ const WEEK2: DayProgram[] = [
     theme: "Endurance & Récupération",
     intention: "Le corps entraîné nourrit l'esprit.",
     meals: [
-      { moment: "matin", items: ["Porridge d'avoine aux fruits rouges", "Graines de chia", "Miel + noix"], conseil: "L'avoine libère son énergie progressivement — idéal pour une matinée active." },
+      { moment: "matin", items: ["Fruits de saison", "Amandes & noisettes", "Pruneaux", "Miel", "Copeaux de noix de coco", "Jus de citron"], conseil: "Variez les fruits selon la saison — ils apportent chacun leurs minéraux spécifiques." },
       { moment: "midi", items: ["Poulet rôti aux herbes de Provence", "Patate douce", "Haricots verts vapeur"] },
       { moment: "après-midi", items: ["Banane + amandes"] },
       { moment: "soir", items: ["Velouté de lentilles blondes", "Pain de seigle", "Fromage de chèvre frais"], conseil: "Repas doux et réconfortant — récupération musculaire et nerveux." },
@@ -237,7 +237,7 @@ const WEEK2: DayProgram[] = [
     theme: "Immunité & Protection",
     intention: "Le corps sain se défend naturellement.",
     meals: [
-      { moment: "matin", items: ["Jus frais (orange, carotte, gingembre, citron)", "Graines de tournesol", "Miel + propolis"], conseil: "La propolis est un antibiotique naturel — en cure 21 jours, effets puissants." },
+      { moment: "matin", items: ["Fruits de saison", "Fruits exotiques (ananas, mangue…)", "Noix du Brésil & amandes", "Dattes & raisins secs", "Miel", "Cannelle", "Jus de citron"], conseil: "L'ananas et la papaye contiennent des enzymes digestives naturelles — privilégiez-les frais." },
       { moment: "midi", items: ["Soupe de légumes anciens (panais, navet, céleri-rave)", "Poulet fermier", "Quinoa"] },
       { moment: "après-midi", items: ["2 mandarines + noisettes"] },
       { moment: "soir", items: ["Curry léger de pois chiches", "Riz complet", "Coriandre fraîche"], conseil: "Le curcuma + poivre noir = absorption x20 des propriétés anti-inflammatoires." },
@@ -251,7 +251,7 @@ const WEEK2: DayProgram[] = [
     theme: "Beauté & Régénération Cellulaire",
     intention: "Ce que vous mangez se voit sur votre peau.",
     meals: [
-      { moment: "matin", items: ["Avocat sur pain de seigle grillé", "Graines de lin moulues", "Jus de grenade", "Eau citronnée"], conseil: "Les graines de lin sont riches en oméga-3 et en fibres — mixez-les pour les assimiler." },
+      { moment: "matin", items: ["Fruits de saison", "Noix de cajou & pistaches", "Figues sèches & abricots", "Miel brut", "Jus de citron"], conseil: "Les fruits de saison sont les plus riches en nutriments — achetez-les mûrs." },
       { moment: "midi", items: ["Saumon gravlax", "Salade de fenouil & orange", "Riz sauvage"] },
       { moment: "après-midi", items: ["Gelée d'aloe vera + fruits rouges"] },
       { moment: "soir", items: ["Velouté de patate douce au gingembre", "Blanc de pintade", "Asperges vapeur"], conseil: "Les asperges sont diurétiques — favorisent l'élimination rénale." },
@@ -265,7 +265,7 @@ const WEEK2: DayProgram[] = [
     theme: "Équilibre Hormonal",
     intention: "Les hormones guident l'énergie — nourrissez-les.",
     meals: [
-      { moment: "matin", items: ["Œufs au plat", "Saumon fumé", "Avocat", "Eau citronnée + ashwagandha en poudre"], conseil: "L'ashwagandha réduit le cortisol et soutient la thyroïde. Dosage : 1/2 c. à café." },
+      { moment: "matin", items: ["Fruits de saison", "Amandes & cerneaux de noix", "Dattes & raisins blonds", "Miel + cannelle", "Jus de citron"], conseil: "Les fruits rouges et la grenade sont parmi les antioxydants les plus puissants." },
       { moment: "midi", items: ["Salade de mâche & noix", "Betterave rôtie", "Feta", "Graines de sésame"] },
       { moment: "après-midi", items: ["Chocolat noir 85% (2 carrés) + noix du Brésil (2)"] },
       { moment: "soir", items: ["Filet de cabillaud en papillote (citron, herbes)", "Riz complet", "Brocolis vapeur"] },
@@ -279,7 +279,7 @@ const WEEK2: DayProgram[] = [
     theme: "Mi-Parcours — Puissance",
     intention: "14 jours. La moitié du chemin. Déjà transformé.",
     meals: [
-      { moment: "matin", items: ["Bowl complet : granola maison, fruits, yaourt de coco, miel"], conseil: "Granola maison = flocons d'avoine + noix + miel + huile de coco, toasté au four." },
+      { moment: "matin", items: ["Fruits de saison", "Fruits exotiques (mangue, papaye…)", "Noix de cajou & macadamia", "Figues & abricots secs", "Miel", "Copeaux de noix de coco", "Jus de citron"], conseil: "Mi-parcours — ce petit-déjeuner festif célèbre vos 14 premiers jours." },
       { moment: "midi", items: ["Pièce de bœuf grass-fed", "Salade verte", "Pommes de terre grenaille rôties", "Sauce chimichurri"] },
       { moment: "après-midi", items: ["Fruits secs mélangés (raisins, abricots, figues)"] },
       { moment: "soir", items: ["Bouillon de légumes enrichi", "Nouilles soba", "Tempeh sauté aux légumes"], conseil: "Le tempeh est fermenté — excellent pour le microbiote et la digestion." },
@@ -297,7 +297,7 @@ const WEEK3: DayProgram[] = [
     theme: "Ancrage & Stabilité",
     intention: "Ce qui s'ancre ne peut plus être arraché.",
     meals: [
-      { moment: "matin", items: ["Graines germées (alfalfa, brocoli)", "Fruits secs", "Tahini + miel", "Eau citronnée"], conseil: "Les graines germées sont parmi les aliments les plus vivants — énergie concentrée." },
+      { moment: "matin", items: ["Fruits de saison", "Amandes & noix mélangées", "Dattes & pruneaux", "Miel brut", "Cannelle", "Jus de citron"], conseil: "Semaine 3 — même rituel solide, vous le préparez désormais instinctivement." },
       { moment: "midi", items: ["Soupe de haricots blancs au romarin", "Filet de merlu", "Salade de mâche"] },
       { moment: "après-midi", items: ["Poignée de noix mélangées + dattes (2)"] },
       { moment: "soir", items: ["Gratin de légumes (courgettes, aubergines, tomates)", "Poulet fermier", "Herbes de Provence"] },
@@ -311,7 +311,7 @@ const WEEK3: DayProgram[] = [
     theme: "Performance Mentale",
     intention: "Un corps nourri est un esprit affûté.",
     meals: [
-      { moment: "matin", items: ["Smoothie vert (épinards, avocat, pomme, spiruline, citron)"], conseil: "La spiruline est une algue complète : protéines, fer, vitamines B12." },
+      { moment: "matin", items: ["Fruits de saison", "Noisettes", "Abricots & figues sèches", "Miel de fleurs", "Jus de citron"], conseil: "Les cerises et fruits rouges sont riches en mélatonine naturelle — favorisent le sommeil." },
       { moment: "midi", items: ["Bowl de riz brun, edamame, avocat, carotte, sésame, sauce tamari"] },
       { moment: "après-midi", items: ["Cerises ou prunes fraîches"] },
       { moment: "soir", items: ["Filet de bar en croûte d'herbes", "Fenouil rôti", "Purée de céleri"], conseil: "Le céleri-rave est riche en vitamine K et phosphore — mémoire et concentration." },
@@ -325,7 +325,7 @@ const WEEK3: DayProgram[] = [
     theme: "Joie & Légèreté",
     intention: "Manger avec plaisir est aussi un acte de santé.",
     meals: [
-      { moment: "matin", items: ["Crêpes au sarrasin", "Fruits frais", "Sirop d'agave"], conseil: "Le sarrasin est sans gluten, riche en protéines complètes et en antioxydants." },
+      { moment: "matin", items: ["Fruits de saison", "Fruits exotiques (ananas, kiwi…)", "Amandes effilées & pistaches", "Raisins secs & dattes", "Miel", "Cannelle", "Copeaux de noix de coco", "Jus de citron"], conseil: "Manger avec plaisir est aussi un acte de santé — savourez chaque bouchée." },
       { moment: "midi", items: ["Paëlla végétarienne (riz, poivrons, artichauts, safran)", "Crevettes"] },
       { moment: "après-midi", items: ["Tarte aux fruits frais maison (base amande)"] },
       { moment: "soir", items: ["Salade caesar légère (romaine, parmesan, croûtons seigle, anchois)", "Filet de poulet"], conseil: "Moment plaisir contrôlé — manger avec gratitude amplifie la digestion." },
@@ -339,7 +339,7 @@ const WEEK3: DayProgram[] = [
     theme: "Régénération Profonde",
     intention: "Le repos est une forme d'action.",
     meals: [
-      { moment: "matin", items: ["Bouillie de millet aux pommes", "Cannelle + vanille", "Lait d'amande"], conseil: "Le millet est le plus digeste des céréales — idéal les jours de fatigue." },
+      { moment: "matin", items: ["Fruits de saison", "Noix de cajou", "Figues, abricots & pruneaux", "Miel", "Jus de citron"], conseil: "Jour de régénération — mangez lentement, en silence si possible." },
       { moment: "midi", items: ["Pot-au-feu léger (bœuf maigre, carottes, navet, poireau)", "Bouillon chaud"] },
       { moment: "après-midi", items: ["Compote de coings + amandes effilées"] },
       { moment: "soir", items: ["Risotto de riz complet aux champignons shitaké", "Poireaux fondants"], conseil: "Les champignons shitaké contiennent du lentinane — immunostimulant naturel." },
@@ -353,7 +353,7 @@ const WEEK3: DayProgram[] = [
     theme: "Clarté & Intentions",
     intention: "La fin approche — que souhaitez-vous garder ?",
     meals: [
-      { moment: "matin", items: ["Jus de légumes frais (betterave, carotte, gingembre, citron, pomme)"], conseil: "La betterave rouge augmente les performances physiques via les nitrates naturels." },
+      { moment: "matin", items: ["Fruits de saison", "Fruits exotiques (mangue, papaye…)", "Amandes & noix du Brésil", "Dattes & abricots secs", "Miel + cannelle", "Copeaux de noix de coco", "Jus de citron"], conseil: "Nourrissez-vous avec pleine conscience — chaque bouchée compte." },
       { moment: "midi", items: ["Taboulé libanais (boulgour, persil, tomate, oignon, citron, huile d'olive)", "Brochettes d'agneau grillées"] },
       { moment: "après-midi", items: ["Grenade fraîche ou mangue"] },
       { moment: "soir", items: ["Harira légère (soupe marocaine aux légumineuses)", "Pain pita grillé"], conseil: "Le persil est l'herbe la plus riche en vitamine C et en fer biodisponible." },
@@ -367,7 +367,7 @@ const WEEK3: DayProgram[] = [
     theme: "Puissance & Gratitude",
     intention: "Ressentir la force de ce qui a été construit.",
     meals: [
-      { moment: "matin", items: ["Œufs bénédicte maison (pain seigle, épinards, œuf poché, sauce hollandaise légère)"], conseil: "Protéines complètes le matin = énergie stable, concentration maximale." },
+      { moment: "matin", items: ["Fruits de saison", "Cerneaux de noix", "Pruneaux & raisins secs", "Miel brut", "Cannelle", "Jus de citron"], conseil: "Avant-dernier jour — mesurez votre énergie ce matin et comparez au Jour 1." },
       { moment: "midi", items: ["Côte de veau grillée", "Gratin dauphinois allégé", "Salade de mâche aux noix"] },
       { moment: "après-midi", items: ["Tarte tatin à la pomme maison (pâte au sarrasin)"] },
       { moment: "soir", items: ["Bouillon thaï (lemongrass, galanga, champignons)", "Tofu soyeux", "Nouilles de riz"], conseil: "Repas léger avant-dernier soir — préparez votre journée finale." },
@@ -381,7 +381,7 @@ const WEEK3: DayProgram[] = [
     theme: "Renaissance & Nouveau Départ",
     intention: "21 jours. Une nouvelle version de vous.",
     meals: [
-      { moment: "matin", items: ["Grand smoothie cérémoniel (banane, cacao cru, datte, lait d'amande, maca)"], conseil: "Le cacao cru est l'aliment le plus riche en magnésium et en antioxydants de la planète." },
+      { moment: "matin", items: ["Fruits de saison", "Fruits exotiques au choix (mangue, ananas, papaye…)", "Mélange oléagineux (amandes, noix, cajou, macadamia)", "Fruits secs (figues, dattes, abricots)", "Miel brut", "Copeaux de noix de coco", "Jus de citron"], conseil: "Jour 21 — ce rituel est désormais le vôtre. Célébrez-le." },
       { moment: "midi", items: ["Repas festif sain : plateau de fruits de mer", "Salade verte à l'huile d'olive & citron", "Pain de seigle au levain"] },
       { moment: "après-midi", items: ["Fruits exotiques (fruits de la passion, litchi, papaye)"] },
       { moment: "soir", items: ["Filet mignon en croûte d'herbes", "Légumes rôtis multicolores", "Riz sauvage"], conseil: "Célébrez avec conscience — vous méritez ce repas." },
@@ -395,8 +395,8 @@ const WEEK3: DayProgram[] = [
 export const PROGRAM: DayProgram[] = [...WEEK1, ...WEEK2, ...WEEK3]
 
 export const WEEK_THEMES: Record<1 | 2 | 3, { title: string; color: string; desc: string }> = {
-  1: { title: "Détox & Purification", color: "#2de4a4", desc: "Nettoyer le corps, libérer les toxines, retrouver la légèreté." },
-  2: { title: "Énergie & Vitalité", color: "#38c4e8", desc: "Nourrir l'énergie, soutenir le cerveau, performer." },
+  1: { title: "Détox & Purification", color: "#7de8ff", desc: "Nettoyer le corps, libérer les toxines, retrouver la légèreté." },
+  2: { title: "Énergie & Vitalité", color: "#7de8ff", desc: "Nourrir l'énergie, soutenir le cerveau, performer." },
   3: { title: "Ancrage & Performance", color: "#818cf8", desc: "Consolider les acquis, ancrer les nouvelles habitudes." },
 }
 
@@ -407,7 +407,7 @@ export function calcIMC(poids: number, taille: number): number {
 
 export function imcLabel(imc: number): { label: string; color: string } {
   if (imc < 18.5) return { label: "Insuffisance pondérale", color: "#f59e0b" }
-  if (imc < 25)   return { label: "Poids santé", color: "#2de4a4" }
+  if (imc < 25)   return { label: "Poids santé", color: "#4cc9f0" }
   if (imc < 30)   return { label: "Surpoids", color: "#f97316" }
   return              { label: "Obésité", color: "#ef4444" }
 }

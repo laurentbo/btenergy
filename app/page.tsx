@@ -8,7 +8,9 @@ import Timeline21 from "@/components/Timeline21"
 import ProfilForm from "@/components/ProfilForm"
 import PrincipesSection from "@/components/PrincipesSection"
 import WeightTracker from "@/components/WeightTracker"
+import ShoppingList from "@/components/ShoppingList"
 import { createClient } from "@/lib/supabase/client"
+import { useAuth } from "@/lib/auth-context"
 
 
 type Override = {
@@ -18,7 +20,7 @@ type Override = {
   meal_overrides: Record<string, string[]> | null
 }
 
-type Tab = "programme" | "journal" | "progression" | "principes" | "profil"
+type Tab = "programme" | "journal" | "progression" | "courses" | "principes" | "profil"
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState<Tab>("programme")
@@ -27,7 +29,19 @@ export default function Dashboard() {
   const [override, setOverride] = useState<Override | null>(null)
   const [checking, setChecking] = useState(true)
   const [currentDay, setCurrentDay] = useState(1)
+  const [viewDay, setViewDay] = useState(1)
+  const [mealLogs, setMealLogs] = useState<Record<string, string[]>>({})
   const supabase = createClient()
+  const { signOut } = useAuth()
+
+  const handleSignOut = async () => {
+    await signOut()
+    window.location.href = "/login"
+  }
+
+  const prenom = profile?.prenom
+    ? profile.prenom.charAt(0).toUpperCase() + profile.prenom.slice(1).toLowerCase()
+    : null
 
   useEffect(() => {
     async function init() {
@@ -42,46 +56,62 @@ export default function Dashboard() {
         window.location.href = "/coach"; return
       }
 
-      // Collaborateur → charge son profil local
-      const saved = localStorage.getItem("btenergy_profile")
-      const localProfile: UserProfile | null = saved ? JSON.parse(saved) : null
-
-      // Récupère start_date depuis Supabase
+      // Récupère le profil complet depuis Supabase
       const { data: { user } } = await supabase.auth.getUser()
       let computedDay = 1
       if (user) {
         const { data: dbProfile } = await supabase
-          .from("profiles").select("start_date").eq("id", user.id).maybeSingle()
+          .from("profiles")
+          .select("prenom, genre, age, taille, poids, start_date")
+          .eq("id", user.id)
+          .maybeSingle()
+
+        const saved = localStorage.getItem("btenergy_profile")
+        const localProfile: UserProfile | null = saved ? JSON.parse(saved) : null
         const startDate = dbProfile?.start_date ?? localProfile?.start_date
         computedDay = calcCurrentDay(startDate)
         setCurrentDay(computedDay)
-        // Merge start_date dans le profil local si pas encore là
-        if (localProfile && !localProfile.start_date && startDate) {
-          const merged = { ...localProfile, start_date: startDate }
+        setViewDay(computedDay)
+
+        // Supabase est la source de vérité si le profil y est enregistré
+        const supabaseProfile: UserProfile | null = dbProfile?.prenom
+          ? {
+              prenom: dbProfile.prenom,
+              genre: (dbProfile.genre as "homme" | "femme") ?? "homme",
+              age: dbProfile.age ?? 0,
+              taille: dbProfile.taille ?? 0,
+              poids: dbProfile.poids ?? 0,
+              start_date: startDate ?? undefined,
+            }
+          : null
+
+        const activeProfile = supabaseProfile ?? localProfile
+        if (activeProfile) {
+          const merged = { ...activeProfile, start_date: startDate ?? activeProfile.start_date }
           localStorage.setItem("btenergy_profile", JSON.stringify(merged))
           setProfile(merged)
-        } else if (localProfile) {
-          setProfile(localProfile)
         } else {
           setShowProfileSetup(true)
         }
-      } else if (localProfile) {
-        setProfile(localProfile)
-        computedDay = calcCurrentDay(localProfile.start_date)
-        setCurrentDay(computedDay)
       } else {
-        setShowProfileSetup(true)
+        const saved = localStorage.getItem("btenergy_profile")
+        const localProfile: UserProfile | null = saved ? JSON.parse(saved) : null
+        if (localProfile) {
+          setProfile(localProfile)
+          computedDay = calcCurrentDay(localProfile.start_date)
+          setCurrentDay(computedDay)
+        } else {
+          setShowProfileSetup(true)
+        }
       }
 
-      // Charge les personnalisations du coach pour ce jour
-      if (user) {
-        const { data: ov } = await supabase
-          .from("program_overrides")
-          .select("*")
-          .eq("collaborateur_id", user.id)
-          .eq("day", computedDay)
-          .maybeSingle()
-        if (ov) setOverride(ov as Override)
+      // Déclenche l'email du jour si pas encore envoyé (dédoublonné côté serveur)
+      if (computedDay >= 1 && computedDay <= 21) {
+        fetch("/api/send-step-email", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ day: computedDay }),
+        }).catch(() => {}) // fire-and-forget, pas bloquant
       }
 
       setChecking(false)
@@ -92,18 +122,62 @@ export default function Dashboard() {
   const handleSaveProfile = async (p: UserProfile) => {
     setProfile(p)
     localStorage.setItem("btenergy_profile", JSON.stringify(p))
-    // Sauvegarde start_date dans Supabase
     const { data: { user } } = await supabase.auth.getUser()
-    if (user && p.start_date) {
-      await supabase.from("profiles").update({ start_date: p.start_date }).eq("id", user.id)
-      setCurrentDay(calcCurrentDay(p.start_date))
+    if (user) {
+      await supabase.from("profiles").update({
+        prenom: p.prenom,
+        genre: p.genre,
+        age: p.age,
+        taille: p.taille,
+        poids: p.poids,
+        ...(p.start_date ? { start_date: p.start_date } : {}),
+      }).eq("id", user.id)
+      if (p.start_date) setCurrentDay(calcCurrentDay(p.start_date))
     }
     setShowProfileSetup(false)
     setActiveTab("programme")
   }
 
+  useEffect(() => {
+    if (checking) return
+    async function loadViewDay() {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+      // Override coach
+      const { data: ov } = await supabase
+        .from("program_overrides")
+        .select("*")
+        .eq("collaborateur_id", user.id)
+        .eq("day", viewDay)
+        .maybeSingle()
+      setOverride(ov as Override ?? null)
+      // Meal logs coachée
+      const { data: logs } = await supabase
+        .from("meal_logs")
+        .select("moment, items")
+        .eq("user_id", user.id)
+        .eq("day", viewDay)
+      const logsMap: Record<string, string[]> = {}
+      if (logs) logs.forEach((l: { moment: string; items: string[] }) => { logsMap[l.moment] = l.items })
+      setMealLogs(logsMap)
+    }
+    loadViewDay()
+  }, [viewDay, checking]) // eslint-disable-line
+
+  const saveMealLog = async (moment: string, items: string[]) => {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+    await supabase.from("meal_logs").upsert(
+      { user_id: user.id, day: viewDay, moment, items },
+      { onConflict: "user_id,day,moment" }
+    )
+    setMealLogs(prev => ({ ...prev, [moment]: items }))
+  }
+
   const day = PROGRAM[currentDay - 1]
   const weekInfo = WEEK_THEMES[day.week]
+  const viewDayData = PROGRAM[viewDay - 1]
+  const viewWeekInfo = WEEK_THEMES[viewDayData.week]
   // Jours complétés = tous les jours jusqu'à currentDay - 1
   const completedDays = Array.from({ length: currentDay - 1 }, (_, i) => i + 1)
 
@@ -118,7 +192,7 @@ export default function Dashboard() {
           <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-xl font-black"
             style={{ background: "linear-gradient(135deg, var(--green-dim), var(--blue-dim))", color: "#070d0f" }}>B</div>
           <div className="w-6 h-6 rounded-full border-2 border-t-transparent animate-spin"
-            style={{ borderColor: "var(--green)", borderTopColor: "transparent" }} />
+            style={{ borderColor: "var(--blue)", borderTopColor: "transparent" }} />
         </div>
       </div>
     )
@@ -159,103 +233,126 @@ export default function Dashboard() {
 
   // ─── APP PRINCIPALE ───────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen" style={{ background: "var(--bg-primary)" }}>
+    <div className="min-h-screen" style={{ background: "linear-gradient(160deg, #0b1e38 0%, #07111e 55%, #050e1a 100%)" }}>
 
       {/* Header */}
-      <header className="sticky top-0 z-50 px-4 py-3"
-        style={{ background: "rgba(7,13,15,0.92)", backdropFilter: "blur(16px)", borderBottom: "1px solid var(--border)" }}>
+      <header className="sticky top-0 z-50 px-5 py-3.5"
+        style={{ background: "rgba(5,14,26,0.82)", backdropFilter: "blur(28px)", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
         <div className="max-w-2xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg flex items-center justify-center text-sm font-black"
-              style={{ background: "linear-gradient(135deg, var(--green-dim), var(--blue-dim))", color: "#070d0f" }}>
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl flex items-center justify-center text-sm font-black"
+              style={{ background: "linear-gradient(135deg, var(--green-dim), var(--blue-dim))", color: "#050e1a" }}>
               B
             </div>
-            <span className="font-black tracking-wider text-sm gradient-text">BTENERGY</span>
+            <span className="font-black tracking-widest text-sm gradient-text" style={{ letterSpacing: "0.12em" }}>BTENERGY</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="tag" style={{ borderColor: weekInfo.color + "40", color: weekInfo.color }}>
-              Semaine {day.week}
+            <div className="tag" style={{ borderColor: `${weekInfo.color}40`, color: weekInfo.color }}>
+              S{day.week} · J{currentDay}
             </div>
-            <div className="tag">J{currentDay}/21</div>
             <button
               onClick={() => setActiveTab("profil")}
-              className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold"
-              style={{ background: "var(--bg-card)", border: "1px solid var(--border)", color: "var(--text-secondary)" }}>
-              {profile?.prenom?.charAt(0).toUpperCase() ?? "?"}
+              className="flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold transition-all"
+              style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.75)" }}>
+              {prenom ?? "Profil"}
+            </button>
+            <button
+              onClick={handleSignOut}
+              className="flex items-center rounded-xl px-3 py-1.5 text-xs font-semibold transition-all"
+              style={{ background: "rgba(255,70,70,0.1)", border: "1px solid rgba(255,70,70,0.2)", color: "rgba(255,120,120,0.9)" }}>
+              Déco
             </button>
           </div>
         </div>
       </header>
 
-      <main className="max-w-2xl mx-auto px-4 pb-28 pt-5">
+      <main className="max-w-2xl mx-auto px-4 pb-28 pt-6">
 
         {/* Hero du jour */}
-        <div className="card glow-green p-5 mb-4 fade-up"
-          style={{ background: "linear-gradient(135deg, #0f1e22 0%, #0a191e 100%)", borderColor: weekInfo.color + "30" }}>
-          <div className="flex items-start justify-between gap-3">
+        <div className="fade-up mb-5"
+          style={{
+            background: "rgba(4,10,22,0.72)",
+            border: `1px solid ${weekInfo.color}30`,
+            borderRadius: "26px",
+            padding: "24px",
+            backdropFilter: "blur(28px)",
+            boxShadow: `0 1px 0 rgba(255,255,255,0.06) inset, 0 16px 48px rgba(0,0,0,0.4), 0 0 60px ${weekInfo.color}08`,
+          }}>
+
+          {/* Badges */}
+          <div className="flex items-center gap-2 mb-5">
+            <div className="rounded-lg px-3 py-1 text-xs font-bold tracking-widest uppercase"
+              style={{ background: `${weekInfo.color}14`, color: weekInfo.color, border: `1px solid ${weekInfo.color}22`, letterSpacing: "0.1em" }}>
+              {weekInfo.title}
+            </div>
+            <div className="rounded-lg px-3 py-1 text-xs uppercase tracking-widest font-semibold"
+              style={{ background: "rgba(255,255,255,0.04)", color: "var(--text-muted)", border: "1px solid rgba(255,255,255,0.07)" }}>
+              {day.theme}
+            </div>
+          </div>
+
+          {/* Greeting + compteur */}
+          <div className="flex items-start justify-between gap-4 mb-5">
             <div className="flex-1">
-              <p className="text-xs uppercase tracking-widest mb-0.5" style={{ color: weekInfo.color, opacity: 0.8 }}>
-                {weekInfo.title}
-              </p>
-              <p className="text-xs uppercase tracking-widest mb-2" style={{ color: "var(--text-muted)" }}>
-                Jour {day.day} · {day.theme}
-              </p>
-              <h1 className="text-xl font-bold mb-1" style={{ color: "var(--text-primary)" }}>
-                Bonjour, {profile?.prenom ?? "vous"} 👋
+              <h1 className="font-black mb-2 leading-tight" style={{ color: "var(--text-primary)", fontSize: "26px" }}>
+                Bonjour, {prenom ?? "vous"} 👋
               </h1>
-              <p className="text-sm italic" style={{ color: weekInfo.color }}>
+              <p className="italic leading-relaxed" style={{ color: weekInfo.color, opacity: 0.85, fontSize: "14px" }}>
                 &ldquo;{day.intention}&rdquo;
               </p>
             </div>
-            <div className="text-right flex-shrink-0">
-              <div className="text-3xl font-black gradient-text">{currentDay}</div>
-              <div className="text-xs" style={{ color: "var(--text-muted)" }}>/ 21</div>
+            <div className="flex-shrink-0 flex flex-col items-center justify-center rounded-2xl"
+              style={{ background: `${weekInfo.color}0e`, border: `1px solid ${weekInfo.color}20`, width: "68px", height: "68px" }}>
+              <div className="font-black gradient-text leading-none" style={{ fontSize: "32px" }}>{currentDay}</div>
+              <div className="font-semibold" style={{ color: "var(--text-muted)", fontSize: "11px" }}>/ 21</div>
             </div>
           </div>
 
-          <div className="progress-bar mt-4">
-            <div className="progress-fill" style={{ width: `${(currentDay / 21) * 100}%` }} />
+          {/* Progress */}
+          <div className="mb-4">
+            <div className="flex justify-between mb-2">
+              <span style={{ color: "var(--text-muted)", fontSize: "12px" }}>Progression du programme</span>
+              <span className="font-bold" style={{ color: weekInfo.color, fontSize: "12px" }}>{Math.round((currentDay / 21) * 100)}%</span>
+            </div>
+            <div className="progress-bar">
+              <div className="progress-fill" style={{ width: `${(currentDay / 21) * 100}%`, background: `linear-gradient(90deg, ${weekInfo.color}, var(--blue))` }} />
+            </div>
           </div>
 
-          <div className="flex gap-2 mt-3">
-            <div className="flex-1 p-3 rounded-xl flex items-center gap-2"
-              style={{ background: "rgba(45,228,164,0.06)", border: "1px solid rgba(45,228,164,0.12)" }}>
-              <span>💧</span>
-              <span className="text-xs" style={{ color: "var(--text-secondary)" }}>{day.hydration}</span>
-            </div>
-            {profile && (
-              <div className="p-3 rounded-xl flex items-center gap-1.5"
-                style={{ background: "rgba(56,196,232,0.06)", border: "1px solid rgba(56,196,232,0.12)" }}>
-                <span className="text-xs font-bold" style={{ color: "var(--blue)" }}>
-                  {profile.genre === "femme" ? "♀" : "♂"}
-                </span>
-                <span className="text-xs" style={{ color: "var(--text-secondary)" }}>
-                  {profile.age} ans · {profile.poids}kg
-                </span>
-              </div>
-            )}
+          {/* Hydratation */}
+          <div className="rounded-xl px-4 py-3 flex items-center gap-3"
+            style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}>
+            <span style={{ fontSize: "15px" }}>💧</span>
+            <span style={{ color: "rgba(255,255,255,0.62)", fontSize: "13px" }}>{day.hydration}</span>
           </div>
         </div>
 
         {/* Tip du jour */}
-        <div className="rounded-xl p-3.5 mb-4 flex items-start gap-3 fade-up"
-          style={{ background: "rgba(56,196,232,0.05)", border: "1px solid rgba(56,196,232,0.15)" }}>
-          <span className="text-base flex-shrink-0">✨</span>
-          <p className="text-xs" style={{ color: "var(--text-secondary)", lineHeight: "1.7" }}>{day.tip}</p>
+        <div className="card fade-up mb-5 px-5 py-4 flex items-start gap-4">
+          <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+            style={{ background: "rgba(76,201,240,0.1)", border: "1px solid rgba(76,201,240,0.18)", fontSize: "16px" }}>✨</div>
+          <p style={{ color: "var(--text-secondary)", lineHeight: "1.75", fontSize: "14px" }}>{day.tip}</p>
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-1 mb-5 p-1 rounded-xl" style={{ background: "var(--bg-card)", border: "1px solid var(--border)" }}>
+        <div className="flex gap-1 mb-6 p-1.5 rounded-2xl"
+          style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}>
           {([
-            { key: "programme", label: "Programme" },
-            { key: "journal",   label: "Journal" },
-            { key: "progression", label: "Progression" },
+            { key: "programme",  label: "Repas" },
+            { key: "journal",    label: "Journal" },
+            { key: "courses",    label: "Courses" },
+            { key: "progression",label: "Progrès" },
+            { key: "principes",  label: "💡" },
           ] as const).map(({ key, label }) => (
             <button key={key} onClick={() => setActiveTab(key)}
-              className="flex-1 py-2 rounded-lg text-xs font-semibold transition-all"
+              className="flex-1 py-2.5 rounded-xl font-semibold transition-all"
               style={{
-                background: activeTab === key ? "linear-gradient(135deg, var(--green-dim), var(--blue-dim))" : "transparent",
-                color: activeTab === key ? "#070d0f" : "var(--text-muted)",
+                background: activeTab === key ? "rgba(255,255,255,0.1)" : "transparent",
+                color: activeTab === key ? "#ffffff" : "rgba(255,255,255,0.4)",
+                boxShadow: activeTab === key ? "0 1px 0 rgba(255,255,255,0.08) inset" : "none",
+                fontSize: "13px",
+                letterSpacing: "0.01em",
+                borderBottom: activeTab === key ? `2px solid var(--blue)` : "2px solid transparent",
               }}>
               {label}
             </button>
@@ -265,13 +362,55 @@ export default function Dashboard() {
         {/* ── Programme ── */}
         {activeTab === "programme" && (
           <div className="space-y-4">
+
+            {/* Navigation jours */}
+            <div className="flex items-center justify-between rounded-2xl px-4 py-3"
+              style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}>
+              <button
+                onClick={() => setViewDay(d => Math.max(1, d - 1))}
+                disabled={viewDay === 1}
+                className="w-9 h-9 rounded-xl flex items-center justify-center transition-all font-bold"
+                style={{
+                  background: viewDay === 1 ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.1)",
+                  color: viewDay === 1 ? "rgba(255,255,255,0.2)" : "rgba(255,255,255,0.8)",
+                  border: "1px solid rgba(255,255,255,0.08)",
+                  fontSize: "16px",
+                }}>←</button>
+
+              <div className="text-center">
+                <div className="font-black" style={{ color: "var(--text-primary)", fontSize: "15px" }}>
+                  Jour {viewDay}
+                  {viewDay === currentDay && (
+                    <span className="ml-2 rounded-full px-2 py-0.5 text-xs font-bold"
+                      style={{ background: "rgba(125,232,255,0.15)", color: "var(--blue)", fontSize: "10px" }}>
+                      Aujourd'hui
+                    </span>
+                  )}
+                </div>
+                <div className="text-xs mt-0.5" style={{ color: "var(--text-muted)" }}>
+                  {viewDay < currentDay ? "🕐 Passé" : viewDay > currentDay ? "📅 À venir" : viewWeekInfo.title}
+                </div>
+              </div>
+
+              <button
+                onClick={() => setViewDay(d => Math.min(21, d + 1))}
+                disabled={viewDay === 21}
+                className="w-9 h-9 rounded-xl flex items-center justify-center transition-all font-bold"
+                style={{
+                  background: viewDay === 21 ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.1)",
+                  color: viewDay === 21 ? "rgba(255,255,255,0.2)" : "rgba(255,255,255,0.8)",
+                  border: "1px solid rgba(255,255,255,0.08)",
+                  fontSize: "16px",
+                }}>→</button>
+            </div>
+
             {/* Note personnalisée du coach */}
             {override?.coach_note && (
               <div className="rounded-xl p-4 fade-up flex gap-3"
-                style={{ background: "rgba(45,228,164,0.07)", border: "1px solid rgba(45,228,164,0.25)" }}>
+                style={{ background: "rgba(76,201,240,0.07)", border: "1px solid rgba(76,201,240,0.25)" }}>
                 <span className="text-lg flex-shrink-0">💬</span>
                 <div>
-                  <p className="text-xs font-bold mb-1" style={{ color: "var(--green)" }}>Message de votre coach</p>
+                  <p className="text-xs font-bold mb-1" style={{ color: "var(--blue)" }}>Message de votre coach</p>
                   <p className="text-sm" style={{ color: "var(--text-secondary)", lineHeight: "1.7" }}>
                     {override.coach_note}
                   </p>
@@ -279,42 +418,35 @@ export default function Dashboard() {
               </div>
             )}
 
-            {/* Adaptation profil */}
-            {profile && (
-              <div className="rounded-xl p-3 flex items-center gap-3 fade-up"
-                style={{ background: "rgba(129,140,248,0.06)", border: "1px solid rgba(129,140,248,0.15)" }}>
-                <span>🎯</span>
-                <p className="text-xs" style={{ color: "var(--text-secondary)", lineHeight: "1.6" }}>
-                  Programme adapté pour <strong style={{ color: "var(--text-primary)" }}>{profile.prenom}</strong> — {profile.genre}, {profile.age} ans, {profile.poids} kg.
-                  {imc && <> IMC <strong style={{ color: imcInfo?.color }}>{imc}</strong> ({imcInfo?.label}).</>}
-                </p>
-              </div>
-            )}
-
             {/* Repas — override ou défaut */}
             <div className="space-y-3">
-              {day.meals.map((meal, i) => {
+              {viewDayData.meals.map((meal, i) => {
                 const overrideMeals = override?.meal_overrides?.[meal.moment]
-                if (overrideMeals && overrideMeals.length > 0) {
-                  const customMeal: Meal = { ...meal, items: overrideMeals }
-                  return <MealCard key={i} meal={customMeal} isCustomized />
-                }
-                return <MealCard key={i} meal={meal} />
+                const baseMeal = overrideMeals?.length ? { ...meal, items: overrideMeals } : meal
+                return (
+                  <MealCard
+                    key={i}
+                    meal={baseMeal}
+                    isCustomized={!!overrideMeals?.length}
+                    mealLog={mealLogs[meal.moment]}
+                    onSaveLog={items => saveMealLog(meal.moment, items)}
+                  />
+                )
               })}
             </div>
 
-            <RitualCard matin={day.ritual.matin} soir={day.ritual.soir} />
+            <RitualCard matin={viewDayData.ritual.matin} soir={viewDayData.ritual.soir} />
           </div>
         )}
 
         {/* ── Journal ── */}
-        {activeTab === "journal" && <JournalForm />}
+        {activeTab === "journal" && <JournalForm currentDay={currentDay} />}
 
         {/* ── Progression ── */}
         {activeTab === "progression" && (
           <div className="space-y-4">
-            <Timeline21 totalDays={21} currentDay={currentDay} completedDays={completedDays} />
             <WeightTracker initialWeight={profile?.poids} />
+            <Timeline21 totalDays={21} currentDay={currentDay} completedDays={completedDays} />
 
             {/* Résumé semaines */}
             <div className="space-y-3">
@@ -359,6 +491,16 @@ export default function Dashboard() {
           </div>
         )}
 
+        {/* ── Courses ── */}
+        {activeTab === "courses" && (
+          <div className="space-y-4">
+            <ShoppingList currentDay={currentDay} horizon={7} />
+          </div>
+        )}
+
+        {/* ── Principes ── */}
+        {activeTab === "principes" && <PrincipesSection />}
+
         {/* ── Profil ── */}
         {activeTab === "profil" && (
           <div className="space-y-4">
@@ -366,32 +508,49 @@ export default function Dashboard() {
               <h2 className="font-bold text-base mb-4" style={{ color: "var(--text-primary)" }}>Mon Profil</h2>
               <ProfilForm onSave={handleSaveProfile} initial={profile} />
             </div>
+            <div className="card p-5">
+              <button
+                onClick={handleSignOut}
+                className="w-full py-2 rounded-lg font-semibold text-sm"
+                style={{ background: "rgba(220,53,69,0.15)", color: "#ff6b7a", border: "1px solid rgba(220,53,69,0.3)" }}
+              >
+                Se déconnecter
+              </button>
+            </div>
           </div>
         )}
-
-        {/* ── Principes ── */}
-        {activeTab === "principes" && <PrincipesSection />}
 
       </main>
 
       {/* Bottom nav */}
-      <nav className="fixed bottom-0 left-0 right-0 px-4"
-        style={{ background: "rgba(7,13,15,0.96)", backdropFilter: "blur(16px)", borderTop: "1px solid var(--border)" }}>
-        <div className="max-w-2xl mx-auto flex items-center justify-around py-2.5">
+      <nav className="fixed bottom-0 left-0 right-0 z-50"
+        style={{ background: "rgba(5,12,22,0.94)", backdropFilter: "blur(28px)", borderTop: "1px solid rgba(255,255,255,0.07)" }}>
+        <div className="max-w-2xl mx-auto flex items-center justify-around px-2 py-1">
           {([
-            { icon: "🏠", label: "Programme", tab: "programme" },
+            { icon: "🍽️", label: "Repas",     tab: "programme" },
             { icon: "📓", label: "Journal",   tab: "journal" },
+            { icon: "🛒", label: "Courses",   tab: "courses" },
             { icon: "📈", label: "Progrès",   tab: "progression" },
             { icon: "💡", label: "Principes", tab: "principes" },
-            { icon: "👤", label: "Profil",    tab: "profil" },
-          ] as const).map(({ icon, label, tab }) => (
-            <button key={tab} onClick={() => setActiveTab(tab)}
-              className="flex flex-col items-center gap-0.5 px-2"
-              style={{ color: activeTab === tab ? "var(--green)" : "var(--text-muted)" }}>
-              <span className="text-lg leading-none">{icon}</span>
-              <span className="text-xs font-medium">{label}</span>
-            </button>
-          ))}
+          ] as const).map(({ icon, label, tab }) => {
+            const isActive = activeTab === tab
+            return (
+              <button key={tab}
+                onClick={() => setActiveTab(tab)}
+                className="flex flex-col items-center gap-0.5 py-2 flex-1 transition-all"
+                style={{ color: isActive ? "var(--blue)" : "var(--text-muted)" }}>
+                <span className="text-xl leading-none"
+                  style={{ filter: isActive ? "drop-shadow(0 0 6px rgba(76,201,240,0.6))" : "none" }}>
+                  {icon}
+                </span>
+                <span className="text-xs font-semibold" style={{ fontSize: "10px" }}>{label}</span>
+                {isActive && (
+                  <div className="w-4 h-0.5 rounded-full mt-0.5"
+                    style={{ background: "var(--blue)" }} />
+                )}
+              </button>
+            )
+          })}
         </div>
       </nav>
     </div>

@@ -11,7 +11,7 @@ type JournalEntry = {
 }
 
 const SLIDERS = [
-  { key: "energie",     label: "Énergie",    icon: "⚡", color: "var(--green)" },
+  { key: "energie",     label: "Énergie",    icon: "⚡", color: "var(--blue)" },
   { key: "humeur",      label: "Humeur",      icon: "😊", color: "var(--blue)" },
   { key: "hydratation", label: "Hydratation", icon: "💧", color: "#38bdf8" },
   { key: "sommeil",     label: "Sommeil",     icon: "🌙", color: "#818cf8" },
@@ -22,6 +22,7 @@ export default function JournalForm({ currentDay = 1 }: { currentDay?: number })
     energie: 5, humeur: 5, hydratation: 5, sommeil: 5, note: "",
   })
   const [status, setStatus] = useState<"idle" | "saving" | "saved" | "error">("idle")
+  const [errorMsg, setErrorMsg] = useState<string>("")
   const supabase = createClient()
 
   const handleSlider = (key: keyof Omit<JournalEntry, "note">, val: number) => {
@@ -31,28 +32,48 @@ export default function JournalForm({ currentDay = 1 }: { currentDay?: number })
 
   const handleSave = async () => {
     setStatus("saving")
+    setErrorMsg("")
     const { data: { user } } = await supabase.auth.getUser()
 
-    if (user) {
-      const { error } = await supabase.from("journal_entries").upsert({
-        user_id:     user.id,
-        day:         currentDay,
-        energie:     values.energie,
-        humeur:      values.humeur,
-        hydratation: values.hydratation,
-        sommeil:     values.sommeil,
-        note:        values.note || null,
-      }, { onConflict: "user_id,day" })
+    if (!user) { setErrorMsg("Non connecté"); setStatus("error"); return }
 
-      if (error) { setStatus("error"); return }
+    const payload = {
+      energie:     values.energie,
+      humeur:      values.humeur,
+      hydratation: values.hydratation,
+      sommeil:     values.sommeil,
+      note:        values.note || null,
     }
+
+    // Vérifie si une entrée existe déjà pour ce jour
+    const { data: existing } = await supabase
+      .from("journal_entries")
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("day", currentDay)
+      .maybeSingle()
+
+    let error
+    if (existing) {
+      ;({ error } = await supabase.from("journal_entries").update(payload).eq("id", existing.id))
+    } else {
+      ;({ error } = await supabase.from("journal_entries").insert({ user_id: user.id, day: currentDay, ...payload }))
+    }
+
+    if (error) {
+      console.error("Journal save error:", error)
+      setErrorMsg(error.message)
+      setStatus("error")
+      return
+    }
+
     setStatus("saved")
     setTimeout(() => setStatus("idle"), 3000)
   }
 
   return (
     <div className="card p-5 fade-up">
-      <h3 className="font-semibold mb-5 text-sm uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>
+      <h3 className="font-semibold mb-5 text-xs uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.4)" }}>
         Journal du jour — Jour {currentDay}
       </h3>
 
@@ -60,7 +81,7 @@ export default function JournalForm({ currentDay = 1 }: { currentDay?: number })
         {SLIDERS.map(({ key, label, icon, color }) => (
           <div key={key}>
             <div className="flex justify-between items-center mb-2">
-              <span className="text-sm flex gap-2 items-center" style={{ color: "var(--text-secondary)" }}>
+              <span className="text-sm flex gap-2 items-center font-medium" style={{ color: "rgba(255,255,255,0.85)" }}>
                 <span>{icon}</span> {label}
               </span>
               <span className="font-bold text-sm" style={{ color }}>{values[key]}/10</span>
@@ -73,8 +94,8 @@ export default function JournalForm({ currentDay = 1 }: { currentDay?: number })
               style={{ accentColor: color }}
             />
             <div className="flex justify-between mt-1">
-              <span className="text-xs" style={{ color: "var(--text-muted)" }}>Faible</span>
-              <span className="text-xs" style={{ color: "var(--text-muted)" }}>Excellent</span>
+              <span className="text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>Faible</span>
+              <span className="text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>Excellent</span>
             </div>
           </div>
         ))}
@@ -87,9 +108,9 @@ export default function JournalForm({ currentDay = 1 }: { currentDay?: number })
         onChange={e => { setValues(v => ({ ...v, note: e.target.value })); if (status === "saved") setStatus("idle") }}
         className="w-full rounded-xl p-3 text-sm resize-none outline-none"
         style={{
-          background: "var(--bg-secondary)",
-          border: "1px solid var(--border)",
-          color: "var(--text-primary)",
+          background: "rgba(255,255,255,0.07)",
+          border: "1px solid rgba(255,255,255,0.12)",
+          color: "#ffffff",
           marginBottom: "16px",
         }}
       />
@@ -99,8 +120,13 @@ export default function JournalForm({ currentDay = 1 }: { currentDay?: number })
         disabled={status === "saving"}
         className="btn-primary w-full text-sm"
         style={{ opacity: status === "saving" ? 0.7 : 1 }}>
-        {status === "saving" ? "Enregistrement..." : status === "saved" ? "✓ Journal enregistré" : status === "error" ? "❌ Erreur — réessayez" : "Enregistrer le journal"}
+        {status === "saving" ? "Enregistrement..." : status === "saved" ? "✓ Journal enregistré" : "Enregistrer le journal"}
       </button>
+      {status === "error" && (
+        <p className="text-xs mt-2 text-center" style={{ color: "#ff8080" }}>
+          ❌ {errorMsg || "Erreur d'enregistrement — réessayez"}
+        </p>
+      )}
     </div>
   )
 }

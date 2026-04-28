@@ -97,7 +97,7 @@ export default function WeightTracker({ initialWeight }: { initialWeight?: numbe
           <svg width="100%" viewBox={`0 0 ${chartW} ${chartH}`} preserveAspectRatio="none" style={{ display: "block" }}>
             {/* Ligne de fond */}
             <path d={`${pathD} L ${toX(weights.length - 1)} ${chartH} L ${toX(0)} ${chartH} Z`}
-              fill="rgba(45,228,164,0.08)" />
+              fill="rgba(76,201,240,0.08)" />
             {/* Courbe */}
             <path d={pathD} fill="none" stroke="var(--green)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             {/* Points */}

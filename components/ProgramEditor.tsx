@@ -112,7 +112,7 @@ export default function ProgramEditor({ collaborateurId, collaborateurPrenom, co
               style={{
                 background: selectedDay === d ? "linear-gradient(135deg, var(--green-dim), var(--blue-dim))" : "transparent",
                 color: selectedDay === d ? "#070d0f" : hasOverride(d) ? "var(--green)" : "var(--text-muted)",
-                border: hasOverride(d) && selectedDay !== d ? "1px solid rgba(45,228,164,0.3)" : "1px solid transparent",
+                border: hasOverride(d) && selectedDay !== d ? "1px solid rgba(76,201,240,0.3)" : "1px solid transparent",
               }}>
               {d}
               {hasOverride(d) && <span style={{ fontSize: "6px" }}>●</span>}
@@ -124,7 +124,7 @@ export default function ProgramEditor({ collaborateurId, collaborateurPrenom, co
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
 
           {/* Titre du jour */}
-          <div className="rounded-xl p-3" style={{ background: "rgba(45,228,164,0.06)", border: "1px solid rgba(45,228,164,0.15)" }}>
+          <div className="rounded-xl p-3" style={{ background: "rgba(76,201,240,0.06)", border: "1px solid rgba(76,201,240,0.15)" }}>
             <p className="text-xs font-bold gradient-text">Jour {selectedDay} — {day.theme}</p>
             <p className="text-xs mt-0.5 italic" style={{ color: "var(--text-muted)" }}>"{day.intention}"</p>
           </div>

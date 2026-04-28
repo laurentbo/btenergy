@@ -4,7 +4,7 @@ import { PRINCIPES } from "@/data/program"
 export default function PrincipesSection() {
   return (
     <div className="fade-up space-y-4">
-      <div className="rounded-xl p-4" style={{ background: "rgba(45,228,164,0.05)", border: "1px solid rgba(45,228,164,0.15)" }}>
+      <div className="rounded-xl p-4" style={{ background: "rgba(76,201,240,0.05)", border: "1px solid rgba(76,201,240,0.15)" }}>
         <p className="text-sm" style={{ color: "var(--text-secondary)", lineHeight: "1.7" }}>
           Ces 7 principes sont le socle du programme BTENERGY. Ils ne sont pas des règles — ce sont des lois biologiques au service de votre énergie.
         </p>

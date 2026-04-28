@@ -72,11 +72,11 @@ export default function PreviewPage() {
 
       {/* Bannière coach */}
       <div className="px-4 py-2 text-center text-xs font-semibold"
-        style={{ background: "rgba(45,228,164,0.12)", borderBottom: "1px solid rgba(45,228,164,0.25)", color: "var(--green)" }}>
+        style={{ background: "rgba(76,201,240,0.12)", borderBottom: "1px solid rgba(76,201,240,0.25)", color: "var(--green)" }}>
         👁 Aperçu coach — espace de {collab?.prenom}
         <button onClick={() => router.push("/coach")}
           className="ml-4 px-2 py-0.5 rounded text-xs"
-          style={{ background: "rgba(45,228,164,0.15)", border: "1px solid rgba(45,228,164,0.3)" }}>
+          style={{ background: "rgba(76,201,240,0.15)", border: "1px solid rgba(76,201,240,0.3)" }}>
           ← Retour
         </button>
       </div>
@@ -130,7 +130,7 @@ export default function PreviewPage() {
           </div>
           <div className="flex gap-2 mt-3">
             <div className="flex-1 p-3 rounded-xl flex items-center gap-2"
-              style={{ background: "rgba(45,228,164,0.06)", border: "1px solid rgba(45,228,164,0.12)" }}>
+              style={{ background: "rgba(76,201,240,0.06)", border: "1px solid rgba(76,201,240,0.12)" }}>
               <span>💧</span>
               <span className="text-xs" style={{ color: "var(--text-secondary)" }}>{day.hydration}</span>
             </div>
@@ -169,7 +169,7 @@ export default function PreviewPage() {
           <div className="space-y-4">
             {override?.coach_note && (
               <div className="rounded-xl p-4 fade-up flex gap-3"
-                style={{ background: "rgba(45,228,164,0.07)", border: "1px solid rgba(45,228,164,0.25)" }}>
+                style={{ background: "rgba(76,201,240,0.07)", border: "1px solid rgba(76,201,240,0.25)" }}>
                 <span className="text-lg flex-shrink-0">💬</span>
                 <div>
                   <p className="text-xs font-bold mb-1" style={{ color: "var(--green)" }}>Message de votre coach</p>

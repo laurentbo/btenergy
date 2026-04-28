@@ -1,29 +1,30 @@
 "use client"
 import { useState } from "react"
-import { createClient } from "@/lib/supabase/client"
 import Link from "next/link"
 
-export default function LoginCollaborateur() {
-  const [email, setEmail]       = useState("")
-  const [password, setPassword] = useState("")
-  const [code, setCode]         = useState("")
-  const [error, setError]       = useState("")
-  const [loading, setLoading]   = useState(false)
-  const supabase = createClient()
+type Step = "form" | "sent"
 
-  async function handleLogin() {
+export default function LoginCollaborateur() {
+  const [email, setEmail]   = useState("")
+  const [code, setCode]     = useState("")
+  const [step, setStep]     = useState<Step>("form")
+  const [error, setError]   = useState("")
+  const [loading, setLoading] = useState(false)
+
+  async function handleSend() {
     setError(""); setLoading(true)
 
-    // Vérifie le code entreprise
-    const { data: company } = await supabase
-      .from("companies").select("id").eq("code", code.toUpperCase()).single()
-    if (!company) { setError("Code entreprise invalide."); setLoading(false); return }
+    const res = await fetch("/api/send-magic-link", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: email.trim(), company_code: code.trim() }),
+    })
 
-    // Connexion email + mot de passe
-    const { error: e } = await supabase.auth.signInWithPassword({ email, password })
-    if (e) { setError("Email ou mot de passe incorrect."); setLoading(false); return }
+    const { error: err } = await res.json()
+    if (err) { setError(err); setLoading(false); return }
 
-    window.location.href = "/"
+    setStep("sent")
+    setLoading(false)
   }
 
   return (
@@ -41,51 +42,72 @@ export default function LoginCollaborateur() {
           <p className="text-sm mt-1" style={{ color: "var(--text-secondary)" }}>Espace collaborateur</p>
         </div>
 
-        <div className="card p-6">
-          <h2 className="font-bold text-base mb-4" style={{ color: "var(--text-primary)" }}>
-            Accéder à mon programme
-          </h2>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-xs uppercase tracking-widest mb-2" style={{ color: "var(--text-muted)" }}>
-                Code entreprise
-              </label>
-              <input
-                type="text" value={code} onChange={e => setCode(e.target.value)}
-                placeholder="EX: BTENERGY2025"
-                className="w-full rounded-xl px-4 py-2.5 text-sm outline-none uppercase"
-                style={{ background: "var(--bg-secondary)", border: "1px solid var(--border)", color: "var(--text-primary)", letterSpacing: "0.1em" }}
-              />
+        {step === "form" ? (
+          <div className="card p-6">
+            <h2 className="font-bold text-base mb-1" style={{ color: "var(--text-primary)" }}>
+              Accéder à mon programme
+            </h2>
+            <p className="text-xs mb-5" style={{ color: "var(--text-muted)" }}>
+              Un lien de connexion sécurisé vous sera envoyé par email.
+            </p>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs uppercase tracking-widest mb-2" style={{ color: "var(--text-muted)" }}>
+                  Code entreprise
+                </label>
+                <input
+                  type="text" value={code} onChange={e => setCode(e.target.value)}
+                  placeholder="EX: BTENERGY2025"
+                  className="w-full rounded-xl px-4 py-2.5 text-sm outline-none uppercase"
+                  style={{ background: "var(--bg-secondary)", border: "1px solid var(--border)", color: "var(--text-primary)", letterSpacing: "0.1em" }}
+                />
+              </div>
+              <div>
+                <label className="block text-xs uppercase tracking-widest mb-2" style={{ color: "var(--text-muted)" }}>
+                  Email
+                </label>
+                <input
+                  type="email" value={email} onChange={e => setEmail(e.target.value)}
+                  placeholder="votre@email.com"
+                  onKeyDown={e => e.key === "Enter" && !(!email || !code || loading) && handleSend()}
+                  className="w-full rounded-xl px-4 py-2.5 text-sm outline-none"
+                  style={{ background: "var(--bg-secondary)", border: "1px solid var(--border)", color: "var(--text-primary)" }}
+                />
+              </div>
+              {error && <p className="text-xs text-red-400">{error}</p>}
+              <button
+                onClick={handleSend}
+                disabled={!email || !code || loading}
+                className="btn-primary w-full text-sm"
+                style={{ opacity: (!email || !code || loading) ? 0.5 : 1 }}>
+                {loading ? "Envoi en cours..." : "Recevoir mon lien de connexion →"}
+              </button>
             </div>
-            <div>
-              <label className="block text-xs uppercase tracking-widest mb-2" style={{ color: "var(--text-muted)" }}>Email</label>
-              <input
-                type="email" value={email} onChange={e => setEmail(e.target.value)}
-                placeholder="votre@email.com"
-                className="w-full rounded-xl px-4 py-2.5 text-sm outline-none"
-                style={{ background: "var(--bg-secondary)", border: "1px solid var(--border)", color: "var(--text-primary)" }}
-              />
+          </div>
+        ) : (
+          <div className="card p-6 text-center">
+            <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl mx-auto mb-4"
+              style={{ background: "rgba(76,201,240,0.1)", border: "1px solid rgba(76,201,240,0.2)" }}>
+              ✉️
             </div>
-            <div>
-              <label className="block text-xs uppercase tracking-widest mb-2" style={{ color: "var(--text-muted)" }}>Mot de passe</label>
-              <input
-                type="password" value={password} onChange={e => setPassword(e.target.value)}
-                placeholder="••••••••"
-                onKeyDown={e => e.key === "Enter" && handleLogin()}
-                className="w-full rounded-xl px-4 py-2.5 text-sm outline-none"
-                style={{ background: "var(--bg-secondary)", border: "1px solid var(--border)", color: "var(--text-primary)" }}
-              />
-            </div>
-            {error && <p className="text-xs text-red-400">{error}</p>}
+            <h2 className="font-bold text-base mb-2" style={{ color: "var(--text-primary)" }}>
+              Vérifiez votre boîte mail
+            </h2>
+            <p className="text-sm mb-4" style={{ color: "var(--text-secondary)", lineHeight: "1.7" }}>
+              Un lien de connexion a été envoyé à<br />
+              <strong style={{ color: "var(--text-primary)" }}>{email}</strong>
+            </p>
+            <p className="text-xs mb-5" style={{ color: "var(--text-muted)" }}>
+              Le lien expire dans 1 heure. Vérifiez vos spams si vous ne le trouvez pas.
+            </p>
             <button
-              onClick={handleLogin}
-              disabled={!email || !password || !code || loading}
-              className="btn-primary w-full text-sm"
-              style={{ opacity: (!email || !password || !code || loading) ? 0.5 : 1 }}>
-              {loading ? "Connexion..." : "Accéder à mon programme →"}
+              onClick={() => { setStep("form"); setError("") }}
+              className="text-xs"
+              style={{ color: "var(--text-muted)" }}>
+              ← Renvoyer un lien
             </button>
           </div>
-        </div>
+        )}
 
         <div className="text-center mt-4">
           <Link href="/login/coach" className="text-xs" style={{ color: "var(--text-muted)" }}>
