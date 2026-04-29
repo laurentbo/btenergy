@@ -9,6 +9,8 @@ import ProfilForm from "@/components/ProfilForm"
 import PrincipesSection from "@/components/PrincipesSection"
 import WeightTracker from "@/components/WeightTracker"
 import ShoppingList from "@/components/ShoppingList"
+import VitalityScore from "@/components/VitalityScore"
+import EnergyCheckin from "@/components/EnergyCheckin"
 import { createClient } from "@/lib/supabase/client"
 import { useAuth } from "@/lib/auth-context"
 
@@ -44,6 +46,7 @@ export default function Dashboard() {
   const [openMoments, setOpenMoments] = useState<Set<string>>(new Set(["matin"]))
   // NOUVEAU — tracker d'hydratation partagé hero ↔ journal
   const [hydrationLiters, setHydrationLiters] = useState<number>(0)
+  const [energyScore] = useState<number>(72)
 
   const supabase = createClient()
   const { signOut } = useAuth()
@@ -523,6 +526,10 @@ export default function Dashboard() {
                 </div>
               </div>
             )}
+
+            {/* Score de vitalité + Check-in énergie */}
+            <VitalityScore score={energyScore} trend={0} />
+            <EnergyCheckin currentDay={viewDay} onCheckin={() => {}} />
 
             {/* MODIFIÉ — Repas en accordéon */}
             <div className="space-y-2">
