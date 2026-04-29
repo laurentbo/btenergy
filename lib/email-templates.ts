@@ -17,10 +17,9 @@ function header() {
   return `
   <tr><td align="center" style="padding-bottom:28px;">
     <table cellpadding="0" cellspacing="0">
-      <tr><td align="center" style="width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,#2dd4a0,#4cc9f0);text-align:center;vertical-align:middle;">
-        <span style="font-size:22px;font-weight:900;color:#070d0f;line-height:48px;">B</span>
+      <tr><td align="center">
+        <span style="font-size:26px;font-weight:900;background:linear-gradient(135deg,#2dd4a0,#4cc9f0);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:0.01em;">Back to energy</span>
       </td></tr>
-      <tr><td align="center" style="padding-top:8px;font-size:13px;font-weight:700;letter-spacing:0.2em;color:#ffffff;">BTENERGY</td></tr>
     </table>
   </td></tr>
   `
