@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react"
 import { useSearchParams } from "next/navigation"
 import Link from "next/link"
+import { createClient } from "@/lib/supabase/client"
 
 type Step = "form" | "sent"
 
@@ -13,8 +14,46 @@ export default function LoginCollaborateur() {
   const searchParams = useSearchParams()
 
   useEffect(() => {
-    const err = searchParams.get("error")
-    if (err) setError("Lien invalide ou expiré. Demandez un nouveau lien.")
+    // Erreur en query string (venant de notre route handler)
+    if (searchParams.get("error")) {
+      setError("Lien invalide ou expiré. Demandez un nouveau lien.")
+      return
+    }
+
+    const hash = window.location.hash
+    if (!hash) return
+
+    const hashParams = new URLSearchParams(hash.replace("#", ""))
+
+    // Flux implicite Supabase : tokens valides dans le hash → on établit la session
+    const access_token  = hashParams.get("access_token")
+    const refresh_token = hashParams.get("refresh_token")
+    if (access_token && refresh_token) {
+      setLoading(true)
+      window.history.replaceState(null, "", window.location.pathname)
+      const supabase = createClient()
+      supabase.auth.setSession({ access_token, refresh_token }).then(({ error }) => {
+        if (error) {
+          setError("Lien invalide ou expiré. Demandez un nouveau lien.")
+          setLoading(false)
+        } else {
+          // Session établie côté client — rechargement dur pour que le proxy la lise
+          window.location.replace("/")
+        }
+      })
+      return
+    }
+
+    // Erreur Supabase en hash (flux implicite, OTP expiré, etc.)
+    if (hashParams.get("error")) {
+      const code = hashParams.get("error_code")
+      setError(
+        code === "otp_expired"
+          ? "Ce lien est expiré. Demandez un nouveau lien ci-dessous."
+          : "Lien invalide ou expiré. Demandez un nouveau lien."
+      )
+      window.history.replaceState(null, "", window.location.pathname)
+    }
   }, [searchParams])
 
   async function handleSend() {
