@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server"
+import { createServerClient } from "@supabase/ssr"
 import { NextRequest, NextResponse } from "next/server"
 import { resend, FROM } from "@/lib/resend"
 import { welcomeEmail } from "@/lib/email-templates"
@@ -12,7 +12,26 @@ export async function GET(request: NextRequest) {
   const token_hash = searchParams.get("token_hash")
   const type       = searchParams.get("type") as "magiclink" | "recovery" | null
 
-  const supabase = await createClient()
+  // Créer la réponse redirect en premier pour y écrire les cookies de session
+  const redirectTo = type === "recovery"
+    ? new URL("/auth/reset-password", SITE)
+    : new URL(SITE)
+  const response = NextResponse.redirect(redirectTo)
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() { return request.cookies.getAll() },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value, options }) =>
+            response.cookies.set(name, value, options)
+          )
+        },
+      },
+    }
+  )
 
   if (code) {
     await supabase.auth.exchangeCodeForSession(code)
@@ -54,10 +73,5 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  // Redirige vers l'app selon le type
-  if (type === "recovery") {
-    return NextResponse.redirect(new URL("/auth/reset-password", request.url))
-  }
-
-  return NextResponse.redirect(new URL(SITE))
+  return response
 }
