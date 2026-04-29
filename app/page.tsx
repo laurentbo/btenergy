@@ -85,13 +85,13 @@ export default function Dashboard() {
       if (user) {
         const { data: dbProfile } = await supabase
           .from("profiles")
-          .select("prenom, genre, age, taille, poids, start_date")
+          .select("prenom, genre, age, taille, poids, program_start")
           .eq("id", user.id)
           .maybeSingle()
 
         const saved = localStorage.getItem("btenergy_profile")
         const localProfile: UserProfile | null = saved ? JSON.parse(saved) : null
-        const startDate = dbProfile?.start_date ?? localProfile?.start_date
+        const startDate = dbProfile?.program_start ?? localProfile?.start_date
         computedDay = calcCurrentDay(startDate)
         setCurrentDay(computedDay)
         setViewDay(computedDay)
@@ -161,7 +161,7 @@ export default function Dashboard() {
         age: p.age,
         taille: p.taille,
         poids: p.poids,
-        ...(p.start_date ? { start_date: p.start_date } : {}),
+        ...(p.start_date ? { program_start: p.start_date } : {}),
       }).eq("id", user.id)
       if (p.start_date) setCurrentDay(calcCurrentDay(p.start_date))
     }

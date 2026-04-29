@@ -28,5 +28,5 @@ export async function GET() {
     .eq("id", user.id)
     .maybeSingle()
 
-  return NextResponse.json({ role: profile?.role ?? "collaborateur", prenom: profile?.prenom })
+  return NextResponse.json({ id: user.id, role: profile?.role ?? "collaborateur", prenom: profile?.prenom })
 }

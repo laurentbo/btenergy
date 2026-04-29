@@ -1,7 +1,7 @@
 "use client"
 import { useEffect, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
-import { PROGRAM, WEEK_THEMES, type Meal } from "@/data/program"
+import { PROGRAM, WEEK_THEMES, calcCurrentDay, type Meal } from "@/data/program"
 import MealCard from "@/components/MealCard"
 import RitualCard from "@/components/RitualCard"
 import Timeline21 from "@/components/Timeline21"
@@ -47,7 +47,7 @@ export default function PreviewPage() {
         setCollab(data.collab)
         setOverrides(data.overrides)
         setEntries(data.entries)
-        setCurrentDay(Math.max(1, data.collab.current_day || 1))
+        setCurrentDay(calcCurrentDay(data.collab.program_start))
         setLoading(false)
       })
   }, [id]) // eslint-disable-line

@@ -1,7 +1,7 @@
 "use client"
 import { useEffect, useState } from "react"
 import type { Database } from "@/lib/supabase/types"
-import { WEEK_THEMES, PROGRAM } from "@/data/program"
+import { WEEK_THEMES, PROGRAM, calcCurrentDay } from "@/data/program"
 import ProgramEditor from "@/components/ProgramEditor"
 import { createClient } from "@/lib/supabase/client"
 
@@ -36,7 +36,7 @@ export default function CoachDashboard() {
       const meRes = await fetch("/api/me")
       if (!meRes.ok) return
       const me = await meRes.json()
-      setCoachProfile({ prenom: me.prenom, role: me.role } as any)
+      setCoachProfile({ id: me.id, prenom: me.prenom, role: me.role } as any)
 
       // Collaborateurs via API sécurisée (service_role, bypass RLS)
       const collabRes = await fetch("/api/collabs")
@@ -50,8 +50,9 @@ export default function CoachDashboard() {
   }, []) // eslint-disable-line
 
   const filtered = collabs.filter(c => {
-    if (filter === "actifs")   return c.current_day > 0
-    if (filter === "inactifs") return c.current_day === 0
+    const day = calcCurrentDay(c.program_start)
+    if (filter === "actifs")   return day > 0 && day <= 21
+    if (filter === "inactifs") return !c.program_start
     return true
   })
 
@@ -117,8 +118,8 @@ export default function CoachDashboard() {
         <div className="grid grid-cols-2 gap-3 mb-6 sm:grid-cols-4">
           {[
             { label: "Collaborateurs", value: collabs.length.toString(), icon: "👥", color: "var(--green)" },
-            { label: "En cours",       value: collabs.filter(c => c.current_day > 0 && c.current_day < 21).length.toString(), icon: "🔥", color: "var(--blue)" },
-            { label: "Terminés",       value: collabs.filter(c => c.current_day >= 21).length.toString(), icon: "🎯", color: "#818cf8" },
+            { label: "En cours",       value: collabs.filter(c => { const d = calcCurrentDay(c.program_start); return d > 0 && d < 21 }).length.toString(), icon: "🔥", color: "var(--blue)" },
+            { label: "Terminés",       value: collabs.filter(c => calcCurrentDay(c.program_start) >= 21).length.toString(), icon: "🎯", color: "#818cf8" },
             { label: "Énergie moy.",   value: avgEnergie ? `${avgEnergie}/10` : "—", icon: "⚡", color: "#f59e0b" },
           ].map(({ label, value, icon, color }) => (
             <div key={label} className="card p-4 text-center">
@@ -161,9 +162,10 @@ export default function CoachDashboard() {
         ) : (
           <div className="space-y-3">
             {filtered.map(c => {
-              const week = c.current_day <= 7 ? 1 : c.current_day <= 14 ? 2 : 3
+              const day = calcCurrentDay(c.program_start)
+              const week = day <= 7 ? 1 : day <= 14 ? 2 : 3
               const wInfo = WEEK_THEMES[week as 1 | 2 | 3]
-              const progress = Math.min(100, Math.round((c.current_day / 21) * 100))
+              const progress = Math.min(100, Math.round((day / 21) * 100))
               const lastSeen = c.last_entry
                 ? new Date(c.last_entry.created_at).toLocaleDateString("fr-FR", { day: "numeric", month: "short" })
                 : "Jamais"
@@ -182,7 +184,7 @@ export default function CoachDashboard() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-2">
                         <span className="font-semibold text-sm" style={{ color: "var(--text-primary)" }}>{c.prenom}</span>
-                        <span className="tag flex-shrink-0">J{c.current_day}/21</span>
+                        <span className="tag flex-shrink-0">J{day}/21</span>
                       </div>
                       <p className="text-xs mt-0.5" style={{ color: wInfo.color }}>{wInfo.title}</p>
                       <div className="progress-bar mt-2">
