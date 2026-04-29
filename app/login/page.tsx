@@ -1,5 +1,6 @@
 "use client"
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useSearchParams } from "next/navigation"
 import Link from "next/link"
 
 type Step = "form" | "sent"
@@ -9,6 +10,12 @@ export default function LoginCollaborateur() {
   const [step, setStep]       = useState<Step>("form")
   const [error, setError]     = useState("")
   const [loading, setLoading] = useState(false)
+  const searchParams = useSearchParams()
+
+  useEffect(() => {
+    const err = searchParams.get("error")
+    if (err) setError("Lien invalide ou expiré. Demandez un nouveau lien.")
+  }, [searchParams])
 
   async function handleSend() {
     setError(""); setLoading(true)
