@@ -16,43 +16,50 @@ function admin() {
 export async function POST(request: NextRequest) {
   const { email } = await request.json()
 
-  if (!email) {
+  if (!email || typeof email !== "string") {
     return NextResponse.json({ error: "Paramètres manquants." }, { status: 400 })
   }
 
   const db = admin()
+  const emailLower = email.toLowerCase().trim()
 
-  // Vérifie que le collaborateur existe
-  const { data: profile } = await db
-    .from("profiles")
-    .select("prenom")
-    .eq("email", email.toLowerCase())
-    .eq("role", "collaborateur")
-    .maybeSingle()
-
-  if (!profile) {
-    return NextResponse.json({ error: "Aucun compte trouvé pour cet email." }, { status: 404 })
-  }
-
-  // 3. Génère le lien magique via Admin API
+  // 1. Génère le lien — Supabase valide que l'email existe dans auth.users
   const { data, error } = await db.auth.admin.generateLink({
     type: "magiclink",
-    email: email.toLowerCase(),
+    email: emailLower,
     options: { redirectTo: `${SITE}/auth/callback` },
   })
 
   if (error || !data?.properties?.hashed_token) {
-    console.error("generateLink error:", error)
-    return NextResponse.json({ error: "Impossible de générer le lien." }, { status: 500 })
+    // Email inconnu de Supabase Auth → message générique (sécurité)
+    return NextResponse.json({ error: "Aucun compte trouvé pour cet email." }, { status: 404 })
   }
 
-  // 4. Construit le lien directement avec token_hash (contourne la liste blanche Supabase)
+  // 2. Vérifie le rôle via l'ID (fiable même si profiles.email n'est pas synchronisé)
+  const userId = data.user?.id
+  let prenom = "vous"
+
+  if (userId) {
+    const { data: profile } = await db
+      .from("profiles")
+      .select("role, prenom")
+      .eq("id", userId)
+      .maybeSingle()
+
+    if (!profile || profile.role !== "collaborateur") {
+      return NextResponse.json({ error: "Aucun compte trouvé pour cet email." }, { status: 404 })
+    }
+
+    prenom = profile.prenom ?? "vous"
+  }
+
+  // 3. Construit l'URL de callback avec le token_hash
   const callbackUrl = `${SITE}/auth/callback?token_hash=${data.properties.hashed_token}&type=magiclink`
 
-  const prenom = profile.prenom ?? "vous"
+  // 4. Envoie l'email via Resend
   const { error: sendError } = await resend.emails.send({
     from: FROM,
-    to: email.toLowerCase(),
+    to: emailLower,
     subject: "🔗 Votre lien de connexion — BTENERGY",
     html: magicLinkEmail(prenom, callbackUrl),
   })
