@@ -31,6 +31,19 @@ export async function proxy(request: NextRequest) {
 
   const { pathname } = request.nextUrl
 
+  // Intercepte les codes PKCE/token_hash Supabase qui atterrissent n'importe où
+  // (Supabase dashboard "Send" redirige vers Site URL, pas /auth/callback)
+  const code      = request.nextUrl.searchParams.get("code")
+  const tokenHash = request.nextUrl.searchParams.get("token_hash")
+  if ((code || tokenHash) && !pathname.startsWith("/auth")) {
+    const callbackUrl = new URL("/auth/callback", request.url)
+    if (code)      callbackUrl.searchParams.set("code", code)
+    if (tokenHash) callbackUrl.searchParams.set("token_hash", tokenHash)
+    const type = request.nextUrl.searchParams.get("type")
+    if (type) callbackUrl.searchParams.set("type", type)
+    return NextResponse.redirect(callbackUrl)
+  }
+
   // APIs publiques : jamais de redirect, toujours passer
   const publicApis = ["/api/verify-company", "/api/send-magic-link", "/api/send-reset-password"]
   if (publicApis.includes(pathname)) return supabaseResponse
