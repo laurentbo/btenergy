@@ -6,6 +6,8 @@ import MealCard from "@/components/MealCard"
 import RitualCard from "@/components/RitualCard"
 import Timeline21 from "@/components/Timeline21"
 import PrincipesSection from "@/components/PrincipesSection"
+import VitalityScore from "@/components/VitalityScore"
+import EnergyCheckin from "@/components/EnergyCheckin"
 
 type Tab = "programme" | "journal" | "progression" | "principes"
 
@@ -177,6 +179,8 @@ export default function PreviewPage() {
                 </div>
               </div>
             )}
+            <VitalityScore score={72} trend={0} />
+            <EnergyCheckin currentDay={currentDay} onCheckin={() => {}} />
             <div className="space-y-3">
               {day.meals.map((meal, i) => {
                 const overrideMeals = override?.meal_overrides?.[meal.moment]
