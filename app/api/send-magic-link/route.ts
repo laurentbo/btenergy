@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
     options: { redirectTo: `${SITE}/auth/callback` },
   })
 
-  if (error || !data?.properties?.action_link) {
+  if (error || !data?.properties?.hashed_token) {
     console.error("generateLink error:", error)
     return NextResponse.json({ error: "Impossible de générer le lien." }, { status: 500 })
   }

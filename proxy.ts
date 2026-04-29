@@ -21,12 +21,22 @@ export async function proxy(request: NextRequest) {
     }
   )
 
-  const { data: { user } } = await supabase.auth.getUser()
+  let user = null
+  try {
+    const { data } = await supabase.auth.getUser()
+    user = data.user
+  } catch {
+    // Supabase indisponible — on traite comme non-authentifié
+  }
+
   const { pathname } = request.nextUrl
 
-  // Routes publiques
+  // APIs publiques : jamais de redirect, toujours passer
   const publicApis = ["/api/verify-company", "/api/send-magic-link", "/api/send-reset-password"]
-  if (pathname.startsWith("/login") || pathname.startsWith("/auth") || pathname.startsWith("/email-preview") || publicApis.includes(pathname)) {
+  if (publicApis.includes(pathname)) return supabaseResponse
+
+  // Pages publiques : redirect vers / si déjà connecté
+  if (pathname.startsWith("/login") || pathname.startsWith("/auth") || pathname.startsWith("/email-preview")) {
     if (user) return NextResponse.redirect(new URL("/", request.url))
     return supabaseResponse
   }
