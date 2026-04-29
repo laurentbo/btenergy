@@ -60,7 +60,7 @@ export function magicLinkEmail(prenom: string, url: string): string {
   const nom = prenom.charAt(0).toUpperCase() + prenom.slice(1).toLowerCase()
   return BASE + header() + card(`
     <p style="margin:0 0 6px;font-size:13px;font-weight:600;letter-spacing:0.12em;color:#4cc9f0;text-transform:uppercase;">Connexion sécurisée</p>
-    <h1 style="margin:0 0 16px;font-size:24px;font-weight:900;color:#ffffff;line-height:1.2;">Bonjour ${nom} 👋</h1>
+    <h1 style="margin:0 0 16px;font-size:24px;font-weight:900;color:#ffffff;line-height:1.2;">Bon jour ${nom} 👋</h1>
     <p style="margin:0 0 24px;font-size:15px;color:rgba(255,255,255,0.65);line-height:1.7;">
       Appuyez sur ce bouton pour accéder à votre programme <strong style="color:#ffffff;">Back to Energy</strong>.<br>
       Ce lien est valable <strong style="color:#ffffff;">1 heure</strong> et ne peut être utilisé qu'une seule fois.
@@ -129,7 +129,7 @@ export function resetPasswordEmail(prenom: string, url: string): string {
     <p style="margin:0 0 6px;font-size:13px;font-weight:600;letter-spacing:0.12em;color:#f87171;text-transform:uppercase;">Sécurité</p>
     <h1 style="margin:0 0 16px;font-size:24px;font-weight:900;color:#ffffff;line-height:1.2;">Réinitialisation<br>du mot de passe</h1>
     <p style="margin:0 0 24px;font-size:15px;color:rgba(255,255,255,0.65);line-height:1.7;">
-      Bonjour ${nom},<br><br>
+      Bon jour ${nom},<br><br>
       Une demande de réinitialisation de mot de passe a été effectuée pour votre compte coach BTENERGY.<br>
       Ce lien est valable <strong style="color:#ffffff;">1 heure</strong>.
     </p>
