@@ -1,11 +1,9 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 
 export default function AuthCallbackPage() {
-  const router = useRouter()
   const [status, setStatus] = useState("Connexion en cours…")
 
   useEffect(() => {
@@ -48,10 +46,9 @@ export default function AuthCallbackPage() {
         }
 
         if (type === "recovery") {
-          router.push("/auth/reset-password")
+          window.location.href = "/auth/reset-password"
         } else {
-          router.push("/")
-          router.refresh()
+          window.location.href = "/"
         }
       } catch {
         setStatus("Erreur de connexion. Veuillez réessayer.")
@@ -59,7 +56,7 @@ export default function AuthCallbackPage() {
     }
 
     handleCallback()
-  }, [router])
+  }, [])
 
   return (
     <div style={{
