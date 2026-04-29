@@ -22,14 +22,14 @@ export async function POST(request: NextRequest) {
 
   const db = admin()
 
-  // Vérifie que c'est un coach
+  // Récupère le profil (tous les utilisateurs, pas juste coaches)
   const { data: profile } = await db
     .from("profiles")
-    .select("prenom, role")
+    .select("prenom")
     .eq("email", email.toLowerCase())
     .maybeSingle()
 
-  if (!profile || !["coach", "admin"].includes(profile.role)) {
+  if (!profile) {
     // Répond toujours OK pour éviter l'énumération d'emails
     return NextResponse.json({ ok: true })
   }
