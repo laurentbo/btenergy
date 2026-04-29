@@ -46,13 +46,15 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Impossible de générer le lien." }, { status: 500 })
   }
 
-  // 4. Envoie via Resend
+  // 4. Construit le lien directement avec token_hash (contourne la liste blanche Supabase)
+  const callbackUrl = `${SITE}/auth/callback?token_hash=${data.properties.hashed_token}&type=magiclink`
+
   const prenom = profile.prenom ?? "vous"
   const { error: sendError } = await resend.emails.send({
     from: FROM,
     to: email.toLowerCase(),
     subject: "🔗 Votre lien de connexion — BTENERGY",
-    html: magicLinkEmail(prenom, data.properties.action_link),
+    html: magicLinkEmail(prenom, callbackUrl),
   })
 
   if (sendError) {
