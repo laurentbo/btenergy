@@ -14,7 +14,7 @@ export default function EmailPreview() {
     <div style={{ background: "#111", minHeight: "100vh", padding: "32px 24px" }}>
       <div style={{ maxWidth: 640, margin: "0 auto" }}>
         <h1 style={{ color: "#fff", fontFamily: "sans-serif", marginBottom: 8 }}>Email Preview</h1>
-        <p style={{ color: "#888", fontFamily: "sans-serif", marginBottom: 40, fontSize: 14 }}>Maquettes des emails BTENERGY</p>
+        <p style={{ color: "#888", fontFamily: "sans-serif", marginBottom: 40, fontSize: 14 }}>Maquettes des emails BACKToENERGY</p>
         {emails.map(({ label, html }) => (
           <div key={label} style={{ marginBottom: 64 }}>
             <p style={{ color: "#4cc9f0", fontFamily: "sans-serif", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", fontSize: 12, marginBottom: 12 }}>

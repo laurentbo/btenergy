@@ -47,6 +47,9 @@ export async function POST(request: NextRequest) {
       .maybeSingle()
 
     if (!profile || profile.role !== "collaborateur") {
+      if (profile?.role === "coach" || profile?.role === "admin") {
+        return NextResponse.json({ error: "coach_redirect" }, { status: 403 })
+      }
       return NextResponse.json({ error: "Aucun compte trouvé pour cet email." }, { status: 404 })
     }
 
@@ -60,7 +63,7 @@ export async function POST(request: NextRequest) {
   const { error: sendError } = await resend.emails.send({
     from: FROM,
     to: emailLower,
-    subject: "🔗 Votre lien de connexion — BTENERGY",
+    subject: "🔗 Votre lien de connexion — BACKToENERGY",
     html: magicLinkEmail(prenom, callbackUrl),
   })
 

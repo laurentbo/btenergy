@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
   await resend.emails.send({
     from: FROM,
     to: email.toLowerCase(),
-    subject: "🔑 Réinitialisation de votre mot de passe — BTENERGY",
+    subject: "🔑 Réinitialisation de votre mot de passe — BACKToENERGY",
     html: resetPasswordEmail(profile.prenom ?? "", data.properties.action_link),
   })
 

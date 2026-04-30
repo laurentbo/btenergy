@@ -66,6 +66,10 @@ function LoginContent() {
     })
 
     const { error: err } = await res.json()
+    if (err === "coach_redirect") {
+      window.location.href = "/login/coach"
+      return
+    }
     if (err) { setError(err); setLoading(false); return }
 
     setStep("sent")
@@ -82,8 +86,7 @@ function LoginContent() {
             style={{ background: "linear-gradient(135deg, var(--green-dim), var(--blue-dim))", color: "#070d0f" }}>
             B
           </div>
-          <h1 className="text-2xl font-black gradient-text">BTENERGY</h1>
-          <p className="text-sm mt-1" style={{ color: "var(--text-secondary)" }}>Back to Energy</p>
+          <h1 className="text-2xl font-black gradient-text">BACKToENERGY</h1>
         </div>
 
         {step === "form" ? (

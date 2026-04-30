@@ -101,7 +101,7 @@ export default function CoachDashboard() {
             <div className="w-7 h-7 rounded-lg flex items-center justify-center text-sm font-black"
               style={{ background: "linear-gradient(135deg, var(--green-dim), var(--blue-dim))", color: "#070d0f" }}>B</div>
             <div>
-              <span className="font-black tracking-wider text-sm gradient-text">BTENERGY</span>
+              <span className="font-black tracking-wider text-sm gradient-text">BACKToENERGY</span>
               <span className="text-xs ml-2" style={{ color: "var(--blue)" }}>Coach</span>
             </div>
           </div>

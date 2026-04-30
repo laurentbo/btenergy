@@ -269,8 +269,7 @@ export default function Dashboard() {
               style={{ background: "linear-gradient(135deg, var(--green-dim), var(--blue-dim))", color: "#070d0f" }}>
               B
             </div>
-            <h1 className="text-2xl font-black gradient-text mb-1">BTENERGY</h1>
-            <p className="text-sm" style={{ color: "var(--text-secondary)" }}>Programme 21 Jours · Détox & Énergie</p>
+            <h1 className="text-2xl font-black gradient-text mb-1">BACKToENERGY</h1>
           </div>
           <div className="card p-5 mb-4">
             <h2 className="font-bold text-base mb-1" style={{ color: "var(--text-primary)" }}>Bienvenue 👋</h2>
@@ -300,8 +299,7 @@ export default function Dashboard() {
             style={{ background: "linear-gradient(135deg, var(--green-dim), var(--blue-dim))", color: "#050e1a" }}>
             B
           </div>
-          <h1 className="text-3xl font-black gradient-text mb-2">BTENERGY</h1>
-          <p className="text-sm mb-8" style={{ color: "var(--text-secondary)" }}>Programme 21 Jours · Détox & Énergie</p>
+          <h1 className="text-3xl font-black gradient-text mb-8">BACKToENERGY</h1>
 
           <div className="card p-6 mb-6 text-left"
             style={{ border: "1px solid rgba(45,212,160,0.25)", background: "rgba(4,10,22,0.72)" }}>
@@ -354,7 +352,7 @@ export default function Dashboard() {
               style={{ background: "linear-gradient(135deg, var(--green-dim), var(--blue-dim))", color: "#050e1a" }}>
               B
             </div>
-            <span className="font-black tracking-widest text-sm gradient-text" style={{ letterSpacing: "0.12em" }}>BTENERGY</span>
+            <span className="font-black tracking-widest text-sm gradient-text" style={{ letterSpacing: "0.12em" }}>BACKToENERGY</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="tag" style={{ borderColor: `${weekInfo.color}40`, color: weekInfo.color }}>
