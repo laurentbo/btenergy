@@ -13,6 +13,7 @@ import VitalityScore from "@/components/VitalityScore"
 import EnergyCheckin from "@/components/EnergyCheckin"
 import { createClient } from "@/lib/supabase/client"
 import { useAuth } from "@/lib/auth-context"
+import WelcomeScreen from "@/components/WelcomeScreen"
 
 // ─── Labels des moments ────────────────────────────────────────────────────────
 const MEAL_META: Record<string, { icon: string; label: string; horaire: string }> = {
@@ -35,6 +36,7 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState<Tab>("programme")
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [showProfileSetup, setShowProfileSetup] = useState(false)
+  const [showWelcome, setShowWelcome] = useState(false)
   // NOUVEAU — onboarding J1 (affiché une seule fois le premier jour)
   const [showJ1Onboarding, setShowJ1Onboarding] = useState(false)
   const [override, setOverride] = useState<Override | null>(null)
@@ -86,7 +88,7 @@ export default function Dashboard() {
       if (user) {
         const { data: dbProfile } = await supabase
           .from("profiles")
-          .select("prenom, genre, age, taille, poids, program_start")
+          .select("prenom, genre, age, taille, poids, program_start, welcome_seen_at")
           .eq("id", user.id)
           .maybeSingle()
 
@@ -113,6 +115,9 @@ export default function Dashboard() {
           const merged = { ...activeProfile, start_date: startDate ?? activeProfile.start_date }
           localStorage.setItem("btenergy_profile", JSON.stringify(merged))
           setProfile(merged)
+          if (!dbProfile?.welcome_seen_at) {
+            setShowWelcome(true)
+          }
         } else {
           setShowProfileSetup(true)
         }
@@ -259,6 +264,11 @@ export default function Dashboard() {
     )
   }
 
+  // ─── WELCOME SCREEN PREMIÈRE CONNEXION ──────────────────────────────────────
+  if (showWelcome) {
+    return <WelcomeScreen prenom={profile?.prenom ?? null} onDone={() => setShowWelcome(false)} />
+  }
+
   // ─── ONBOARDING PROFIL ────────────────────────────────────────────────────────
   if (showProfileSetup) {
     return (
@@ -269,7 +279,7 @@ export default function Dashboard() {
               style={{ background: "linear-gradient(135deg, var(--green-dim), var(--blue-dim))", color: "#070d0f" }}>
               B
             </div>
-            <h1 className="text-2xl font-black gradient-text mb-1">BACKToENERGY</h1>
+            <h1 className="text-2xl font-black gradient-text mb-1">BacktoEnergy</h1>
           </div>
           <div className="card p-5 mb-4">
             <h2 className="font-bold text-base mb-1" style={{ color: "var(--text-primary)" }}>Bienvenue 👋</h2>
@@ -299,7 +309,7 @@ export default function Dashboard() {
             style={{ background: "linear-gradient(135deg, var(--green-dim), var(--blue-dim))", color: "#050e1a" }}>
             B
           </div>
-          <h1 className="text-3xl font-black gradient-text mb-8">BACKToENERGY</h1>
+          <h1 className="text-3xl font-black gradient-text mb-8">BacktoEnergy</h1>
 
           <div className="card p-6 mb-6 text-left"
             style={{ border: "1px solid rgba(45,212,160,0.25)", background: "rgba(4,10,22,0.72)" }}>
@@ -352,7 +362,7 @@ export default function Dashboard() {
               style={{ background: "linear-gradient(135deg, var(--green-dim), var(--blue-dim))", color: "#050e1a" }}>
               B
             </div>
-            <span className="font-black text-sm gradient-text">BACKToENERGY</span>
+            <span className="font-black text-sm gradient-text">BacktoEnergy</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="tag" style={{ borderColor: `${weekInfo.color}40`, color: weekInfo.color }}>

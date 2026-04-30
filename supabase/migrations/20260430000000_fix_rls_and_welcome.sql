@@ -1,0 +1,13 @@
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS welcome_seen_at timestamptz;
+ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE journal_entries ENABLE ROW LEVEL SECURITY;
+ALTER TABLE meal_logs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE weight_entries ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "profiles_select_own" ON profiles;
+CREATE POLICY "profiles_select_own" ON profiles FOR ALL USING (id = auth.uid());
+DROP POLICY IF EXISTS "journal_select_own" ON journal_entries;
+CREATE POLICY "journal_select_own" ON journal_entries FOR ALL USING (user_id = auth.uid());
+DROP POLICY IF EXISTS "meal_logs_select_own" ON meal_logs;
+CREATE POLICY "meal_logs_select_own" ON meal_logs FOR ALL USING (user_id = auth.uid());
+DROP POLICY IF EXISTS "weight_select_own" ON weight_entries;
+CREATE POLICY "weight_select_own" ON weight_entries FOR ALL USING (user_id = auth.uid());
