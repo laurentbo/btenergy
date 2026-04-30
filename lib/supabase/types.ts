@@ -48,6 +48,45 @@ export type Database = {
         Insert: Omit<Database["public"]["Tables"]["journal_entries"]["Row"], "id" | "created_at">
         Update: Partial<Database["public"]["Tables"]["journal_entries"]["Insert"]>
       }
+      meal_logs: {
+        Row: {
+          id: string
+          user_id: string
+          day: number
+          moment: string
+          items: string[]
+          note: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: Omit<Database["public"]["Tables"]["meal_logs"]["Row"], "id" | "created_at" | "updated_at">
+        Update: Partial<Database["public"]["Tables"]["meal_logs"]["Insert"]>
+      }
+      email_logs: {
+        Row: {
+          id: string
+          user_id: string
+          type: string
+          sent_at: string
+        }
+        Insert: Omit<Database["public"]["Tables"]["email_logs"]["Row"], "id" | "sent_at">
+        Update: Partial<Database["public"]["Tables"]["email_logs"]["Insert"]>
+      }
+      program_overrides: {
+        Row: {
+          id: string
+          collaborateur_id: string
+          coach_id: string | null
+          day: number
+          coach_note: string | null
+          tip_override: string | null
+          intention_override: string | null
+          meal_overrides: Record<string, string[]> | null
+          updated_at: string
+        }
+        Insert: Omit<Database["public"]["Tables"]["program_overrides"]["Row"], "id" | "updated_at">
+        Update: Partial<Database["public"]["Tables"]["program_overrides"]["Insert"]>
+      }
     }
     Views: Record<string, never>
     Functions: Record<string, never>

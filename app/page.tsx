@@ -1,6 +1,6 @@
 "use client"
 import { useState, useEffect } from "react"
-import { PROGRAM, WEEK_THEMES, calcIMC, imcLabel, calcCurrentDay, type UserProfile, type Meal } from "@/data/program"
+import { PROGRAM, WEEK_THEMES, calcIMC, imcLabel, calcCurrentDay, calcRawDay, type UserProfile, type Meal } from "@/data/program"
 import MealCard from "@/components/MealCard"
 import RitualCard from "@/components/RitualCard"
 import JournalForm from "@/components/JournalForm"
@@ -46,7 +46,8 @@ export default function Dashboard() {
   const [openMoments, setOpenMoments] = useState<Set<string>>(new Set(["matin"]))
   // NOUVEAU — tracker d'hydratation partagé hero ↔ journal
   const [hydrationLiters, setHydrationLiters] = useState<number>(0)
-  const [energyScore] = useState<number>(72)
+  const [vitalityScore, setVitalityScore] = useState<number>(0)
+  const [vitalityTrend, setVitalityTrend] = useState<number>(0)
 
   const supabase = createClient()
   const { signOut } = useAuth()
@@ -115,6 +116,24 @@ export default function Dashboard() {
         } else {
           setShowProfileSetup(true)
         }
+
+        // Vitality score depuis les deux dernières entrées journal
+        const { data: recentEntries } = await supabase
+          .from("journal_entries")
+          .select("energie,humeur,hydratation,sommeil")
+          .eq("user_id", user.id)
+          .order("day", { ascending: false })
+          .limit(2)
+        if (recentEntries?.length) {
+          const latest = recentEntries[0]
+          const avg = (latest.energie + latest.humeur + latest.hydratation + latest.sommeil) / 4
+          setVitalityScore(Math.round(avg * 10))
+          if (recentEntries.length >= 2) {
+            const prev = recentEntries[1]
+            const prevAvg = (prev.energie + prev.humeur + prev.hydratation + prev.sommeil) / 4
+            setVitalityTrend(avg > prevAvg ? 1 : avg < prevAvg ? -1 : 0)
+          }
+        }
       } else {
         const saved = localStorage.getItem("btenergy_profile")
         const localProfile: UserProfile | null = saved ? JSON.parse(saved) : null
@@ -132,13 +151,21 @@ export default function Dashboard() {
         setShowJ1Onboarding(true)
       }
 
-      // Email du jour (fire-and-forget)
-      if (computedDay >= 1 && computedDay <= 21) {
+      // Email du jour — dédoublonnage client-side avant même l'appel API
+      const rawDay = calcRawDay(
+        (() => { try { return JSON.parse(localStorage.getItem("btenergy_profile") ?? "{}").start_date } catch { return undefined } })()
+      )
+      const emailDay = Math.min(22, rawDay)
+      const emailSentKey = `btenergy_email_sent_${emailDay}`
+      if (!localStorage.getItem(emailSentKey) && emailDay >= 1 && emailDay <= 22) {
         fetch("/api/send-step-email", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ day: computedDay }),
-        }).catch(() => {})
+          body: JSON.stringify({ day: emailDay }),
+        })
+          .then(r => r.json())
+          .then(d => { if (d.ok) localStorage.setItem(emailSentKey, "1") })
+          .catch(() => {})
       }
 
       // NOUVEAU — Restaure l'hydratation du jour depuis localStorage
@@ -528,8 +555,8 @@ export default function Dashboard() {
             )}
 
             {/* Score de vitalité + Check-in énergie */}
-            <VitalityScore score={energyScore} trend={0} />
-            <EnergyCheckin currentDay={viewDay} onCheckin={() => {}} />
+            <VitalityScore score={vitalityScore} trend={vitalityTrend} />
+            <EnergyCheckin currentDay={viewDay} onCheckin={v => setVitalityTrend(v >= 4 ? 1 : v <= 2 ? -1 : 0)} />
 
             {/* MODIFIÉ — Repas en accordéon */}
             <div className="space-y-2">

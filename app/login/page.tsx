@@ -1,12 +1,12 @@
 "use client"
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { createClient } from "@/lib/supabase/client"
 
 type Step = "form" | "sent"
 
-export default function LoginCollaborateur() {
+function LoginContent() {
   const [email, setEmail]     = useState("")
   const [step, setStep]       = useState<Step>("form")
   const [error, setError]     = useState("")
@@ -149,5 +149,13 @@ export default function LoginCollaborateur() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function LoginCollaborateur() {
+  return (
+    <Suspense>
+      <LoginContent />
+    </Suspense>
   )
 }

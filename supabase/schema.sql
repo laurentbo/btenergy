@@ -182,3 +182,41 @@ alter table email_logs enable row level security;
 -- Seul le service_role écrit dans cette table (API routes)
 create policy "email_logs_service_only" on email_logs
   for all using (false);
+
+-- ──────────────────────────────────────────────────────────────
+-- program_overrides : personnalisations du coach par collaborateur/jour
+-- ──────────────────────────────────────────────────────────────
+create table program_overrides (
+  id                 uuid primary key default uuid_generate_v4(),
+  collaborateur_id   uuid references profiles(id) on delete cascade,
+  coach_id           uuid references auth.users(id) on delete set null,
+  day                int not null check (day between 1 and 21),
+  coach_note         text,
+  tip_override       text,
+  intention_override text,
+  meal_overrides     jsonb,
+  updated_at         timestamptz default now(),
+  unique(collaborateur_id, day)
+);
+
+alter table program_overrides enable row level security;
+
+-- Collaborateur : lecture de ses propres overrides
+create policy "overrides_collab_read" on program_overrides
+  for select using (auth.uid() = collaborateur_id);
+
+-- Coach : lecture de ses overrides (via coach_id)
+create policy "overrides_coach_read" on program_overrides
+  for select using (coach_id = auth.uid());
+
+-- Coach : insertion (doit poser son propre coach_id)
+create policy "overrides_coach_insert" on program_overrides
+  for insert with check (coach_id = auth.uid());
+
+-- Coach : mise à jour de ses propres overrides
+create policy "overrides_coach_update" on program_overrides
+  for update using (coach_id = auth.uid());
+
+-- Coach : suppression de ses propres overrides
+create policy "overrides_coach_delete" on program_overrides
+  for delete using (coach_id = auth.uid());

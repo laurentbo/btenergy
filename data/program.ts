@@ -34,6 +34,17 @@ export function calcCurrentDay(startDate: string | null | undefined): number {
   return Math.min(21, Math.max(1, diff + 1))
 }
 
+// Comme calcCurrentDay mais sans plafonner à 21 — utilisé pour l'envoi de l'email post-cure (j22)
+export function calcRawDay(startDate: string | null | undefined): number {
+  if (!startDate) return 1
+  const start = new Date(startDate)
+  const today = new Date()
+  start.setHours(0, 0, 0, 0)
+  today.setHours(0, 0, 0, 0)
+  const diff = Math.floor((today.getTime() - start.getTime()) / (1000 * 60 * 60 * 24))
+  return Math.max(1, diff + 1)
+}
+
 export type PrincipalKey = {
   icon: string
   title: string

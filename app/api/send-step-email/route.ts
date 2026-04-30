@@ -9,7 +9,7 @@ const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? "https://backtoenergy.fr"
 export async function POST(request: NextRequest) {
   const { day } = await request.json()
 
-  if (!day || day < 1 || day > 21) {
+  if (!day || day < 1 || day > 22) {
     return NextResponse.json({ error: "Jour invalide." }, { status: 400 })
   }
 
