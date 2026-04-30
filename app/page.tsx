@@ -352,7 +352,7 @@ export default function Dashboard() {
               style={{ background: "linear-gradient(135deg, var(--green-dim), var(--blue-dim))", color: "#050e1a" }}>
               B
             </div>
-            <span className="font-black tracking-widest text-sm gradient-text" style={{ letterSpacing: "0.12em" }}>BACKToENERGY</span>
+            <span className="font-black text-sm gradient-text">BACKToENERGY</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="tag" style={{ borderColor: `${weekInfo.color}40`, color: weekInfo.color }}>
@@ -363,7 +363,7 @@ export default function Dashboard() {
               onClick={() => setActiveTab("profil")}
               className="flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold transition-all"
               style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.75)" }}>
-              {prenom ?? "Profil"} ↗
+              Moi ↗
             </button>
             {/* Bouton Déco RETIRÉ du header — se connecte depuis Profil uniquement */}
           </div>
