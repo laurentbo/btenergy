@@ -1,6 +1,6 @@
 import {
   magicLinkEmail, welcomeEmail, resetPasswordEmail,
-  stepEmail, midpointEmail, postCureEmail,
+  stepEmail, midpointEmail, postCureEmail, invitationEmail,
 } from "@/lib/email-templates"
 import {
   viewLogin, viewOnboarding, viewWelcomeScreen, viewJ1Onboarding,
@@ -11,6 +11,7 @@ import {
 const SITE = "https://backtoenergy.fr"
 
 const EMAILS = [
+  { label: "Invitation (nouveau)",      html: invitationEmail("Laurent", `${SITE}/auth/callback?token_hash=xxx&type=magiclink`) },
   { label: "Lien de connexion",        html: magicLinkEmail("Laurent", `${SITE}/auth/callback?token_hash=xxx&type=magiclink`) },
   { label: "Bienvenue",               html: welcomeEmail("Laurent", SITE) },
   { label: "Email Jour 1",            html: stepEmail("Laurent", 1, SITE) },

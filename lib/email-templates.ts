@@ -123,6 +123,33 @@ export function welcomeEmail(prenom: string, appUrl: string): string {
   `) + footer() + CLOSE
 }
 
+// ─── INVITATION ─────────────────────────────────────────────────────────────
+
+export function invitationEmail(prenom: string | null, url: string): string {
+  const nom = prenom ? prenom.charAt(0).toUpperCase() + prenom.slice(1).toLowerCase() : null
+  const greeting = nom ? `Bonjour ${nom} 👋` : "Bonjour 👋"
+  return BASE + header() + card(`
+    <p style="margin:0 0 6px;font-size:13px;font-weight:600;letter-spacing:0.12em;color:#2dd4a0;text-transform:uppercase;">Votre accès est prêt</p>
+    <h1 style="margin:0 0 16px;font-size:24px;font-weight:900;color:#ffffff;line-height:1.2;">${greeting}</h1>
+    <p style="margin:0 0 20px;font-size:15px;color:rgba(255,255,255,0.65);line-height:1.7;">
+      Votre coach vous a ouvert un accès au programme <strong style="color:#ffffff;">Backtoenergy — 21 jours</strong>.<br>
+      Cliquez sur le bouton ci-dessous pour créer votre espace et démarrer votre parcours.
+    </p>
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:rgba(45,212,160,0.07);border:1px solid rgba(45,212,160,0.2);border-radius:14px;margin-bottom:24px;">
+      <tr><td style="padding:18px 20px;">
+        <p style="margin:0 0 8px;font-size:12px;font-weight:700;letter-spacing:0.1em;color:#2dd4a0;text-transform:uppercase;">Votre programme en 3 semaines</p>
+        <p style="margin:0 0 6px;font-size:13px;color:rgba(255,255,255,0.7);line-height:1.6;">🌅 <strong style="color:#ffffff;">Semaine 1 :</strong> Détox &amp; Purification</p>
+        <p style="margin:0 0 6px;font-size:13px;color:rgba(255,255,255,0.7);line-height:1.6;">⚡ <strong style="color:#ffffff;">Semaine 2 :</strong> Énergie &amp; Vitalité</p>
+        <p style="margin:0;font-size:13px;color:rgba(255,255,255,0.7);line-height:1.6;">🏔️ <strong style="color:#ffffff;">Semaine 3 :</strong> Ancrage &amp; Performance</p>
+      </td></tr>
+    </table>
+    ${btn(url, "Accéder à mon programme →")}
+    <p style="margin:24px 0 0;font-size:12px;color:rgba(255,255,255,0.35);text-align:center;">
+      Ce lien est valable <strong style="color:rgba(255,255,255,0.5);">1 heure</strong>. Si vous ne l'avez pas demandé, ignorez cet email.
+    </p>
+  `) + footer() + CLOSE
+}
+
 // ─── RESET PASSWORD ──────────────────────────────────────────────────────────
 
 export function resetPasswordEmail(prenom: string, url: string): string {

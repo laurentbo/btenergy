@@ -29,8 +29,10 @@ export default function CoachDashboard() {
   const [editing, setEditing]   = useState<CollabWithJournal | null>(null)
   const [mealLogs, setMealLogs] = useState<Record<string, MealLog[]>>({})
   const [logsLoading, setLogsLoading] = useState(false)
-  const [linkSending, setLinkSending] = useState<Record<string, boolean>>({})
-  const [linkSent, setLinkSent]       = useState<Record<string, boolean>>({})
+  const [linkSending, setLinkSending]   = useState<Record<string, boolean>>({})
+  const [linkSent, setLinkSent]         = useState<Record<string, boolean>>({})
+  const [inviteSending, setInviteSending] = useState<Record<string, boolean>>({})
+  const [inviteSent, setInviteSent]       = useState<Record<string, boolean>>({})
   const supabase = createClient()
 
   useEffect(() => {
@@ -88,6 +90,19 @@ export default function CoachDashboard() {
     setLinkSending(s => ({ ...s, [c.id]: false }))
     setLinkSent(s => ({ ...s, [c.id]: true }))
     setTimeout(() => setLinkSent(s => ({ ...s, [c.id]: false })), 3000)
+  }
+
+  const sendInvitation = async (c: CollabWithJournal) => {
+    if (!c.email) return
+    setInviteSending(s => ({ ...s, [c.id]: true }))
+    await fetch("/api/send-invitation", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: c.email }),
+    })
+    setInviteSending(s => ({ ...s, [c.id]: false }))
+    setInviteSent(s => ({ ...s, [c.id]: true }))
+    setTimeout(() => setInviteSent(s => ({ ...s, [c.id]: false })), 3000)
   }
 
   const signOut = async () => {
@@ -325,6 +340,19 @@ export default function CoachDashboard() {
                         </button>
                       </div>
                       <button
+                        onClick={e => { e.stopPropagation(); sendInvitation(c) }}
+                        disabled={inviteSending[c.id] || inviteSent[c.id]}
+                        className="w-full text-xs rounded-xl font-semibold transition-all mt-2"
+                        style={{
+                          padding: "8px",
+                          background: inviteSent[c.id] ? "rgba(45,212,160,0.12)" : "rgba(45,212,160,0.08)",
+                          border: `1px solid ${inviteSent[c.id] ? "rgba(45,212,160,0.35)" : "rgba(45,212,160,0.2)"}`,
+                          color: "var(--green)",
+                          opacity: inviteSending[c.id] ? 0.6 : 1,
+                        }}>
+                        {inviteSending[c.id] ? "Envoi en cours…" : inviteSent[c.id] ? "✓ Invitation envoyée" : "📨 Envoyer l'invitation"}
+                      </button>
+                      <button
                         onClick={e => { e.stopPropagation(); sendMagicLink(c) }}
                         disabled={linkSending[c.id] || linkSent[c.id]}
                         className="w-full text-xs rounded-xl font-semibold transition-all mt-2"
@@ -335,7 +363,7 @@ export default function CoachDashboard() {
                           color: linkSent[c.id] ? "var(--green)" : "var(--blue)",
                           opacity: linkSending[c.id] ? 0.6 : 1,
                         }}>
-                        {linkSending[c.id] ? "Envoi en cours…" : linkSent[c.id] ? "✓ Lien envoyé" : "✉️ Envoyer un lien de connexion"}
+                        {linkSending[c.id] ? "Envoi en cours…" : linkSent[c.id] ? "✓ Lien envoyé" : "🔗 Renvoyer un lien de connexion"}
                       </button>
                     </div>
                   )}
