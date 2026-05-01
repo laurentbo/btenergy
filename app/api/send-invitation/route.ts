@@ -23,40 +23,32 @@ export async function POST(request: NextRequest) {
   const db = admin()
   const emailLower = email.toLowerCase().trim()
 
+  const { data: profile } = await db
+    .from("profiles")
+    .select("role, prenom")
+    .eq("email", emailLower)
+    .maybeSingle()
+
+  if (!profile || profile.role !== "collaborateur") {
+    return NextResponse.json({ error: "Compte non trouvé." }, { status: 404 })
+  }
+
+  // Génère un lien de type "recovery" pour que le collaborateur définisse son mot de passe
   const { data, error } = await db.auth.admin.generateLink({
-    type: "magiclink",
+    type: "recovery",
     email: emailLower,
-    options: { redirectTo: `${SITE}/auth/callback` },
+    options: { redirectTo: `${SITE}/auth/callback?type=recovery` },
   })
 
-  if (error || !data?.properties?.hashed_token) {
+  if (error || !data?.properties?.action_link) {
     return NextResponse.json({ error: "Impossible de générer le lien." }, { status: 500 })
   }
-
-  const userId = data.user?.id
-  let prenom: string | null = null
-
-  if (userId) {
-    const { data: profile } = await db
-      .from("profiles")
-      .select("role, prenom")
-      .eq("id", userId)
-      .maybeSingle()
-
-    if (!profile || profile.role !== "collaborateur") {
-      return NextResponse.json({ error: "Compte non trouvé." }, { status: 404 })
-    }
-
-    prenom = profile.prenom ?? null
-  }
-
-  const callbackUrl = `${SITE}/auth/callback?token_hash=${data.properties.hashed_token}&type=magiclink`
 
   const { error: sendError } = await resend.emails.send({
     from: FROM,
     to: emailLower,
     subject: "🌱 Votre programme Backtoenergy vous attend",
-    html: invitationEmail(prenom, callbackUrl),
+    html: invitationEmail(profile.prenom ?? null, data.properties.action_link),
   })
 
   if (sendError) {

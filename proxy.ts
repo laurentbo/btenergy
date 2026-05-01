@@ -50,7 +50,7 @@ export async function proxy(request: NextRequest) {
 
   // Pages publiques : redirect vers / si déjà connecté
   if (pathname.startsWith("/login") || pathname.startsWith("/auth") || pathname.startsWith("/email-preview")) {
-    if (user) return NextResponse.redirect(new URL("/", request.url))
+    if (user && pathname !== "/auth/reset-password") return NextResponse.redirect(new URL("/", request.url))
     return supabaseResponse
   }
 

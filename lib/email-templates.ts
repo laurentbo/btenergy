@@ -143,7 +143,7 @@ export function invitationEmail(prenom: string | null, url: string): string {
         <p style="margin:0;font-size:13px;color:rgba(255,255,255,0.7);line-height:1.6;">🏔️ <strong style="color:#ffffff;">Semaine 3 :</strong> Ancrage &amp; Performance</p>
       </td></tr>
     </table>
-    ${btn(url, "Accéder à mon programme →")}
+    ${btn(url, "Définir mon mot de passe →")}
     <p style="margin:24px 0 0;font-size:12px;color:rgba(255,255,255,0.35);text-align:center;">
       Ce lien est valable <strong style="color:rgba(255,255,255,0.5);">1 heure</strong>. Si vous ne l'avez pas demandé, ignorez cet email.
     </p>
