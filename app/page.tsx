@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { PROGRAM, WEEK_THEMES, calcIMC, imcLabel, calcCurrentDay, calcRawDay, type UserProfile, type Meal } from "@/data/program"
 import MealCard from "@/components/MealCard"
 import RitualCard from "@/components/RitualCard"
@@ -53,7 +53,7 @@ export default function Dashboard() {
   const [vitalityScore, setVitalityScore] = useState<number>(0)
   const [vitalityTrend, setVitalityTrend] = useState<number>(0)
 
-  const supabase = createClient()
+  const supabase = useMemo(() => createClient(), [])
   const { signOut } = useAuth()
 
   // Déconnexion — accessible uniquement depuis l'onglet Profil désormais

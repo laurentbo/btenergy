@@ -31,8 +31,8 @@ export async function POST(request: NextRequest) {
   })
 
   if (error || !data?.properties?.hashed_token) {
-    // Email inconnu de Supabase Auth → message générique (sécurité)
-    return NextResponse.json({ error: "Aucun compte trouvé pour cet email." }, { status: 404 })
+    // Réponse identique qu'il y ait un compte ou non (évite l'énumération d'emails)
+    return NextResponse.json({ ok: true })
   }
 
   // 2. Vérifie le rôle via l'ID (fiable même si profiles.email n'est pas synchronisé)

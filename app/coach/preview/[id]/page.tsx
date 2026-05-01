@@ -21,6 +21,7 @@ type Override = {
 
 type JournalEntry = {
   id: string
+  day: number
   created_at: string
   energie: number
   humeur: number
@@ -64,10 +65,9 @@ export default function PreviewPage() {
   const day = PROGRAM[currentDay - 1]
   const weekInfo = WEEK_THEMES[day.week]
   const override = overrides.find(o => o.day === currentDay) ?? null
-  const completedDays = entries.map(e => {
-    const d = new Date(e.created_at)
-    return d.getDate() // approximation — à améliorer avec un champ day
-  }).filter((v, i, a) => a.indexOf(v) === i)
+  const completedDays = entries
+    .map(e => e.day)
+    .filter((v, i, a) => a.indexOf(v) === i)
 
   return (
     <div className="min-h-screen" style={{ background: "var(--bg-primary)" }}>
@@ -235,12 +235,12 @@ export default function PreviewPage() {
         {/* Progression */}
         {activeTab === "progression" && (
           <div className="space-y-4">
-            <Timeline21 totalDays={21} currentDay={collab?.current_day || 1} completedDays={[]} />
+            <Timeline21 totalDays={21} currentDay={currentDay} completedDays={completedDays} />
             <div className="space-y-3">
               {([1, 2, 3] as const).map(w => {
                 const wInfo = WEEK_THEMES[w]
                 const wDays = PROGRAM.filter(d => d.week === w)
-                const done = wDays.filter(d => d.day <= (collab?.current_day || 0)).length
+                const done = wDays.filter(d => completedDays.includes(d.day)).length
                 return (
                   <div key={w} className="card p-4">
                     <div className="flex items-center justify-between mb-2">

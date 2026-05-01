@@ -1,5 +1,5 @@
 "use client"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
 
 type JournalEntry = {
@@ -32,6 +32,10 @@ export default function JournalForm({
   const [status, setStatus] = useState<"idle" | "saving" | "saved" | "error">("idle")
   const [errorMsg, setErrorMsg] = useState<string>("")
   const supabase = createClient()
+
+  useEffect(() => {
+    setValues(v => ({ ...v, hydratation: Math.round((hydrationLiters / 3) * 10) || 5 }))
+  }, [hydrationLiters])
 
   const handleSlider = (key: keyof Omit<JournalEntry, "note">, val: number) => {
     setValues(v => ({ ...v, [key]: val }))

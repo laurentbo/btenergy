@@ -6,6 +6,7 @@ import ProgramEditor from "@/components/ProgramEditor"
 import { createClient } from "@/lib/supabase/client"
 
 type Profile = Database["public"]["Tables"]["profiles"]["Row"]
+type CoachProfile = Pick<Profile, "id" | "prenom" | "role">
 type JournalEntry = Database["public"]["Tables"]["journal_entries"]["Row"]
 
 type CollabWithJournal = Profile & {
@@ -22,7 +23,7 @@ const MOMENT_LABEL: Record<string, string> = {
 export default function CoachDashboard() {
   const [collabs, setCollabs] = useState<CollabWithJournal[]>([])
   const [loading, setLoading] = useState(true)
-  const [coachProfile, setCoachProfile] = useState<Profile | null>(null)
+  const [coachProfile, setCoachProfile] = useState<CoachProfile | null>(null)
   const [filter, setFilter]   = useState<"tous" | "actifs" | "inactifs">("tous")
   const [selected, setSelected] = useState<CollabWithJournal | null>(null)
   const [editing, setEditing]   = useState<CollabWithJournal | null>(null)
@@ -38,7 +39,7 @@ export default function CoachDashboard() {
       const meRes = await fetch("/api/me")
       if (!meRes.ok) return
       const me = await meRes.json()
-      setCoachProfile({ id: me.id, prenom: me.prenom, role: me.role } as any)
+      setCoachProfile({ id: me.id, prenom: me.prenom, role: me.role })
 
       // Collaborateurs via API sécurisée (service_role, bypass RLS)
       const collabRes = await fetch("/api/collabs")

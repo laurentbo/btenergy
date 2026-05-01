@@ -17,6 +17,9 @@ function header() {
   return `
   <tr><td align="center" style="padding-bottom:28px;">
     <table cellpadding="0" cellspacing="0">
+      <tr><td align="center" style="padding-bottom:10px;">
+        <div style="width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,#2dd4a0,#4cc9f0);display:inline-block;text-align:center;line-height:48px;font-size:22px;font-weight:900;color:#070d0f;">B</div>
+      </td></tr>
       <tr><td align="center">
         <span style="font-size:26px;font-weight:900;background:linear-gradient(135deg,#2dd4a0,#4cc9f0);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:0.01em;">Backtoenergy</span>
       </td></tr>
@@ -59,13 +62,12 @@ function btn(url: string, label: string) {
 export function magicLinkEmail(prenom: string, url: string): string {
   const nom = prenom.charAt(0).toUpperCase() + prenom.slice(1).toLowerCase()
   return BASE + header() + card(`
-    <p style="margin:0 0 6px;font-size:13px;font-weight:600;letter-spacing:0.12em;color:#4cc9f0;text-transform:uppercase;">Connexion sécurisée</p>
-    <h1 style="margin:0 0 16px;font-size:24px;font-weight:900;color:#ffffff;line-height:1.2;">Bon jour ${nom} 👋</h1>
+    <h1 style="margin:0 0 16px;font-size:24px;font-weight:900;color:#ffffff;line-height:1.2;">Bonjour ${nom} 🌿</h1>
     <p style="margin:0 0 24px;font-size:15px;color:rgba(255,255,255,0.65);line-height:1.7;">
       Appuyez sur ce bouton pour accéder à votre programme <strong style="color:#ffffff;">Backtoenergy</strong>.<br>
       Ce lien est valable <strong style="color:#ffffff;">1 heure</strong> et ne peut être utilisé qu'une seule fois.
     </p>
-    ${btn(url, "Accéder à mon programme")}
+    ${btn(url, "Accéder à mon programme →")}
     <p style="margin:24px 0 0;font-size:12px;color:rgba(255,255,255,0.35);text-align:center;">
       Si vous n'avez pas demandé ce lien, ignorez cet email.
     </p>
@@ -129,7 +131,7 @@ export function resetPasswordEmail(prenom: string, url: string): string {
     <p style="margin:0 0 6px;font-size:13px;font-weight:600;letter-spacing:0.12em;color:#f87171;text-transform:uppercase;">Sécurité</p>
     <h1 style="margin:0 0 16px;font-size:24px;font-weight:900;color:#ffffff;line-height:1.2;">Réinitialisation<br>du mot de passe</h1>
     <p style="margin:0 0 24px;font-size:15px;color:rgba(255,255,255,0.65);line-height:1.7;">
-      Bon jour ${nom},<br><br>
+      Bonjour ${nom},<br><br>
       Une demande de réinitialisation de mot de passe a été effectuée pour votre compte coach Backtoenergy.<br>
       Ce lien est valable <strong style="color:#ffffff;">1 heure</strong>.
     </p>

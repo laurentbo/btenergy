@@ -17,7 +17,7 @@ h1{color:#fff;margin-bottom:8px}p{color:#888;margin-bottom:40px;font-size:14px}
 .frame{border:1px solid rgba(76,201,240,.2);border-radius:12px;overflow:hidden;margin-bottom:64px}
 iframe{width:100%;height:620px;border:none;display:block}
 </style></head><body>
-<h1>Email Preview — BTENERGY</h1>
+<h1>Email Preview — Backtoenergy</h1>
 <p>6 templates · données de test</p>
 ${emails.map(e => `<div class="label">${e.name}</div><div class="frame"><iframe src="${e.name}.html"></iframe></div>`).join("")}
 </body></html>`
