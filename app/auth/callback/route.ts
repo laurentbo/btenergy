@@ -44,10 +44,21 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
-  // Mail de bienvenue (fire-and-forget, ne bloque pas)
+  // Mail de bienvenue + détection nouvel utilisateur (fire-and-forget, ne bloque pas)
+  let isNewUser = false
   try {
     const { data: { user } } = await supabase.auth.getUser()
     if (user) {
+      // Vérifie si l'utilisateur a déjà vu l'écran de bienvenue (welcome_seen_at)
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("welcome_seen_at")
+        .eq("id", user.id)
+        .maybeSingle()
+
+      // Nouvel utilisateur = n'a jamais vu le welcome screen
+      isNewUser = !profile?.welcome_seen_at
+
       fetch(`${process.env.NEXT_PUBLIC_SITE_URL ?? "https://backtoenergy.fr"}/api/auth/welcome`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -57,7 +68,11 @@ export async function GET(request: NextRequest) {
   } catch {}
 
   // Destination finale
-  const destination = type === "recovery" ? "/auth/reset-password" : "/"
+  const destination = type === "recovery"
+    ? "/auth/reset-password"
+    : isNewUser
+    ? "/onboarding"
+    : "/"
   const response = NextResponse.redirect(new URL(destination, request.url))
 
   // Pose les cookies de session sur la réponse HTTP (visible par le proxy dès le prochain request)

@@ -1,4 +1,4 @@
 import { Resend } from "resend"
 
 export const resend = new Resend(process.env.RESEND_API_KEY)
-export const FROM = "BACKToENERGY <programme@backtoenergy.fr>"
+export const FROM = "Backtoenergy <programme@backtoenergy.fr>"

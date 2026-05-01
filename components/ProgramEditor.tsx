@@ -9,6 +9,8 @@ type Override = {
   tip_override: string
   intention_override: string
   meal_overrides: Record<string, string[]>
+  ritual_matin_override: string
+  ritual_soir_override: string
 }
 
 type Props = {
@@ -50,6 +52,8 @@ export default function ProgramEditor({ collaborateurId, collaborateurPrenom, co
     tip_override: "",
     intention_override: "",
     meal_overrides: {},
+    ritual_matin_override: "",
+    ritual_soir_override: "",
   }
 
   const update = (key: keyof Override, val: string | Record<string, string[]>) => {
@@ -68,14 +72,16 @@ export default function ProgramEditor({ collaborateurId, collaborateurPrenom, co
   const handleSave = async () => {
     setSaving(true)
     const payload = {
-      coach_id:           coachId,
-      collaborateur_id:   collaborateurId,
-      day:                selectedDay,
-      coach_note:         current.coach_note || null,
-      tip_override:       current.tip_override || null,
-      intention_override: current.intention_override || null,
-      meal_overrides:     Object.keys(current.meal_overrides).length ? current.meal_overrides : null,
-      updated_at:         new Date().toISOString(),
+      coach_id:               coachId,
+      collaborateur_id:       collaborateurId,
+      day:                    selectedDay,
+      coach_note:             current.coach_note || null,
+      tip_override:           current.tip_override || null,
+      intention_override:     current.intention_override || null,
+      meal_overrides:         Object.keys(current.meal_overrides).length ? current.meal_overrides : null,
+      ritual_matin_override:  current.ritual_matin_override || null,
+      ritual_soir_override:   current.ritual_soir_override || null,
+      updated_at:             new Date().toISOString(),
     }
     await supabase.from("program_overrides").upsert(payload, { onConflict: "collaborateur_id,day" })
     setSaving(false)
@@ -85,7 +91,8 @@ export default function ProgramEditor({ collaborateurId, collaborateurPrenom, co
 
   const hasOverride = (d: number) => !!overrides[d] && (
     overrides[d].coach_note || overrides[d].tip_override ||
-    overrides[d].intention_override || Object.keys(overrides[d].meal_overrides ?? {}).length > 0
+    overrides[d].intention_override || Object.keys(overrides[d].meal_overrides ?? {}).length > 0 ||
+    overrides[d].ritual_matin_override || overrides[d].ritual_soir_override
   )
 
   return (
@@ -196,6 +203,45 @@ export default function ProgramEditor({ collaborateurId, collaborateurPrenom, co
                   </div>
                 )
               })}
+            </div>
+          </div>
+
+          {/* Rituels overrides */}
+          <div>
+            <label className="block text-xs uppercase tracking-widest mb-3" style={{ color: "var(--text-muted)" }}>
+              🌅 Rituels du jour
+            </label>
+            <div className="space-y-3">
+              <div className="card p-3">
+                <p className="text-xs font-semibold mb-1.5" style={{ color: "#f59e0b" }}>
+                  🌅 Rituel matin
+                </p>
+                <p className="text-xs mb-2 italic" style={{ color: "var(--text-muted)" }}>
+                  Par défaut : {day.ritual.matin}
+                </p>
+                <input type="text"
+                  value={current.ritual_matin_override}
+                  onChange={e => update("ritual_matin_override", e.target.value)}
+                  placeholder="Laisser vide = rituel par défaut"
+                  className="w-full rounded-xl px-3 py-2.5 text-xs outline-none"
+                  style={{ background: "var(--bg-secondary)", border: "1px solid var(--border)", color: "var(--text-primary)" }}
+                />
+              </div>
+              <div className="card p-3">
+                <p className="text-xs font-semibold mb-1.5" style={{ color: "#a78bfa" }}>
+                  🌙 Rituel soir
+                </p>
+                <p className="text-xs mb-2 italic" style={{ color: "var(--text-muted)" }}>
+                  Par défaut : {day.ritual.soir}
+                </p>
+                <input type="text"
+                  value={current.ritual_soir_override}
+                  onChange={e => update("ritual_soir_override", e.target.value)}
+                  placeholder="Laisser vide = rituel par défaut"
+                  className="w-full rounded-xl px-3 py-2.5 text-xs outline-none"
+                  style={{ background: "var(--bg-secondary)", border: "1px solid var(--border)", color: "var(--text-primary)" }}
+                />
+              </div>
             </div>
           </div>
 

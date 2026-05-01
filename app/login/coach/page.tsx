@@ -43,7 +43,7 @@ export default function LoginCoach() {
             style={{ background: "linear-gradient(135deg, var(--green-dim), var(--blue-dim))", color: "#070d0f" }}>
             B
           </div>
-          <h1 className="text-2xl font-black gradient-text">BACKToENERGY</h1>
+          <h1 className="text-2xl font-black gradient-text">Backtoenergy</h1>
           <p className="text-sm mt-1" style={{ color: "var(--blue)" }}>Espace coach</p>
         </div>
 

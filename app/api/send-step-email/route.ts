@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
     const { error: sendError } = await resend.emails.send({
       from: FROM,
       to: user.email!,
-      subject: "Félicitations — BACKToENERGY complété 🎉",
+      subject: "Félicitations — Backtoenergy complété 🎉",
       html: postCureEmail(prenom, SITE),
     })
 
@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
     const { error: stepErr } = await resend.emails.send({
       from: FROM,
       to: user.email!,
-      subject: `Jour ${day} · Programme BACKToENERGY`,
+      subject: `Jour ${day} · Programme Backtoenergy`,
       html: stepEmail(prenom, day, SITE),
     })
 
@@ -96,7 +96,7 @@ export async function POST(request: NextRequest) {
   const { error: sendError } = await resend.emails.send({
     from: FROM,
     to: user.email!,
-    subject: `Jour ${day} · Programme BACKToENERGY`,
+    subject: `Jour ${day} · Programme Backtoenergy`,
     html: stepEmail(prenom, day, SITE),
   })
 

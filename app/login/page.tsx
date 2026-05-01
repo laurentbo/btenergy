@@ -86,7 +86,7 @@ function LoginContent() {
             style={{ background: "linear-gradient(135deg, var(--green-dim), var(--blue-dim))", color: "#070d0f" }}>
             B
           </div>
-          <h1 className="text-2xl font-black gradient-text">BACKToENERGY</h1>
+          <h1 className="text-2xl font-black gradient-text">Backtoenergy</h1>
         </div>
 
         {step === "form" ? (

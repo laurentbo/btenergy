@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     await resend.emails.send({
       from: FROM,
       to: email,
-      subject: "🌱 Bienvenue dans votre programme 21 Jours — BACKToENERGY",
+      subject: "🌱 Bienvenue dans votre programme 21 Jours — Backtoenergy",
       html: welcomeEmail(prenom, SITE),
     })
   }

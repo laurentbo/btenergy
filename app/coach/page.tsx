@@ -28,6 +28,8 @@ export default function CoachDashboard() {
   const [editing, setEditing]   = useState<CollabWithJournal | null>(null)
   const [mealLogs, setMealLogs] = useState<Record<string, MealLog[]>>({})
   const [logsLoading, setLogsLoading] = useState(false)
+  const [linkSending, setLinkSending] = useState<Record<string, boolean>>({})
+  const [linkSent, setLinkSent]       = useState<Record<string, boolean>>({})
   const supabase = createClient()
 
   useEffect(() => {
@@ -74,6 +76,19 @@ export default function CoachDashboard() {
     setLogsLoading(false)
   }
 
+  const sendMagicLink = async (c: CollabWithJournal) => {
+    if (!c.email) return
+    setLinkSending(s => ({ ...s, [c.id]: true }))
+    await fetch("/api/send-magic-link", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: c.email }),
+    })
+    setLinkSending(s => ({ ...s, [c.id]: false }))
+    setLinkSent(s => ({ ...s, [c.id]: true }))
+    setTimeout(() => setLinkSent(s => ({ ...s, [c.id]: false })), 3000)
+  }
+
   const signOut = async () => {
     const { createClient } = await import("@/lib/supabase/client")
     await createClient().auth.signOut()
@@ -101,7 +116,7 @@ export default function CoachDashboard() {
             <div className="w-7 h-7 rounded-lg flex items-center justify-center text-sm font-black"
               style={{ background: "linear-gradient(135deg, var(--green-dim), var(--blue-dim))", color: "#070d0f" }}>B</div>
             <div>
-              <span className="font-black text-sm gradient-text">BACKToENERGY</span>
+              <span className="font-black text-sm gradient-text">Backtoenergy</span>
               <span className="text-xs ml-2" style={{ color: "var(--blue)" }}>Coach</span>
             </div>
           </div>
@@ -308,6 +323,19 @@ export default function CoachDashboard() {
                           👁 Voir l&apos;espace
                         </button>
                       </div>
+                      <button
+                        onClick={e => { e.stopPropagation(); sendMagicLink(c) }}
+                        disabled={linkSending[c.id] || linkSent[c.id]}
+                        className="w-full text-xs rounded-xl font-semibold transition-all mt-2"
+                        style={{
+                          padding: "8px",
+                          background: linkSent[c.id] ? "rgba(45,212,160,0.12)" : "rgba(76,201,240,0.08)",
+                          border: `1px solid ${linkSent[c.id] ? "rgba(45,212,160,0.35)" : "rgba(76,201,240,0.2)"}`,
+                          color: linkSent[c.id] ? "var(--green)" : "var(--blue)",
+                          opacity: linkSending[c.id] ? 0.6 : 1,
+                        }}>
+                        {linkSending[c.id] ? "Envoi en cours…" : linkSent[c.id] ? "✓ Lien envoyé" : "✉️ Envoyer un lien de connexion"}
+                      </button>
                     </div>
                   )}
                 </button>

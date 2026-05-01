@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
   const { error: sendError } = await resend.emails.send({
     from: FROM,
     to: emailLower,
-    subject: "🔗 Votre lien de connexion — BACKToENERGY",
+    subject: "Votre lien de connexion Backtoenergy",
     html: magicLinkEmail(prenom, callbackUrl),
   })
 

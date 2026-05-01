@@ -3,7 +3,7 @@ import { AuthProvider } from "@/lib/auth-context"
 import "./globals.css"
 
 export const metadata: Metadata = {
-  title: "BACKToENERGY — Programme 21 Jours",
+  title: "Backtoenergy — Programme 21 Jours",
   description: "Détox, énergie et vitalité pour les collaborateurs",
 }
 

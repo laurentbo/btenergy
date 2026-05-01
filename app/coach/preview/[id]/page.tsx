@@ -90,7 +90,7 @@ export default function PreviewPage() {
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 rounded-lg flex items-center justify-center text-sm font-black"
               style={{ background: "linear-gradient(135deg, var(--green-dim), var(--blue-dim))", color: "#070d0f" }}>B</div>
-            <span className="font-black text-sm gradient-text">BACKToENERGY</span>
+            <span className="font-black text-sm gradient-text">Backtoenergy</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="tag" style={{ borderColor: weekInfo.color + "40", color: weekInfo.color }}>S{day.week}</div>

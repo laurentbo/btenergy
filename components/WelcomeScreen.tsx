@@ -64,7 +64,7 @@ export default function WelcomeScreen({ prenom, onDone }: Props) {
             className="font-black mb-3"
             style={{ fontSize: "20px", color: "#ffffff" }}
           >
-            Bienvenue dans votre programme BacktoEnergy.
+            Bienvenue dans votre programme Backtoenergy.
           </p>
           <p
             style={{

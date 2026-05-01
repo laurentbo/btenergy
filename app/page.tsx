@@ -28,6 +28,8 @@ type Override = {
   tip_override: string | null
   intention_override: string | null
   meal_overrides: Record<string, string[]> | null
+  ritual_matin_override: string | null
+  ritual_soir_override: string | null
 }
 
 type Tab = "programme" | "journal" | "progression" | "courses" | "principes" | "profil"
@@ -279,7 +281,7 @@ export default function Dashboard() {
               style={{ background: "linear-gradient(135deg, var(--green-dim), var(--blue-dim))", color: "#070d0f" }}>
               B
             </div>
-            <h1 className="text-2xl font-black gradient-text mb-1">BacktoEnergy</h1>
+            <h1 className="text-2xl font-black gradient-text mb-1">Backtoenergy</h1>
           </div>
           <div className="card p-5 mb-4">
             <h2 className="font-bold text-base mb-1" style={{ color: "var(--text-primary)" }}>Bienvenue 👋</h2>
@@ -309,7 +311,7 @@ export default function Dashboard() {
             style={{ background: "linear-gradient(135deg, var(--green-dim), var(--blue-dim))", color: "#050e1a" }}>
             B
           </div>
-          <h1 className="text-3xl font-black gradient-text mb-8">BacktoEnergy</h1>
+          <h1 className="text-3xl font-black gradient-text mb-8">Backtoenergy</h1>
 
           <div className="card p-6 mb-6 text-left"
             style={{ border: "1px solid rgba(45,212,160,0.25)", background: "rgba(4,10,22,0.72)" }}>
@@ -362,7 +364,7 @@ export default function Dashboard() {
               style={{ background: "linear-gradient(135deg, var(--green-dim), var(--blue-dim))", color: "#050e1a" }}>
               B
             </div>
-            <span className="font-black text-sm gradient-text">BacktoEnergy</span>
+            <span className="font-black text-sm gradient-text">Backtoenergy</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="tag" style={{ borderColor: `${weekInfo.color}40`, color: weekInfo.color }}>
@@ -621,7 +623,10 @@ export default function Dashboard() {
               })}
             </div>
 
-            <RitualCard matin={viewDayData.ritual.matin} soir={viewDayData.ritual.soir} />
+            <RitualCard
+              matin={override?.ritual_matin_override ?? viewDayData.ritual.matin}
+              soir={override?.ritual_soir_override ?? viewDayData.ritual.soir}
+            />
           </div>
         )}
 

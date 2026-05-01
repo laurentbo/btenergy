@@ -18,7 +18,7 @@ function header() {
   <tr><td align="center" style="padding-bottom:28px;">
     <table cellpadding="0" cellspacing="0">
       <tr><td align="center">
-        <span style="font-size:26px;font-weight:900;background:linear-gradient(135deg,#2dd4a0,#4cc9f0);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:0.01em;">BACKToENERGY</span>
+        <span style="font-size:26px;font-weight:900;background:linear-gradient(135deg,#2dd4a0,#4cc9f0);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:0.01em;">Backtoenergy</span>
       </td></tr>
     </table>
   </td></tr>
@@ -37,7 +37,7 @@ function footer() {
   return `
   <tr><td align="center" style="padding-top:28px;">
     <p style="margin:0;font-size:11px;color:rgba(255,255,255,0.3);line-height:1.8;">
-      BACKToENERGY · backtoenergy.fr<br>
+      Backtoenergy · backtoenergy.fr<br>
       Ce message est automatique, merci de ne pas y répondre.
     </p>
   </td></tr>
@@ -62,10 +62,10 @@ export function magicLinkEmail(prenom: string, url: string): string {
     <p style="margin:0 0 6px;font-size:13px;font-weight:600;letter-spacing:0.12em;color:#4cc9f0;text-transform:uppercase;">Connexion sécurisée</p>
     <h1 style="margin:0 0 16px;font-size:24px;font-weight:900;color:#ffffff;line-height:1.2;">Bon jour ${nom} 👋</h1>
     <p style="margin:0 0 24px;font-size:15px;color:rgba(255,255,255,0.65);line-height:1.7;">
-      Appuyez sur ce bouton pour accéder à votre programme <strong style="color:#ffffff;">BACKToENERGY</strong>.<br>
+      Appuyez sur ce bouton pour accéder à votre programme <strong style="color:#ffffff;">Backtoenergy</strong>.<br>
       Ce lien est valable <strong style="color:#ffffff;">1 heure</strong> et ne peut être utilisé qu'une seule fois.
     </p>
-    ${btn(url, "Accéder à BACKToENERGY →")}
+    ${btn(url, "Accéder à mon programme")}
     <p style="margin:24px 0 0;font-size:12px;color:rgba(255,255,255,0.35);text-align:center;">
       Si vous n'avez pas demandé ce lien, ignorez cet email.
     </p>
@@ -80,8 +80,8 @@ export function welcomeEmail(prenom: string, appUrl: string): string {
     <p style="margin:0 0 6px;font-size:13px;font-weight:600;letter-spacing:0.12em;color:#2dd4a0;text-transform:uppercase;">Accès confirmé</p>
     <h1 style="margin:0 0 16px;font-size:24px;font-weight:900;color:#ffffff;line-height:1.2;">Bienvenue ${nom} 🌱</h1>
     <p style="margin:0 0 24px;font-size:15px;color:rgba(255,255,255,0.65);line-height:1.8;">
-      Votre programme <strong style="color:#ffffff;">BACKToENERGY — 21 jours</strong> commence maintenant.<br>
-      Pendant 3 semaines, vous allez retrouver une énergie durable, un corps plus léger et une clarté mentale que vous n'avez peut-être plus ressentie depuis longtemps.
+      Votre programme <strong style="color:#ffffff;">Backtoenergy — 21 jours</strong> commence maintenant.<br>
+      Pendant 3 semaines, vous allez retrouver une énergie durable, un nettoyage digestif en profondeur, un corps plus léger et une clarté mentale que vous n'avez peut-être plus ressentie depuis longtemps.
     </p>
 
     <p style="margin:0 0 10px;font-size:12px;font-weight:700;letter-spacing:0.1em;color:rgba(255,255,255,0.4);text-transform:uppercase;">Votre parcours</p>
@@ -130,7 +130,7 @@ export function resetPasswordEmail(prenom: string, url: string): string {
     <h1 style="margin:0 0 16px;font-size:24px;font-weight:900;color:#ffffff;line-height:1.2;">Réinitialisation<br>du mot de passe</h1>
     <p style="margin:0 0 24px;font-size:15px;color:rgba(255,255,255,0.65);line-height:1.7;">
       Bon jour ${nom},<br><br>
-      Une demande de réinitialisation de mot de passe a été effectuée pour votre compte coach BACKToENERGY.<br>
+      Une demande de réinitialisation de mot de passe a été effectuée pour votre compte coach Backtoenergy.<br>
       Ce lien est valable <strong style="color:#ffffff;">1 heure</strong>.
     </p>
     ${btn(url, "Réinitialiser mon mot de passe →")}
@@ -239,7 +239,7 @@ export function postCureEmail(prenom: string, appUrl: string): string {
     <p style="margin:0 0 6px;font-size:13px;font-weight:600;letter-spacing:0.12em;color:#2dd4a0;text-transform:uppercase;">Programme Terminé</p>
     <h1 style="margin:0 0 16px;font-size:24px;font-weight:900;color:#ffffff;line-height:1.2;">${nom}, vous avez réussi ! 🎉</h1>
     <p style="margin:0 0 24px;font-size:15px;color:rgba(255,255,255,0.65);line-height:1.7;">
-      Félicitations pour avoir complété le programme BACKToENERGY. Les 21 jours sont derrière vous — ce qui vient maintenant, c'est de maintenir et renforcer ce que vous avez construit.
+      Félicitations pour avoir complété le programme Backtoenergy. Les 21 jours sont derrière vous — ce qui vient maintenant, c'est de maintenir et renforcer ce que vous avez construit.
     </p>
 
     <table width="100%" cellpadding="0" cellspacing="0" style="background:rgba(129,140,248,0.07);border:1px solid rgba(129,140,248,0.2);border-radius:14px;margin-bottom:20px;">
@@ -260,7 +260,7 @@ export function postCureEmail(prenom: string, appUrl: string): string {
 
     ${btn(appUrl, "Voir mon bilan →")}
     <p style="margin:20px 0 0;text-align:center;font-size:12px;color:rgba(255,255,255,0.3);">
-      Merci d'avoir suivi le programme BACKToENERGY. Votre wellbeing commence ici 🌿
+      Merci d'avoir suivi le programme Backtoenergy. Votre wellbeing commence ici 🌿
     </p>
   `) + footer() + CLOSE
 }
