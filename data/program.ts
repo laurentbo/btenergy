@@ -9,10 +9,115 @@ export type DayProgram = {
   week: 1 | 2 | 3
   theme: string
   intention: string
+  coachWord?: string
+  morningRitual?: string
   meals: Meal[]
   ritual: { matin: string; soir: string }
   hydration: string
   tip: string
+}
+
+export type PreparationStep = {
+  label: "J-3" | "J-2" | "J-1" | "J0"
+  title: string
+  tasks: string[]
+  coachNote?: string
+}
+
+export type ShoppingCategory = {
+  name: string
+  icon: string
+  items: string[]
+}
+
+export type PreparationPhaseData = {
+  steps: PreparationStep[]
+  shopping: ShoppingCategory[]
+  purgeWarning: string
+  coachNotes: string
+}
+
+export const preparationPhase: PreparationPhaseData = {
+  steps: [
+    {
+      label: "J-3",
+      title: "Vider & préparer",
+      tasks: [
+        "Faites le tri dans les placards : retirez les sucres raffinés, farines blanches et produits ultra-transformés.",
+        "Faites votre liste de courses (voir ci-dessous) et achetez ce dont vous avez besoin.",
+        "Préparez vos contenants (bouteille d'eau, boîtes repas, blender si disponible).",
+        "Lisez les 7 jours du programme pour anticiper les repas.",
+      ],
+      coachNote: "Plus vous préparez votre environnement, plus la volonté est inutile. Rendez le sain facile et le toxique inaccessible.",
+    },
+    {
+      label: "J-2",
+      title: "Organiser & planifier",
+      tasks: [
+        "Relisez les principes fondamentaux du programme (onglet Principes).",
+        "Notez votre poids, tour de taille et niveau d'énergie (référence J1).",
+        "Préparez vos repas pour le Jour 1 si possible (fruits, eau citronnée prête).",
+        "Informez votre entourage pour limiter les tentations sociales.",
+      ],
+      coachNote: "L'anticipation est votre meilleur allié. Un dimanche de préparation vaut 6 jours de régularité.",
+    },
+    {
+      label: "J-1",
+      title: "Purge & légèreté",
+      tasks: [
+        "Dîner léger : légumes vapeur + protéine légère uniquement.",
+        "Supprimez alcool, café, sucre et excitants dès ce soir.",
+        "Buvez 2L d'eau minimum dans la journée.",
+        "Couchez-vous avant 22h30 pour bien démarrer demain.",
+      ],
+      coachNote: "Ce dernier soir de transition est important. Votre corps commence déjà à se préparer — accompagnez-le.",
+    },
+    {
+      label: "J0",
+      title: "C'est parti !",
+      tasks: [
+        "Au réveil : un grand verre d'eau tiède avec le jus d'un demi-citron à jeun.",
+        "Attendez 15 min avant de prendre votre petit-déjeuner.",
+        "Ouvrez l'onglet Programme et suivez le Jour 1.",
+        "Notez votre intention du matin dans le Journal.",
+      ],
+      coachNote: "Le premier matin donne le ton des 21 suivants. Prenez le temps de ce rituel — il deviendra automatique.",
+    },
+  ],
+  shopping: [
+    {
+      name: "Fruits frais",
+      icon: "🍊",
+      items: ["Oranges (x6)", "Citrons bio (x8)", "Pommes (x6)", "Poires (x4)", "Kiwis (x6)", "Bananes (x4)", "Myrtilles ou framboises (1 barquette)", "Avocat (x4)"],
+    },
+    {
+      name: "Légumes",
+      icon: "🥦",
+      items: ["Carottes (1 kg)", "Brocolis (x2)", "Courgettes (x4)", "Épinards frais (200g)", "Tomates (1 kg)", "Concombre (x2)", "Poireaux (x3)", "Betterave crue (x2)", "Salade verte (x2)"],
+    },
+    {
+      name: "Protéines",
+      icon: "🥚",
+      items: ["Œufs fermiers (x12)", "Saumon frais ou surgelé (400g)", "Poulet fermier (2 filets)", "Sardines à l'huile d'olive (x3 boîtes)", "Dinde en escalope (400g)"],
+    },
+    {
+      name: "Oléagineux & fruits secs",
+      icon: "🌰",
+      items: ["Amandes (200g)", "Noix (150g)", "Noisettes (100g)", "Dattes Medjool (200g)", "Abricots secs non soufrés (150g)", "Raisins secs (100g)", "Figues sèches (100g)"],
+    },
+    {
+      name: "Épicerie sèche",
+      icon: "🫙",
+      items: ["Huile d'olive extra-vierge (1 bouteille)", "Miel brut (1 pot)", "Cannelle en poudre", "Curcuma en poudre", "Graines de courge (100g)", "Lentilles corail (300g)", "Riz basmati complet (500g)"],
+    },
+    {
+      name: "Boissons & infusions",
+      icon: "🍵",
+      items: ["Eau minérale (6L minimum)", "Tisane détox (ortie, pissenlit)", "Thé vert (1 boîte)", "Infusion verveine", "Infusion fenouil + anis étoilé"],
+    },
+  ],
+  purgeWarning: "Ce soir : dîner uniquement légumes vapeur + protéine légère (poisson ou œufs). Supprimez alcool, sucre ajouté et café dès maintenant. Buvez 2L d'eau. Coucher avant 22h30.",
+  coachNotes: "La préparation est la moitié de la réussite. En organisant votre environnement 3 jours avant le démarrage, vous maximisez vos chances de tenir les 21 jours. Ne négligez pas cette phase — elle conditionne tout le reste.",
 }
 
 export type UserProfile = {
@@ -103,6 +208,8 @@ const WEEK1: DayProgram[] = [
     day: 1, week: 1,
     theme: "Éveil & Purification",
     intention: "Nettoyer, alléger, recommencer.",
+    coachWord: "Le premier pas est toujours le plus courageux. Vous êtes là — c'est déjà une victoire.",
+    morningRitual: "Eau citronnée à jeun (15 min avant de manger). 3 grandes respirations. Posez une intention pour la journée.",
     meals: [
       { moment: "matin", items: ["Fruits de saison", "Amandes & noix", "Abricots secs & raisins", "Miel brut", "Jus de citron"], conseil: "Commencez par le jus de citron à jeun — 15 min avant de manger." },
       { moment: "midi", items: ["Crudités variées", "Pommes de terre vapeur", "Œufs mollets", "Café"], conseil: "Mastiquez lentement. Le calme digestif commence par la lenteur." },
@@ -117,6 +224,8 @@ const WEEK1: DayProgram[] = [
     day: 2, week: 1,
     theme: "Ancrage & Énergie Durable",
     intention: "Construire un socle solide pour la journée.",
+    coachWord: "Chaque bouchée saine est un acte d'amour envers vous-même. Continuez.",
+    morningRitual: "Eau citronnée à jeun. Marche de 10 min à l'air libre avant ou après le petit-déjeuner.",
     meals: [
       { moment: "matin", items: ["Fruits de saison", "Noisettes & amandes", "Dattes & figues sèches", "Miel de fleurs", "Jus de citron"], conseil: "Faites tremper les fruits secs la veille pour une meilleure assimilation." },
       { moment: "midi", items: ["Carottes râpées", "Betterave crue", "Lentilles tièdes", "Huile d'olive & citron"], conseil: "Les légumineuses nourrissent le microbiote — à intégrer régulièrement." },
@@ -131,6 +240,8 @@ const WEEK1: DayProgram[] = [
     day: 3, week: 1,
     theme: "Légèreté & Clarté Mentale",
     intention: "Alléger le corps pour clarifier l'esprit.",
+    coachWord: "La clarté arrive quand on allège le corps. Vous êtes sur la bonne voie.",
+    morningRitual: "Eau citronnée à jeun. 5 min de cohérence cardiaque (app ou YouTube).",
     meals: [
       { moment: "matin", items: ["Fruits de saison", "Noix du Brésil (3 max)", "Pruneaux & raisins secs", "Miel + cannelle", "Jus de citron"], conseil: "La cannelle régule la glycémie — saupoudrez généreusement." },
       { moment: "midi", items: ["Salade verte", "Avocat", "Œufs durs", "Tomates cerises", "Graines de courge"] },
@@ -145,6 +256,8 @@ const WEEK1: DayProgram[] = [
     day: 4, week: 1,
     theme: "Douceur & Régénération",
     intention: "Nourrir sans alourdir.",
+    coachWord: "Vos cellules se régénèrent en ce moment même. Vous ne le voyez pas encore — mais ça se passe.",
+    morningRitual: "Eau citronnée à jeun. Notez 3 intentions pour la journée — des états à atteindre, pas des tâches.",
     meals: [
       { moment: "matin", items: ["Fruits de saison", "Noix de cajou", "Dattes Medjool & abricots secs", "Miel", "Copeaux de noix de coco", "Jus de citron"], conseil: "Les dattes Medjool apportent du magnésium et du potassium — énergie immédiate." },
       { moment: "midi", items: ["Crudités de légumes variés (tomates, concombre, radis)", "Sardines à l'huile d'olive", "Roquette"] },
@@ -159,6 +272,8 @@ const WEEK1: DayProgram[] = [
     day: 5, week: 1,
     theme: "Force Tranquille",
     intention: "L'énergie vient de l'intérieur.",
+    coachWord: "L'énergie tranquille est plus puissante que l'enthousiasme bruyant. Sentez-la.",
+    morningRitual: "Eau citronnée à jeun. Auto-massage du ventre circulaire 3 min — stimule le transit et le nerf vague.",
     meals: [
       { moment: "matin", items: ["Fruits de saison", "Amandes effilées", "Figues sèches & abricots", "Miel de châtaignier", "Jus de citron"], conseil: "Les amandes effilées sont plus faciles à digérer — idéal en milieu de semaine." },
       { moment: "midi", items: ["Salade de chou rouge râpé", "Pois chiches rôtis", "Tomates & concombre", "Huile de noix"], conseil: "Le chou rouge est riche en anthocyanes — puissants antioxydants." },
@@ -173,6 +288,8 @@ const WEEK1: DayProgram[] = [
     day: 6, week: 1,
     theme: "Équilibre & Sérénité",
     intention: "Trouver le calme dans la constance.",
+    coachWord: "La constance d'aujourd'hui est la transformation de demain. Tenez.",
+    morningRitual: "Eau citronnée à jeun. Marche lente 5 min + respiration 4-4-4 (inspire 4s / retiens 4s / expire 4s).",
     meals: [
       { moment: "matin", items: ["Fruits de saison", "Fruits exotiques (mangue, papaye…)", "Pistaches & noix de macadamia", "Raisins secs & dattes", "Miel brut", "Cannelle", "Jus de citron"], conseil: "Les pistaches sont riches en protéines végétales — satiété durable jusqu'à midi." },
       { moment: "midi", items: ["Gaspacho maison (tomates, poivrons, concombre)", "Œufs pochés"] },
@@ -187,6 +304,8 @@ const WEEK1: DayProgram[] = [
     day: 7, week: 1,
     theme: "Bilan & Célébration",
     intention: "Une semaine de transformé — honorer le chemin parcouru.",
+    coachWord: "Tu as tenu une semaine complète. C'est déjà une victoire que beaucoup ne font jamais.",
+    morningRitual: "Eau citronnée à jeun. Bilan de la semaine : corps, énergie, humeur. Notez 3 victoires.",
     meals: [
       { moment: "matin", items: ["Fruits de saison", "Mélange oléagineux (amandes, noix, cajou)", "Fruits secs variés (abricots, figues, dattes)", "Miel", "Copeaux de noix de coco", "Jus de citron"], conseil: "Fin de semaine 1 — prenez le temps de préparer ce bol avec soin, c'est votre récompense." },
       { moment: "midi", items: ["Grande salade composée (avocat, tomates, concombre, graines)", "Filet de truite vapeur"] },
@@ -205,6 +324,8 @@ const WEEK2: DayProgram[] = [
     day: 8, week: 2,
     theme: "Réveil de l'Énergie",
     intention: "Alimenter la machine avec précision.",
+    coachWord: "La semaine 2 commence. Vous êtes déjà différent de qui vous étiez au Jour 1.",
+    morningRitual: "Eau citronnée à jeun. 10 min de yoga ou stretching dynamique — réveillez les fascias.",
     meals: [
       { moment: "matin", items: ["Fruits de saison", "Noix de cajou", "Dattes & figues sèches", "Miel", "Jus de citron"], conseil: "Les agrumes activent le foie le matin — parfaits pour bien démarrer la semaine 2." },
       { moment: "midi", items: ["Salade niçoise (thon, œufs, haricots verts, olives)"] },
@@ -219,6 +340,8 @@ const WEEK2: DayProgram[] = [
     day: 9, week: 2,
     theme: "Concentration & Acuité",
     intention: "Nourrir le cerveau pour performer.",
+    coachWord: "Un cerveau bien nourri pense mieux. Chaque repas est un acte de performance.",
+    morningRitual: "Eau citronnée à jeun. 5 min de méditation de pleine conscience — observez sans juger.",
     meals: [
       { moment: "matin", items: ["Fruits de saison", "Cerneaux de noix", "Raisins secs & abricots", "Miel de forêt", "Cannelle", "Jus de citron"], conseil: "Les cerneaux de noix nourrissent le cerveau — riches en oméga-3 ALA et en vitamine E." },
       { moment: "midi", items: ["Sardines fraîches grillées", "Crudités d'herbes fraîches (persil, menthe, tomates, concombre)", "Salade de roquette"] },
@@ -233,6 +356,8 @@ const WEEK2: DayProgram[] = [
     day: 10, week: 2,
     theme: "Endurance & Récupération",
     intention: "Le corps entraîné nourrit l'esprit.",
+    coachWord: "10 jours. Le corps entraîné demande moins d'effort pour produire plus d'énergie.",
+    morningRitual: "Eau citronnée à jeun. 20 min de marche rapide ou vélo — activez le métabolisme.",
     meals: [
       { moment: "matin", items: ["Fruits de saison", "Amandes & noisettes", "Pruneaux", "Miel", "Copeaux de noix de coco", "Jus de citron"], conseil: "Variez les fruits selon la saison — ils apportent chacun leurs minéraux spécifiques." },
       { moment: "midi", items: ["Poulet rôti aux herbes de Provence", "Patate douce", "Haricots verts vapeur"] },
@@ -247,6 +372,8 @@ const WEEK2: DayProgram[] = [
     day: 11, week: 2,
     theme: "Immunité & Protection",
     intention: "Le corps sain se défend naturellement.",
+    coachWord: "Votre immunité se renforce en silence. Continuez à la nourrir avec constance.",
+    morningRitual: "Eau citronnée à jeun. Oil pulling à l'huile de coco 5 min — détox buccal et immunité.",
     meals: [
       { moment: "matin", items: ["Fruits de saison", "Fruits exotiques (ananas, mangue…)", "Noix du Brésil & amandes", "Dattes & raisins secs", "Miel", "Cannelle", "Jus de citron"], conseil: "L'ananas et la papaye contiennent des enzymes digestives naturelles — privilégiez-les frais." },
       { moment: "midi", items: ["Soupe de légumes anciens (panais, navet, céleri-rave)", "Poulet fermier", "Quinoa"] },
@@ -261,6 +388,8 @@ const WEEK2: DayProgram[] = [
     day: 12, week: 2,
     theme: "Beauté & Régénération Cellulaire",
     intention: "Ce que vous mangez se voit sur votre peau.",
+    coachWord: "Ce que vous mangez aujourd'hui, votre peau le montrera dans 72h. Nourrissez-la bien.",
+    morningRitual: "Eau citronnée à jeun. Brossage à sec du corps de bas en haut — stimule la lymphe et l'éclat.",
     meals: [
       { moment: "matin", items: ["Fruits de saison", "Noix de cajou & pistaches", "Figues sèches & abricots", "Miel brut", "Jus de citron"], conseil: "Les fruits de saison sont les plus riches en nutriments — achetez-les mûrs." },
       { moment: "midi", items: ["Saumon gravlax", "Salade de fenouil & orange"] },
@@ -275,6 +404,8 @@ const WEEK2: DayProgram[] = [
     day: 13, week: 2,
     theme: "Équilibre Hormonal",
     intention: "Les hormones guident l'énergie — nourrissez-les.",
+    coachWord: "L'équilibre hormonal se construit dans l'assiette et dans le sommeil. Les deux comptent.",
+    morningRitual: "Eau citronnée à jeun. Exposition à la lumière naturelle 10 min — régule mélatonine et cortisol.",
     meals: [
       { moment: "matin", items: ["Fruits de saison", "Amandes & cerneaux de noix", "Dattes & raisins blonds", "Miel + cannelle", "Jus de citron"], conseil: "Les fruits rouges et la grenade sont parmi les antioxydants les plus puissants." },
       { moment: "midi", items: ["Salade de mâche & noix", "Betterave rôtie", "Graines de sésame"] },
@@ -289,6 +420,8 @@ const WEEK2: DayProgram[] = [
     day: 14, week: 2,
     theme: "Mi-Parcours — Puissance",
     intention: "14 jours. La moitié du chemin. Déjà transformé.",
+    coachWord: "La moitié est derrière toi. Tu es capable d'aller jusqu'au bout — et tu le sais.",
+    morningRitual: "Eau citronnée à jeun. Bilan des 14 jours : pesez-vous, mesurez votre énergie sur 10.",
     meals: [
       { moment: "matin", items: ["Fruits de saison", "Fruits exotiques (mangue, papaye…)", "Noix de cajou & macadamia", "Figues & abricots secs", "Miel", "Copeaux de noix de coco", "Jus de citron"], conseil: "Mi-parcours — ce petit-déjeuner festif célèbre vos 14 premiers jours." },
       { moment: "midi", items: ["Pièce de bœuf grass-fed", "Salade verte", "Sauce chimichurri"] },
@@ -307,6 +440,8 @@ const WEEK3: DayProgram[] = [
     day: 15, week: 3,
     theme: "Ancrage & Stabilité",
     intention: "Ce qui s'ancre ne peut plus être arraché.",
+    coachWord: "Les nouvelles habitudes s'ancrent. Bientôt elles seront automatiques — sans effort.",
+    morningRitual: "Eau citronnée à jeun. Ancrage : marche pieds nus sur l'herbe ou le carrelage 5 min.",
     meals: [
       { moment: "matin", items: ["Fruits de saison", "Amandes & noix mélangées", "Dattes & pruneaux", "Miel brut", "Cannelle", "Jus de citron"], conseil: "Semaine 3 — même rituel solide, vous le préparez désormais instinctivement." },
       { moment: "midi", items: ["Soupe de haricots blancs au romarin", "Filet de merlu", "Salade de mâche"] },
@@ -321,6 +456,8 @@ const WEEK3: DayProgram[] = [
     day: 16, week: 3,
     theme: "Performance Mentale",
     intention: "Un corps nourri est un esprit affûté.",
+    coachWord: "Un esprit net pour une performance maximale. Vous touchez au but.",
+    morningRitual: "Eau citronnée à jeun. Thé vert matcha. Notez 3 priorités pour la journée.",
     meals: [
       { moment: "matin", items: ["Fruits de saison", "Noisettes", "Abricots & figues sèches", "Miel de fleurs", "Jus de citron"], conseil: "Les cerises et fruits rouges sont riches en mélatonine naturelle — favorisent le sommeil." },
       { moment: "midi", items: ["Bowl de riz brun, edamame, avocat, carotte, sésame, sauce tamari"] },
@@ -335,6 +472,8 @@ const WEEK3: DayProgram[] = [
     day: 17, week: 3,
     theme: "Joie & Légèreté",
     intention: "Manger avec plaisir est aussi un acte de santé.",
+    coachWord: "Manger avec plaisir est aussi une médecine. Plaisir et santé ne s'opposent pas.",
+    morningRitual: "Eau citronnée à jeun. Gratitude rituelle : nommez 5 choses pour lesquelles vous êtes reconnaissant.",
     meals: [
       { moment: "matin", items: ["Fruits de saison", "Fruits exotiques (ananas, kiwi…)", "Amandes effilées & pistaches", "Raisins secs & dattes", "Miel", "Cannelle", "Copeaux de noix de coco", "Jus de citron"], conseil: "Manger avec plaisir est aussi un acte de santé — savourez chaque bouchée." },
       { moment: "midi", items: ["Paëlla végétarienne (riz, poivrons, artichauts, safran)"] },
@@ -349,6 +488,8 @@ const WEEK3: DayProgram[] = [
     day: 18, week: 3,
     theme: "Régénération Profonde",
     intention: "Le repos est une forme d'action.",
+    coachWord: "Régénérer, c'est accumuler la force de demain. Ne confondez pas repos et passivité.",
+    morningRitual: "Eau citronnée à jeun. Sieste de 20 min si possible en milieu de journée — récupération active.",
     meals: [
       { moment: "matin", items: ["Fruits de saison", "Noix de cajou", "Figues, abricots & pruneaux", "Miel", "Jus de citron"], conseil: "Jour de régénération — mangez lentement, en silence si possible." },
       { moment: "midi", items: ["Pot-au-feu léger (bœuf maigre, carottes, navet, poireau)", "Bouillon chaud"] },
@@ -363,6 +504,8 @@ const WEEK3: DayProgram[] = [
     day: 19, week: 3,
     theme: "Clarté & Intentions",
     intention: "La fin approche — que souhaitez-vous garder ?",
+    coachWord: "Chaque habitude conservée après le programme est un gain permanent pour votre santé.",
+    morningRitual: "Eau citronnée à jeun. Listez 5 habitudes acquises en 19 jours que vous souhaitez conserver.",
     meals: [
       { moment: "matin", items: ["Fruits de saison", "Fruits exotiques (mangue, papaye…)", "Amandes & noix du Brésil", "Dattes & abricots secs", "Miel + cannelle", "Copeaux de noix de coco", "Jus de citron"], conseil: "Nourrissez-vous avec pleine conscience — chaque bouchée compte." },
       { moment: "midi", items: ["Salade de persil, tomates, oignon, citron et huile d'olive", "Brochettes d'agneau grillées"] },
@@ -377,6 +520,8 @@ const WEEK3: DayProgram[] = [
     day: 20, week: 3,
     theme: "Puissance & Gratitude",
     intention: "Ressentir la force de ce qui a été construit.",
+    coachWord: "Avant-dernier jour. Mesurez votre transformation intérieure — pas seulement sur la balance.",
+    morningRitual: "Eau citronnée à jeun. Mesurez-vous : poids, tour de taille, énergie sur 10. Comparez au Jour 1.",
     meals: [
       { moment: "matin", items: ["Fruits de saison", "Cerneaux de noix", "Pruneaux & raisins secs", "Miel brut", "Cannelle", "Jus de citron"], conseil: "Avant-dernier jour — mesurez votre énergie ce matin et comparez au Jour 1." },
       { moment: "midi", items: ["Côte de veau grillée", "Légumes rôtis au four", "Salade de mâche aux noix"] },
@@ -391,6 +536,8 @@ const WEEK3: DayProgram[] = [
     day: 21, week: 3,
     theme: "Renaissance & Nouveau Départ",
     intention: "21 jours. Une nouvelle version de vous.",
+    coachWord: "21 jours accomplis. Vous n'êtes plus la même personne qu'au Jour 1. Ce n'est pas une fin — c'est une fondation.",
+    morningRitual: "Eau citronnée à jeun. Méditation de 15 min en pleine présence. Célébrez ce moment.",
     meals: [
       { moment: "matin", items: ["Fruits de saison", "Fruits exotiques au choix (mangue, ananas, papaye…)", "Mélange oléagineux (amandes, noix, cajou, macadamia)", "Fruits secs (figues, dattes, abricots)", "Miel brut", "Copeaux de noix de coco", "Jus de citron"], conseil: "Jour 21 — ce rituel est désormais le vôtre. Célébrez-le." },
       { moment: "midi", items: ["Repas festif sain : plateau de fruits de mer", "Salade verte à l'huile d'olive & citron", "Pain de seigle au levain"] },

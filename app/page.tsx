@@ -11,9 +11,22 @@ import WeightTracker from "@/components/WeightTracker"
 import ShoppingList from "@/components/ShoppingList"
 import VitalityScore from "@/components/VitalityScore"
 import EnergyCheckin from "@/components/EnergyCheckin"
+import PreparationPhase from "@/components/PreparationPhase"
 import { createClient } from "@/lib/supabase/client"
 import { useAuth } from "@/lib/auth-context"
 import WelcomeScreen from "@/components/WelcomeScreen"
+
+// ─── Titres courts des semaines ───────────────────────────────────────────────
+const WEEK_SHORT: Record<1 | 2 | 3, string> = { 1: "Détox", 2: "Énergie", 3: "Ancrage" }
+
+function calcDaysUntilStart(startDate: string | null | undefined): number {
+  if (!startDate) return 0
+  const start = new Date(startDate)
+  const today = new Date()
+  start.setHours(0, 0, 0, 0)
+  today.setHours(0, 0, 0, 0)
+  return Math.max(0, Math.floor((start.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)))
+}
 
 // ─── Labels des moments ────────────────────────────────────────────────────────
 const MEAL_META: Record<string, { icon: string; label: string; horaire: string }> = {
@@ -52,6 +65,7 @@ export default function Dashboard() {
   const [hydrationLiters, setHydrationLiters] = useState<number>(0)
   const [vitalityScore, setVitalityScore] = useState<number>(0)
   const [vitalityTrend, setVitalityTrend] = useState<number>(0)
+  const [daysUntilStart, setDaysUntilStart] = useState<number>(0)
 
   const supabase = useMemo(() => createClient(), [])
   const { signOut } = useAuth()
@@ -100,6 +114,7 @@ export default function Dashboard() {
         computedDay = calcCurrentDay(startDate)
         setCurrentDay(computedDay)
         setViewDay(computedDay)
+        setDaysUntilStart(calcDaysUntilStart(startDate))
 
         const supabaseProfile: UserProfile | null = dbProfile?.prenom
           ? {
@@ -395,24 +410,23 @@ export default function Dashboard() {
             boxShadow: `0 1px 0 rgba(255,255,255,0.06) inset, 0 16px 48px rgba(0,0,0,0.4), 0 0 60px ${weekInfo.color}08`,
           }}>
 
-          <div className="flex items-center gap-2 mb-5">
+          <div className="flex items-center gap-2 mb-4">
             <div className="rounded-lg px-3 py-1 text-xs font-bold tracking-widest uppercase"
               style={{ background: `${weekInfo.color}14`, color: weekInfo.color, border: `1px solid ${weekInfo.color}22`, letterSpacing: "0.1em" }}>
-              {weekInfo.title}
-            </div>
-            <div className="rounded-lg px-3 py-1 text-xs uppercase tracking-widest font-semibold"
-              style={{ background: "rgba(255,255,255,0.04)", color: "var(--text-muted)", border: "1px solid rgba(255,255,255,0.07)" }}>
-              {day.theme}
+              Semaine {day.week} · {WEEK_SHORT[day.week]}
             </div>
           </div>
 
-          <div className="flex items-start justify-between gap-4 mb-5">
+          <div className="flex items-start justify-between gap-4 mb-4">
             <div className="flex-1">
-              <h1 className="font-black mb-2 leading-tight" style={{ color: "var(--text-primary)", fontSize: "26px" }}>
+              <p className="text-sm mb-1" style={{ color: "var(--text-muted)" }}>
                 Bonjour, {prenom ?? "vous"} 👋
-              </h1>
+              </p>
+              <h2 className="font-black mb-2 leading-tight" style={{ color: "var(--text-primary)", fontSize: "24px" }}>
+                {day.theme}
+              </h2>
               <p className="italic leading-relaxed" style={{ color: weekInfo.color, opacity: 0.85, fontSize: "14px" }}>
-                &ldquo;{day.intention}&rdquo;
+                &ldquo;{day.coachWord ?? day.intention}&rdquo;
               </p>
             </div>
             <div className="flex-shrink-0 flex flex-col items-center justify-center rounded-2xl"
@@ -473,6 +487,24 @@ export default function Dashboard() {
           </div>
         </div>
 
+        {/* Rituel du matin */}
+        {day.morningRitual && (
+          <div className="fade-up mb-4 rounded-2xl px-5 py-4 flex items-start gap-4"
+            style={{
+              background: "linear-gradient(135deg, rgba(132,204,22,0.1), rgba(45,212,160,0.07))",
+              border: "1px solid rgba(132,204,22,0.25)",
+            }}>
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+              style={{ background: "rgba(132,204,22,0.15)", border: "1px solid rgba(132,204,22,0.3)", fontSize: "16px" }}>
+              🌅
+            </div>
+            <div>
+              <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: "#84cc16" }}>Rituel du matin</p>
+              <p style={{ color: "var(--text-secondary)", lineHeight: "1.75", fontSize: "14px" }}>{day.morningRitual}</p>
+            </div>
+          </div>
+        )}
+
         {/* Tip du jour */}
         <div className="card fade-up mb-5 px-5 py-4 flex items-start gap-4">
           <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
@@ -508,6 +540,11 @@ export default function Dashboard() {
         {/* ── Programme ── */}
         {activeTab === "programme" && (
           <div className="space-y-4">
+
+            {/* Phase de préparation (J-3, J-2, J-1) */}
+            {daysUntilStart >= 1 && daysUntilStart <= 3 && (
+              <PreparationPhase daysUntilStart={daysUntilStart} />
+            )}
 
             {/* Navigation jours */}
             <div className="flex items-center justify-between rounded-2xl px-4 py-3"
