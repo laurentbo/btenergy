@@ -1,5 +1,6 @@
 "use client"
 import { useState, useEffect, useMemo } from "react"
+import Link from "next/link"
 import { PROGRAM, WEEK_THEMES, calcIMC, imcLabel, calcCurrentDay, calcRawDay, type UserProfile, type Meal } from "@/data/program"
 import MealCard from "@/components/MealCard"
 import RitualCard from "@/components/RitualCard"
@@ -773,6 +774,12 @@ export default function Dashboard() {
               </button>
             )
           })}
+          <Link href="/programme"
+            className="flex flex-col items-center gap-0.5 py-2 flex-1 transition-all"
+            style={{ color: "var(--text-muted)" }}>
+            <span className="text-xl leading-none">🌿</span>
+            <span className="text-xs font-semibold" style={{ fontSize: "10px" }}>Cure</span>
+          </Link>
         </div>
       </nav>
     </div>
