@@ -209,12 +209,17 @@ export default function CoachDashboard() {
                     {/* Avatar */}
                     <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0"
                       style={{ background: `${wInfo.color}18`, border: `1px solid ${wInfo.color}40`, color: wInfo.color }}>
-                      {c.prenom?.charAt(0).toUpperCase() ?? "?"}
+                      {(c.prenom ?? c.email)?.charAt(0).toUpperCase() ?? "?"}
                     </div>
 
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-2">
-                        <span className="font-semibold text-sm" style={{ color: "var(--text-primary)" }}>{c.prenom}</span>
+                        <div className="min-w-0">
+                          <span className="font-semibold text-sm block truncate" style={{ color: "var(--text-primary)" }}>
+                            {c.prenom ?? "—"}
+                          </span>
+                          <span className="text-xs truncate block" style={{ color: "var(--text-muted)" }}>{c.email}</span>
+                        </div>
                         <span className="tag flex-shrink-0">J{day}/21</span>
                       </div>
                       <p className="text-xs mt-0.5" style={{ color: wInfo.color }}>{wInfo.title}</p>

@@ -27,7 +27,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   }
 
   const { data: collab } = await admin
-    .from("profiles").select("*").eq("id", id).eq("coach_id", user.id).maybeSingle()
+    .from("profiles").select("*").eq("id", id).maybeSingle()
   if (!collab) return NextResponse.json(null, { status: 404 })
 
   // Journal entries
