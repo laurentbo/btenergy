@@ -33,11 +33,10 @@ export async function GET() {
     return NextResponse.json([], { status: 403 })
   }
 
-  // Récupère les collaborateurs de ce coach
+  // Récupère tous les collaborateurs (plateforme mono-coach)
   const { data: profiles } = await admin
     .from("profiles")
     .select("*")
-    .eq("coach_id", user.id)
     .eq("role", "collaborateur")
     .order("created_at", { ascending: false })
 
