@@ -48,9 +48,9 @@ export async function proxy(request: NextRequest) {
   const publicApis = ["/api/verify-company", "/api/send-magic-link", "/api/send-reset-password"]
   if (publicApis.includes(pathname)) return supabaseResponse
 
-  // Pages publiques : redirect vers / si déjà connecté
-  if (pathname.startsWith("/login") || pathname.startsWith("/auth") || pathname.startsWith("/email-preview")) {
-    if (user && pathname !== "/auth/reset-password") return NextResponse.redirect(new URL("/", request.url))
+  // Pages publiques : accessibles sans auth, redirect vers /dashboard si déjà connecté
+  if (pathname === "/" || pathname.startsWith("/login") || pathname.startsWith("/auth") || pathname.startsWith("/email-preview")) {
+    if (user && pathname !== "/auth/reset-password") return NextResponse.redirect(new URL("/dashboard", request.url))
     return supabaseResponse
   }
 
@@ -69,10 +69,13 @@ export async function proxy(request: NextRequest) {
       .eq("id", user.id)
       .maybeSingle()
     if (profile?.role !== "coach" && profile?.role !== "admin") {
-      return NextResponse.redirect(new URL("/", request.url))
+      return NextResponse.redirect(new URL("/dashboard", request.url))
     }
     return supabaseResponse
   }
+
+  // Admin backoffice : pas de protection middleware (gérée dans la page elle-même)
+  if (pathname.startsWith("/admin")) return supabaseResponse
 
   // App principale : auth requise
   if (!user) return NextResponse.redirect(new URL("/login", request.url))
