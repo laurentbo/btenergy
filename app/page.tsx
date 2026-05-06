@@ -269,51 +269,11 @@ export default function AccueilPublic() {
 
       </main>
 
-<<<<<<< HEAD
-      {/* Bottom nav */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50"
-        style={{ background: "rgba(5,12,22,0.94)", backdropFilter: "blur(28px)", borderTop: "1px solid rgba(255,255,255,0.07)" }}>
-        <div className="max-w-2xl mx-auto flex items-center justify-around px-2 py-1">
-          {([
-            { icon: "🍽️", label: "Repas",     tab: "programme" },
-            { icon: "📓", label: "Journal",   tab: "journal" },
-            { icon: "🛒", label: "Courses",   tab: "courses" },
-            { icon: "📈", label: "Progrès",   tab: "progression" },
-            { icon: "💡", label: "Principes", tab: "principes" },
-          ] as const).map(({ icon, label, tab }) => {
-            const isActive = activeTab === tab
-            return (
-              <button key={tab}
-                onClick={() => setActiveTab(tab)}
-                className="flex flex-col items-center gap-0.5 py-2 flex-1 transition-all"
-                style={{ color: isActive ? "var(--blue)" : "var(--text-muted)" }}>
-                <span className="text-xl leading-none"
-                  style={{ filter: isActive ? "drop-shadow(0 0 6px rgba(76,201,240,0.6))" : "none" }}>
-                  {icon}
-                </span>
-                <span className="text-xs font-semibold" style={{ fontSize: "10px" }}>{label}</span>
-                {isActive && (
-                  <div className="w-4 h-0.5 rounded-full mt-0.5"
-                    style={{ background: "var(--blue)" }} />
-                )}
-              </button>
-            )
-          })}
-          <Link href="/programme"
-            className="flex flex-col items-center gap-0.5 py-2 flex-1 transition-all"
-            style={{ color: "var(--text-muted)" }}>
-            <span className="text-xl leading-none">🌿</span>
-            <span className="text-xs font-semibold" style={{ fontSize: "10px" }}>Cure</span>
-          </Link>
-        </div>
-      </nav>
-=======
       <footer style={{ borderTop: "1px solid #e8e5e0", padding: "24px", textAlign: "center" }}>
         <p style={{ fontSize: 12, color: "#9b9590", margin: 0 }}>
           Backtoenergy · Programme 21 jours · backtoenergy.fr
         </p>
       </footer>
->>>>>>> d5a34d0 (feat: évolutions Force tranquille – accueil, dashboard, journal, exclusions)
     </div>
   )
 }
