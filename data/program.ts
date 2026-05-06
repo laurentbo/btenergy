@@ -19,10 +19,7 @@ export type DayProgram = {
 
 export type UserProfile = {
   prenom: string
-  genre: "homme" | "femme"
-  age: number
-  taille: number   // cm
-  poids: number    // kg
+  age?: number
   start_date?: string  // ISO date YYYY-MM-DD
 }
 
@@ -598,25 +595,5 @@ export const WEEK_THEMES: Record<1 | 2 | 3, { title: string; color: string; desc
   3: { title: "Ancrage & Performance", color: "#818cf8", desc: "Consolider les acquis, ancrer les nouvelles habitudes." },
 }
 
-// ─── CALCULS PROFIL ────────────────────────────────────────────────────────────
-export function calcIMC(poids: number, taille: number): number {
-  return Math.round((poids / Math.pow(taille / 100, 2)) * 10) / 10
-}
+// calcIMC, calcBesoinsBase, portionMultiplier supprimés (voir ÉTAPE 7 évolutions)
 
-export function imcLabel(imc: number): { label: string; color: string } {
-  if (imc < 18.5) return { label: "Insuffisance pondérale", color: "#f59e0b" }
-  if (imc < 25)   return { label: "Poids santé", color: "#4cc9f0" }
-  if (imc < 30)   return { label: "Surpoids", color: "#f97316" }
-  return              { label: "Obésité", color: "#ef4444" }
-}
-
-export function calcBesoinsBase(p: UserProfile): number {
-  // Mifflin-St Jeor
-  if (p.genre === "homme") return Math.round(10 * p.poids + 6.25 * p.taille - 5 * p.age + 5)
-  return Math.round(10 * p.poids + 6.25 * p.taille - 5 * p.age - 161)
-}
-
-export function portionMultiplier(p: UserProfile): number {
-  const base = p.genre === "homme" ? 75 : 60
-  return Math.round((p.poids / base) * 10) / 10
-}

@@ -72,7 +72,7 @@ export async function GET(request: NextRequest) {
     ? "/auth/reset-password"
     : isNewUser
     ? "/onboarding"
-    : "/"
+    : "/dashboard"
   const response = NextResponse.redirect(new URL(destination, request.url))
 
   // Pose les cookies de session sur la réponse HTTP (visible par le proxy dès le prochain request)

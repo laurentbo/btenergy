@@ -87,6 +87,44 @@ export type Database = {
         Insert: Omit<Database["public"]["Tables"]["program_overrides"]["Row"], "id" | "updated_at">
         Update: Partial<Database["public"]["Tables"]["program_overrides"]["Insert"]>
       }
+      coach_settings: {
+        Row: {
+          id: string
+          exclusions: Record<string, boolean | string[]>
+          updated_at: string
+        }
+        Insert: { exclusions?: Record<string, boolean | string[]> }
+        Update: { exclusions?: Record<string, boolean | string[]>; updated_at?: string }
+      }
+      journal: {
+        Row: {
+          id: string
+          user_id: string
+          jour: number
+          activite: string | null
+          rituel_fait: boolean
+          energie: number | null
+          humeur: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          user_id: string
+          jour: number
+          activite?: string | null
+          rituel_fait?: boolean
+          energie?: number | null
+          humeur?: string | null
+          updated_at?: string
+        }
+        Update: {
+          activite?: string | null
+          rituel_fait?: boolean
+          energie?: number | null
+          humeur?: string | null
+          updated_at?: string
+        }
+      }
     }
     Views: Record<string, never>
     Functions: Record<string, never>

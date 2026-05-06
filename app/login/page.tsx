@@ -17,7 +17,7 @@ export default function LoginCollaborateur() {
     setError(""); setLoading(true)
     const { error: e } = await supabase.auth.signInWithPassword({ email, password })
     if (e) { setError("Email ou mot de passe incorrect."); setLoading(false); return }
-    window.location.href = "/"
+    window.location.href = "/dashboard"
   }
 
   async function handleReset() {
