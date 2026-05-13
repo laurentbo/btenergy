@@ -80,9 +80,9 @@ export default function ProfilForm({ onSave, initial }: Props) {
           <label style={LABEL}>Taille (cm)</label>
           <input
             type="number"
-            placeholder="170"
+            placeholder="ex : 170"
             min={100} max={230}
-            value={form.taille ?? ""}
+            value={form.taille || ""}
             onChange={e => set("taille", parseInt(e.target.value) || 0)}
             style={INPUT}
           />
@@ -91,10 +91,10 @@ export default function ProfilForm({ onSave, initial }: Props) {
           <label style={LABEL}>Poids (kg)</label>
           <input
             type="number"
-            placeholder="70"
+            placeholder="ex : 70"
             min={30} max={300}
             step={0.1}
-            value={form.poids ?? ""}
+            value={form.poids || ""}
             onChange={e => set("poids", parseFloat(e.target.value) || 0)}
             style={INPUT}
           />
@@ -106,26 +106,12 @@ export default function ProfilForm({ onSave, initial }: Props) {
         <label style={LABEL}>Âge</label>
         <input
           type="number"
-          placeholder="35"
+          placeholder="ex : 35"
           min={10} max={100}
-          value={form.age ?? ""}
+          value={form.age || ""}
           onChange={e => set("age", parseInt(e.target.value) || 0)}
           style={INPUT}
         />
-      </div>
-
-      {/* Date de démarrage */}
-      <div>
-        <label style={LABEL}>Date de démarrage</label>
-        <input
-          type="date"
-          value={form.start_date ?? new Date().toISOString().split("T")[0]}
-          min={new Date(Date.now() - 21 * 86400000).toISOString().split("T")[0]}
-          max={new Date(Date.now() + 30 * 86400000).toISOString().split("T")[0]}
-          onChange={e => set("start_date", e.target.value)}
-          style={{ ...INPUT, colorScheme: "light" }}
-        />
-        <p style={{ fontSize: "11px", color: "#94a3b8", marginTop: "4px" }}>Jour 1 de ton programme de 21 jours</p>
       </div>
 
       <button
@@ -138,6 +124,7 @@ export default function ProfilForm({ onSave, initial }: Props) {
           poids: form.poids,
           start_date: form.start_date ?? new Date().toISOString().split("T")[0],
         })}
+
         style={{
           width: "100%",
           padding: "12px",
