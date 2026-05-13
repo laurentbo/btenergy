@@ -138,6 +138,8 @@ export default function ProgrammePage() {
     setTimeout(() => setSaveStatus("idle"), 3000)
   }
 
+  const { menu: dbMenu } = useDayMenu(userId, Math.min(currentDay, 21))
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: "#0f1117" }}>
@@ -150,8 +152,6 @@ export default function ProgrammePage() {
       </div>
     )
   }
-
-  const { menu: dbMenu } = useDayMenu(userId, Math.min(currentDay, 21))
   const jour = VERISSIMO_PROGRAM[Math.min(currentDay - 1, VERISSIMO_PROGRAM.length - 1)]
   const phaseColor = PHASE_COLORS[jour.type] ?? "var(--green)"
   const semLabel = SEMAINE_LABELS[jour.s] ?? `Semaine ${jour.s}`
