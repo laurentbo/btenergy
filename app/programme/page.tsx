@@ -5,7 +5,6 @@ import { VERISSIMO_PROGRAM } from "@/data/verissimo"
 import { createClient } from "@/lib/supabase/client"
 import LearnTab from "./components/LearnTab"
 import { useDayMenu } from "@/lib/hooks/useDayMenu"
-import { addFoodPreference } from "@/lib/menus"
 import type { MealFieldName } from "@/lib/supabase/types"
 
 type PTab = "accueil" | "journee" | "programme" | "suivi"
@@ -38,12 +37,12 @@ export default function ProgrammePage() {
   const [prenom, setPrenom] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
 
-  // "Je n'aime pas ça" modal
-  const [dislikeModal, setDislikeModal] = useState<{ field: MealFieldName; content: string } | null>(null)
-  const [dislikeIngredient, setDislikeIngredient] = useState("")
-  const [dislikeType, setDislikeType] = useState<"dislike" | "allergy" | "intolerance">("dislike")
-  const [dislikeSaving, setDislikeSaving] = useState(false)
-  const [dislikeConfirm, setDislikeConfirm] = useState(false)
+  // Modal "J'ai une question"
+  const [questionModal, setQuestionModal] = useState<{ field: MealFieldName; content: string } | null>(null)
+  const [questionText, setQuestionText] = useState("")
+  const [questionSaving, setQuestionSaving] = useState(false)
+  const [questionConfirm, setQuestionConfirm] = useState(false)
+  const [coachId, setCoachId] = useState<string | null>(null)
 
   // Suivi state — mapped to existing journal_entries columns
   const [energie, setEnergie] = useState(5)
@@ -65,13 +64,14 @@ export default function ProgrammePage() {
         setUserId(user.id)
         const { data: profile } = await supabase
           .from("profiles")
-          .select("prenom, current_day")
+          .select("prenom, current_day, coach_id")
           .eq("id", user.id)
           .maybeSingle()
 
         if (profile) {
           setPrenom(profile.prenom ?? null)
           setCurrentDay(profile.current_day ?? 1)
+          setCoachId(profile.coach_id ?? null)
         }
 
         // Load today's journal entry
@@ -157,14 +157,19 @@ export default function ProgrammePage() {
   const semLabel = SEMAINE_LABELS[jour.s] ?? `Semaine ${jour.s}`
   const progress = Math.round((Math.min(currentDay, 21) / 21) * 100)
 
-  const handleDislikeSave = async () => {
-    if (!userId || !dislikeIngredient.trim()) return
-    setDislikeSaving(true)
+  const handleQuestionSave = async () => {
+    if (!userId || !questionText.trim()) return
+    setQuestionSaving(true)
     try {
-      await addFoodPreference(userId, dislikeIngredient, dislikeType)
-      setDislikeConfirm(true)
-      setTimeout(() => { setDislikeConfirm(false); setDislikeModal(null); setDislikeIngredient("") }, 2000)
-    } finally { setDislikeSaving(false) }
+      await supabase.from("questions").insert({
+        user_id: userId,
+        coach_id: coachId ?? null,
+        day: Math.min(currentDay, 21),
+        text: questionText.trim(),
+      })
+      setQuestionConfirm(true)
+      setTimeout(() => { setQuestionConfirm(false); setQuestionModal(null); setQuestionText("") }, 2500)
+    } finally { setQuestionSaving(false) }
   }
 
   return (
@@ -435,12 +440,12 @@ export default function ProgrammePage() {
                         <span className="text-xs font-bold uppercase tracking-widest flex-1" style={{ color: isOverridden ? "#ffd700" : color }}>
                           {label}{snack ? " · si faim" : ""}
                         </span>
-                        {!snack && userId && content && (
+                        {!snack && userId && (
                           <button
-                            onClick={() => { setDislikeModal({ field: key, content: content ?? "" }); setDislikeIngredient("") }}
-                            className="opacity-0 group-hover:opacity-100 transition-opacity text-xs rounded-lg px-2 py-0.5"
-                            style={{ background: "rgba(255,100,100,0.12)", color: "rgba(255,120,120,0.7)", border: "1px solid rgba(255,100,100,0.2)" }}>
-                            Je n'aime pas ça
+                            onClick={() => { setQuestionModal({ field: key, content: content ?? "" }); setQuestionText("") }}
+                            className="flex-shrink-0 rounded-lg px-2.5 py-1 text-xs font-semibold transition-all"
+                            style={{ background: "rgba(38,197,206,0.12)", color: "var(--accent-cyan)", border: "1px solid rgba(38,197,206,0.25)" }}>
+                            J'ai une question ?
                           </button>
                         )}
                       </div>
@@ -468,58 +473,42 @@ export default function ProgrammePage() {
           </div>
         )}
 
-        {/* ── Modal "Je n'aime pas ça" ── */}
-        {dislikeModal && (
+        {/* ── Modal "J'ai une question" ── */}
+        {questionModal && (
           <div className="fixed inset-0 z-50 flex items-end justify-center p-4 sm:items-center"
             style={{ background: "rgba(0,0,0,0.65)", backdropFilter: "blur(8px)" }}>
             <div className="w-full max-w-sm rounded-2xl p-5 space-y-4"
-              style={{ background: "#0f1117", border: "1px solid rgba(255,255,255,0.12)" }}>
-              {dislikeConfirm ? (
+              style={{ background: "#0f1117", border: "1px solid rgba(38,197,206,0.25)" }}>
+              {questionConfirm ? (
                 <div className="text-center py-4">
-                  <div style={{ fontSize: "32px" }}>✅</div>
-                  <p className="font-bold mt-2" style={{ color: "var(--green)" }}>Enregistré, merci !</p>
-                  <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.4)" }}>Le coach en sera informé.</p>
+                  <div style={{ fontSize: "32px" }}>✉️</div>
+                  <p className="font-bold mt-2" style={{ color: "var(--accent-cyan)" }}>Question envoyée !</p>
+                  <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.4)" }}>Ton coach te répondra prochainement.</p>
                 </div>
               ) : (
                 <>
                   <div className="flex items-center justify-between">
-                    <h3 className="font-bold text-sm" style={{ color: "#fff" }}>Je n'aime pas ça</h3>
-                    <button onClick={() => setDislikeModal(null)} style={{ color: "rgba(255,255,255,0.4)" }}>✕</button>
+                    <h3 className="font-bold text-sm" style={{ color: "#fff" }}>J'ai une question 💬</h3>
+                    <button onClick={() => setQuestionModal(null)} style={{ color: "rgba(255,255,255,0.4)", fontSize: "18px" }}>✕</button>
                   </div>
-                  <p className="text-xs rounded-xl p-3" style={{ background: "rgba(255,255,255,0.05)", color: "rgba(255,255,255,0.5)", lineHeight: "1.6" }}>
-                    {dislikeModal.content}
-                  </p>
-                  <div>
-                    <label className="text-xs font-semibold mb-1.5 block" style={{ color: "rgba(255,255,255,0.4)" }}>
-                      Quel ingrédient posait problème ?
-                    </label>
-                    <input
-                      autoFocus
-                      value={dislikeIngredient}
-                      onChange={(e) => setDislikeIngredient(e.target.value)}
-                      onKeyDown={(e) => e.key === "Enter" && handleDislikeSave()}
-                      placeholder="ex : fenouil, ail, shiitake…"
-                      className="w-full rounded-xl px-3 py-2 text-sm outline-none"
-                      style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.15)", color: "#fff" }}
-                    />
-                  </div>
-                  <div className="flex gap-2">
-                    {(["dislike", "allergy", "intolerance"] as const).map((t) => (
-                      <button key={t} onClick={() => setDislikeType(t)}
-                        className="flex-1 rounded-xl py-2 text-xs font-bold"
-                        style={{
-                          background: dislikeType === t ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.05)",
-                          color: dislikeType === t ? "#fff" : "rgba(255,255,255,0.35)",
-                          border: dislikeType === t ? "1px solid rgba(255,255,255,0.2)" : "1px solid transparent",
-                        }}>
-                        {t === "dislike" ? "N'aime pas" : t === "allergy" ? "Allergie" : "Intolérance"}
-                      </button>
-                    ))}
-                  </div>
-                  <button onClick={handleDislikeSave} disabled={dislikeSaving || !dislikeIngredient.trim()}
+                  {questionModal.content && (
+                    <p className="text-xs rounded-xl p-3" style={{ background: "rgba(255,255,255,0.04)", color: "rgba(255,255,255,0.45)", lineHeight: "1.6" }}>
+                      {questionModal.content}
+                    </p>
+                  )}
+                  <textarea
+                    autoFocus
+                    rows={4}
+                    value={questionText}
+                    onChange={(e) => setQuestionText(e.target.value)}
+                    placeholder="Pose ta question au coach…"
+                    className="w-full rounded-xl px-3 py-2.5 text-sm resize-none outline-none"
+                    style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(38,197,206,0.25)", color: "#fff" }}
+                  />
+                  <button onClick={handleQuestionSave} disabled={questionSaving || !questionText.trim()}
                     className="w-full rounded-xl py-2.5 font-bold text-sm"
-                    style={{ background: "var(--green)", color: "#060e12", opacity: !dislikeIngredient.trim() ? 0.4 : 1 }}>
-                    {dislikeSaving ? "…" : "Signaler au coach"}
+                    style={{ background: "var(--accent-cyan)", color: "#060e12", opacity: !questionText.trim() ? 0.4 : 1 }}>
+                    {questionSaving ? "…" : "Envoyer au coach"}
                   </button>
                 </>
               )}
