@@ -71,7 +71,7 @@ export async function GET(request: NextRequest) {
   const destination = type === "recovery"
     ? "/auth/reset-password"
     : isNewUser
-    ? "/onboarding"
+    ? "/welcome"
     : "/dashboard"
   const response = NextResponse.redirect(new URL(destination, request.url))
 
