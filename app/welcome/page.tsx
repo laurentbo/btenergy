@@ -133,7 +133,7 @@ export default function WelcomePage() {
         {/* CTA */}
         <div style={{ margin: "0 16px 10px" }}>
           <button
-            onClick={() => router.push("/programme")}
+            onClick={() => router.push("/dashboard")}
             style={{
               width: "100%",
               padding: 15,

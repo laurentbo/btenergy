@@ -14,12 +14,37 @@ import { createClient } from "@/lib/supabase/client"
 import { useAuth } from "@/lib/auth-context"
 import WelcomeScreen from "@/components/WelcomeScreen"
 import PreparationPhase from "@/components/PreparationPhase"
+import { useDayMenu } from "@/lib/hooks/useDayMenu"
+import type { MealFieldName } from "@/lib/supabase/types"
 
 const MEAL_META: Record<string, { icon: string; label: string; horaire: string }> = {
   "matin":        { icon: "🌅", label: "Petit-déjeuner", horaire: "7h – 9h" },
   "midi":         { icon: "🌞", label: "Déjeuner",       horaire: "12h – 14h" },
   "après-midi":   { icon: "🌤",  label: "Collation",      horaire: "15h – 17h" },
   "soir":         { icon: "🌙", label: "Dîner",           horaire: "18h – 20h" },
+}
+
+const DB_MEAL_META: Record<MealFieldName, { icon: string; label: string; horaire: string } | null> = {
+  petit_dejeuner:       { icon: "🌅", label: "Petit-déjeuner",     horaire: "7h – 9h"   },
+  collation_matin:      { icon: "🍎", label: "Collation matin",     horaire: "10h – 11h" },
+  dejeuner:             { icon: "🌞", label: "Déjeuner",            horaire: "12h – 14h" },
+  collation_apres_midi: { icon: "🌤", label: "Collation après-midi", horaire: "15h – 17h" },
+  diner:                { icon: "🌙", label: "Dîner",               horaire: "18h – 20h" },
+  astuce_umami:         null,
+}
+
+const DB_MEAL_BORDER: Record<MealFieldName, string> = {
+  petit_dejeuner:       "#f59e0b",
+  collation_matin:      "#fb923c",
+  dejeuner:             "#22c55e",
+  collation_apres_midi: "#fb923c",
+  diner:                "#818cf8",
+  astuce_umami:         "#94a3b8",
+}
+
+function parseDbMeal(value: string | null): string[] {
+  if (!value) return []
+  return value.split("\n").map(s => s.trim()).filter(Boolean)
 }
 
 type Override = {
@@ -47,9 +72,11 @@ export default function Dashboard() {
   const [openMoments, setOpenMoments] = useState<Set<string>>(new Set(["matin"]))
   const [programStartDate, setProgramStartDate] = useState<string | null>(null)
   const [exclusions, setExclusions] = useState<Record<string, boolean | string[]>>({})
+  const [userId, setUserId] = useState<string | null>(null)
 
   const supabase = useMemo(() => createClient(), [])
   const { signOut } = useAuth()
+  const { menu: dbMenu } = useDayMenu(userId, viewDay)
 
   const handleSignOut = async () => {
     await signOut()
@@ -81,6 +108,7 @@ export default function Dashboard() {
       const { data: { user } } = await supabase.auth.getUser()
       let computedDay = 1
       if (user) {
+        setUserId(user.id)
         const { data: dbProfile } = await supabase
           .from("profiles")
           .select("prenom, age, genre, taille, poids, program_start, welcome_seen_at")
@@ -559,57 +587,122 @@ const saveMealLog = async (moment: string, items: string[]) => {
               </div>
             )}
 
-            {/* Meal cards */}
-            {viewDayData.meals.map((meal: Meal, i: number) => {
-              const overrideMeals = override?.meal_overrides?.[meal.moment]
-              const baseMeal = overrideMeals?.length ? { ...meal, items: overrideMeals } : meal
-              const meta = MEAL_META[meal.moment] ?? { icon: "🍴", label: meal.moment, horaire: "" }
-              const isOpen = openMoments.has(meal.moment)
-              const borderColor = MEAL_BORDER[meal.moment] ?? "#94a3b8"
-              const isLastMeal = i === viewDayData.meals.length - 1
+            {/* Meal cards — DB si disponible, sinon static */}
+            {dbMenu && !dbMenu.is_weekend ? (
+              <>
+                {(["petit_dejeuner", "collation_matin", "dejeuner", "collation_apres_midi", "diner"] as MealFieldName[]).map((field) => {
+                  const meta = DB_MEAL_META[field]
+                  if (!meta) return null
+                  const items = parseDbMeal(dbMenu[field as keyof typeof dbMenu] as string | null)
+                  if (items.length === 0) return null
+                  const isOpen = openMoments.has(field)
+                  const borderColor = DB_MEAL_BORDER[field]
+                  const isOverridden = dbMenu.overriddenFields.includes(field)
 
-              return (
-                <div key={i} style={{ background: "#fff", borderRadius: "16px", overflow: "hidden", boxShadow: "0 1px 3px rgba(0,0,0,0.06)", borderLeft: `3px solid ${borderColor}` }}>
-                  <button onClick={() => toggleMoment(meal.moment)}
-                    style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", background: isOpen ? "#fafafa" : "#fff", border: "none", cursor: "pointer", textAlign: "left" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                      <span style={{ fontSize: "20px" }}>{meta.icon}</span>
-                      <div>
-                        <p style={{ fontWeight: 700, fontSize: "14px", color: "#0f172a", margin: 0 }}>{meta.label}</p>
-                        <p style={{ fontSize: "11px", color: "#94a3b8", margin: 0 }}>{meta.horaire}</p>
+                  return (
+                    <div key={field} style={{ background: "#fff", borderRadius: "16px", overflow: "hidden", boxShadow: "0 1px 3px rgba(0,0,0,0.06)", borderLeft: `3px solid ${borderColor}` }}>
+                      <button onClick={() => toggleMoment(field)}
+                        style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", background: isOpen ? "#fafafa" : "#fff", border: "none", cursor: "pointer", textAlign: "left" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                          <span style={{ fontSize: "20px" }}>{meta.icon}</span>
+                          <div>
+                            <p style={{ fontWeight: 700, fontSize: "14px", color: "#0f172a", margin: 0 }}>
+                              {meta.label}
+                              {isOverridden && <span style={{ marginLeft: "6px", fontSize: "10px", background: "#fef3c7", color: "#92400e", borderRadius: "20px", padding: "1px 7px", fontWeight: 700 }}>adapté</span>}
+                            </p>
+                            <p style={{ fontSize: "11px", color: "#94a3b8", margin: 0 }}>{meta.horaire}</p>
+                          </div>
+                        </div>
+                        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                          <span style={{ background: "#f1f5f9", borderRadius: "20px", padding: "3px 10px", fontSize: "11px", fontWeight: 600, color: "#64748b" }}>
+                            {items.length} aliment{items.length > 1 ? "s" : ""}
+                          </span>
+                          <span style={{ color: "#94a3b8", fontSize: "13px", transform: isOpen ? "rotate(180deg)" : "rotate(0)", transition: "transform 0.2s", display: "inline-block" }}>▾</span>
+                        </div>
+                      </button>
+                      {isOpen && (
+                        <div style={{ padding: "0 16px 14px", borderTop: "1px solid #f8fafc" }}>
+                          {items.map((item, k) => (
+                            <div key={k} style={{ display: "flex", alignItems: "flex-start", gap: "8px", padding: "4px 0" }}>
+                              <span style={{ color: borderColor, fontSize: "14px", marginTop: "1px", flexShrink: 0, lineHeight: 1 }}>·</span>
+                              <span style={{ fontSize: "13px", color: "#334155", lineHeight: 1.55 }}>{item}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+                {dbMenu.astuce_umami && (
+                  <div style={{ background: "#fefce8", border: "1px solid #fde68a", borderRadius: "14px", padding: "12px 14px", display: "flex", gap: "10px", alignItems: "flex-start" }}>
+                    <span style={{ fontSize: "16px", flexShrink: 0 }}>✨</span>
+                    <div>
+                      <p style={{ fontSize: "10px", fontWeight: 800, color: "#92400e", letterSpacing: "0.08em", marginBottom: "3px" }}>ASTUCE UMAMI</p>
+                      <p style={{ fontSize: "13px", color: "#78350f", lineHeight: 1.6 }}>{dbMenu.astuce_umami}</p>
+                    </div>
+                  </div>
+                )}
+              </>
+            ) : dbMenu?.is_weekend ? (
+              <div style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: "16px", padding: "20px", textAlign: "center" }}>
+                <p style={{ fontSize: "28px", marginBottom: "8px" }}>🌿</p>
+                <p style={{ fontWeight: 700, fontSize: "15px", color: "#15803d", marginBottom: "6px" }}>Week-end libre</p>
+                <p style={{ fontSize: "13px", color: "#4ade80", lineHeight: 1.6 }}>
+                  Profite du week-end pour cuisiner librement en respectant les grands principes du programme.
+                </p>
+              </div>
+            ) : (
+              viewDayData.meals.map((meal: Meal, i: number) => {
+                const overrideMeals = override?.meal_overrides?.[meal.moment]
+                const baseMeal = overrideMeals?.length ? { ...meal, items: overrideMeals } : meal
+                const meta = MEAL_META[meal.moment] ?? { icon: "🍴", label: meal.moment, horaire: "" }
+                const isOpen = openMoments.has(meal.moment)
+                const borderColor = MEAL_BORDER[meal.moment] ?? "#94a3b8"
+                const isLastMeal = i === viewDayData.meals.length - 1
+
+                return (
+                  <div key={i} style={{ background: "#fff", borderRadius: "16px", overflow: "hidden", boxShadow: "0 1px 3px rgba(0,0,0,0.06)", borderLeft: `3px solid ${borderColor}` }}>
+                    <button onClick={() => toggleMoment(meal.moment)}
+                      style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", background: isOpen ? "#fafafa" : "#fff", border: "none", cursor: "pointer", textAlign: "left" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                        <span style={{ fontSize: "20px" }}>{meta.icon}</span>
+                        <div>
+                          <p style={{ fontWeight: 700, fontSize: "14px", color: "#0f172a", margin: 0 }}>{meta.label}</p>
+                          <p style={{ fontSize: "11px", color: "#94a3b8", margin: 0 }}>{meta.horaire}</p>
+                        </div>
                       </div>
-                    </div>
-                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                      <span style={{ background: "#f1f5f9", borderRadius: "20px", padding: "3px 10px", fontSize: "11px", fontWeight: 600, color: "#64748b" }}>
-                        {baseMeal.items.length} aliments
-                      </span>
-                      <span style={{ color: "#94a3b8", fontSize: "13px", transform: isOpen ? "rotate(180deg)" : "rotate(0)", transition: "transform 0.2s", display: "inline-block" }}>▾</span>
-                    </div>
-                  </button>
-                  {isOpen && (
-                    <div style={{ padding: "0 16px 14px", borderTop: "1px solid #f8fafc" }}>
-                      {baseMeal.items.map((item, k) => (
-                        <div key={k} style={{ display: "flex", alignItems: "flex-start", gap: "8px", padding: "4px 0" }}>
-                          <span style={{ color: borderColor, fontSize: "14px", marginTop: "1px", flexShrink: 0, lineHeight: 1 }}>·</span>
-                          <span style={{ fontSize: "13px", color: "#334155", lineHeight: 1.55 }}>{item}</span>
-                        </div>
-                      ))}
-                      {baseMeal.conseil && (
-                        <p style={{ fontSize: "12px", color: "#16a34a", marginTop: "8px", fontStyle: "italic", paddingTop: "8px", borderTop: "1px solid #f0fdf4" }}>
-                          💡 {baseMeal.conseil}
-                        </p>
-                      )}
-                      {isLastMeal && day.tip && (
-                        <div style={{ marginTop: "10px", paddingTop: "10px", borderTop: "1px solid #fef3c7", display: "flex", gap: "8px", alignItems: "flex-start" }}>
-                          <span style={{ fontSize: "14px", flexShrink: 0 }}>✨</span>
-                          <p style={{ fontSize: "12px", color: "#92400e", lineHeight: 1.55, fontStyle: "italic" }}>{day.tip}</p>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              )
-            })}
+                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                        <span style={{ background: "#f1f5f9", borderRadius: "20px", padding: "3px 10px", fontSize: "11px", fontWeight: 600, color: "#64748b" }}>
+                          {baseMeal.items.length} aliments
+                        </span>
+                        <span style={{ color: "#94a3b8", fontSize: "13px", transform: isOpen ? "rotate(180deg)" : "rotate(0)", transition: "transform 0.2s", display: "inline-block" }}>▾</span>
+                      </div>
+                    </button>
+                    {isOpen && (
+                      <div style={{ padding: "0 16px 14px", borderTop: "1px solid #f8fafc" }}>
+                        {baseMeal.items.map((item, k) => (
+                          <div key={k} style={{ display: "flex", alignItems: "flex-start", gap: "8px", padding: "4px 0" }}>
+                            <span style={{ color: borderColor, fontSize: "14px", marginTop: "1px", flexShrink: 0, lineHeight: 1 }}>·</span>
+                            <span style={{ fontSize: "13px", color: "#334155", lineHeight: 1.55 }}>{item}</span>
+                          </div>
+                        ))}
+                        {baseMeal.conseil && (
+                          <p style={{ fontSize: "12px", color: "#16a34a", marginTop: "8px", fontStyle: "italic", paddingTop: "8px", borderTop: "1px solid #f0fdf4" }}>
+                            💡 {baseMeal.conseil}
+                          </p>
+                        )}
+                        {isLastMeal && day.tip && (
+                          <div style={{ marginTop: "10px", paddingTop: "10px", borderTop: "1px solid #fef3c7", display: "flex", gap: "8px", alignItems: "flex-start" }}>
+                            <span style={{ fontSize: "14px", flexShrink: 0 }}>✨</span>
+                            <p style={{ fontSize: "12px", color: "#92400e", lineHeight: 1.55, fontStyle: "italic" }}>{day.tip}</p>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )
+              })
+            )}
 
             {/* Comment je me sens */}
             <EnergyCheckin currentDay={viewDay} onCheckin={() => {}} />
