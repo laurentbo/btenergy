@@ -125,9 +125,73 @@ export type Database = {
           updated_at?: string
         }
       }
-    }
+      meal_plans: {
+        Row: {
+          id: string
+          jour: number
+          semaine: number
+          nom_jour: string
+          is_weekend: boolean
+          petit_dejeuner: string | null
+          collation_matin: string | null
+          dejeuner: string | null
+          collation_apres_midi: string | null
+          diner: string | null
+          astuce_umami: string | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: Omit<Database["public"]["Tables"]["meal_plans"]["Row"], "id" | "updated_at">
+        Update: Partial<Database["public"]["Tables"]["meal_plans"]["Insert"]>
+      }
+      user_meal_overrides: {
+        Row: {
+          id: string
+          user_id: string
+          jour: number
+          field_name: "petit_dejeuner" | "collation_matin" | "dejeuner" | "collation_apres_midi" | "diner" | "astuce_umami"
+          override_value: string | null
+          reason: string | null
+          created_at: string
+          created_by: string | null
+        }
+        Insert: Omit<Database["public"]["Tables"]["user_meal_overrides"]["Row"], "id" | "created_at">
+        Update: Partial<Database["public"]["Tables"]["user_meal_overrides"]["Insert"]>
+      }
+      user_food_preferences: {
+        Row: {
+          id: string
+          user_id: string
+          ingredient: string
+          type: "dislike" | "allergy" | "intolerance"
+          note: string | null
+          created_at: string
+        }
+        Insert: Omit<Database["public"]["Tables"]["user_food_preferences"]["Row"], "id" | "created_at">
+        Update: Partial<Database["public"]["Tables"]["user_food_preferences"]["Insert"]>
+      }
+    }  // end Tables
     Views: Record<string, never>
     Functions: Record<string, never>
     Enums: { role: Role }
   }
+}
+
+export type MealPlan = Database["public"]["Tables"]["meal_plans"]["Row"]
+export type MealOverride = Database["public"]["Tables"]["user_meal_overrides"]["Row"]
+export type FoodPreference = Database["public"]["Tables"]["user_food_preferences"]["Row"]
+export type MealFieldName = MealOverride["field_name"]
+
+export type ResolvedDayMenu = {
+  jour: number
+  semaine: number
+  nom_jour: string
+  is_weekend: boolean
+  petit_dejeuner: string | null
+  collation_matin: string | null
+  dejeuner: string | null
+  collation_apres_midi: string | null
+  diner: string | null
+  astuce_umami: string | null
+  overriddenFields: MealFieldName[]
 }

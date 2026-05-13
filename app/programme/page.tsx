@@ -1,31 +1,49 @@
 "use client"
 import { useState, useEffect, useMemo } from "react"
 import Link from "next/link"
-import { PROGRAM } from "@/data/programme"
+import { VERISSIMO_PROGRAM } from "@/data/verissimo"
 import { createClient } from "@/lib/supabase/client"
-import MealsBlock from "./components/MealsBlock"
 import LearnTab from "./components/LearnTab"
+import { useDayMenu } from "@/lib/hooks/useDayMenu"
+import { addFoodPreference } from "@/lib/menus"
+import type { MealFieldName } from "@/lib/supabase/types"
 
 type PTab = "accueil" | "journee" | "programme" | "suivi"
 
 const PHASE_COLORS: Record<string, string> = {
-  cure_s1: "var(--green)",
-  cure_s2: "var(--accent-cyan)",
-  off: "var(--accent-lime)",
-  reprise: "#BF7D2C",
+  s1: "var(--green)",
+  s2: "var(--accent-cyan)",
+  s3: "var(--accent-lime)",
+  s3_volaille: "#BF7D2C",
 }
 
 const SEMAINE_LABELS: Record<number, string> = {
-  1: "Semaine 1 · Détox",
-  2: "Semaine 2 · Vitalité",
+  1: "Semaine 1 · Fondations",
+  2: "Semaine 2 · Équilibre",
   3: "Semaine 3 · Ancrage",
 }
+
+const MEAL_META: { key: MealFieldName; icon: string; label: string; snack: boolean; color: string }[] = [
+  { key: "petit_dejeuner",       icon: "🌅", label: "Petit-déjeuner",       snack: false, color: "#f59e0b" },
+  { key: "collation_matin",      icon: "🍎", label: "Collation matin",      snack: true,  color: "rgba(255,255,255,0.3)" },
+  { key: "dejeuner",             icon: "☀️", label: "Déjeuner",             snack: false, color: "var(--green)" },
+  { key: "collation_apres_midi", icon: "🍊", label: "Collation après-midi", snack: true,  color: "rgba(255,255,255,0.3)" },
+  { key: "diner",                icon: "🌙", label: "Dîner",                snack: false, color: "var(--accent-cyan)" },
+]
 
 export default function ProgrammePage() {
   const [activeTab, setActiveTab] = useState<PTab>("accueil")
   const [currentDay, setCurrentDay] = useState(1)
+  const [userId, setUserId] = useState<string | null>(null)
   const [prenom, setPrenom] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
+
+  // "Je n'aime pas ça" modal
+  const [dislikeModal, setDislikeModal] = useState<{ field: MealFieldName; content: string } | null>(null)
+  const [dislikeIngredient, setDislikeIngredient] = useState("")
+  const [dislikeType, setDislikeType] = useState<"dislike" | "allergy" | "intolerance">("dislike")
+  const [dislikeSaving, setDislikeSaving] = useState(false)
+  const [dislikeConfirm, setDislikeConfirm] = useState(false)
 
   // Suivi state — mapped to existing journal_entries columns
   const [energie, setEnergie] = useState(5)
@@ -44,6 +62,7 @@ export default function ProgrammePage() {
 
       const { data: { user } } = await supabase.auth.getUser()
       if (user) {
+        setUserId(user.id)
         const { data: profile } = await supabase
           .from("profiles")
           .select("prenom, current_day")
@@ -132,10 +151,21 @@ export default function ProgrammePage() {
     )
   }
 
-  const jour = PROGRAM[Math.min(currentDay - 1, PROGRAM.length - 1)]
+  const { menu: dbMenu } = useDayMenu(userId, Math.min(currentDay, 21))
+  const jour = VERISSIMO_PROGRAM[Math.min(currentDay - 1, VERISSIMO_PROGRAM.length - 1)]
   const phaseColor = PHASE_COLORS[jour.type] ?? "var(--green)"
   const semLabel = SEMAINE_LABELS[jour.s] ?? `Semaine ${jour.s}`
-  const progress = Math.round((currentDay / 21) * 100)
+  const progress = Math.round((Math.min(currentDay, 21) / 21) * 100)
+
+  const handleDislikeSave = async () => {
+    if (!userId || !dislikeIngredient.trim()) return
+    setDislikeSaving(true)
+    try {
+      await addFoodPreference(userId, dislikeIngredient, dislikeType)
+      setDislikeConfirm(true)
+      setTimeout(() => { setDislikeConfirm(false); setDislikeModal(null); setDislikeIngredient("") }, 2000)
+    } finally { setDislikeSaving(false) }
+  }
 
   return (
     <div className="min-h-screen pb-8" style={{ background: "#0f1117" }}>
@@ -149,7 +179,7 @@ export default function ProgrammePage() {
               style={{ background: "linear-gradient(135deg, var(--green-dim), var(--blue-dim))", color: "#050e1a" }}>
               B
             </Link>
-            <span className="font-black text-sm gradient-text">Cure 21 jours</span>
+            <span className="font-black text-sm gradient-text">Pari 3 semaines sur toi</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="tag" style={{ borderColor: `${phaseColor}40`, color: phaseColor }}>
@@ -265,7 +295,7 @@ export default function ProgrammePage() {
 
               {/* 21-day grid */}
               <div className="grid grid-cols-7 gap-1">
-                {PROGRAM.map((d) => {
+                {VERISSIMO_PROGRAM.map((d) => {
                   const isDone = d.jour < currentDay
                   const isToday = d.jour === currentDay
                   const dc = PHASE_COLORS[d.type] ?? phaseColor
@@ -321,18 +351,179 @@ export default function ProgrammePage() {
 
         {/* ── Journée ── */}
         {activeTab === "journee" && (
-          <div className="fade-up">
-            <div className="rounded-2xl p-3 mb-4 flex items-center gap-2"
-              style={{ background: `${phaseColor}10`, border: `1px solid ${phaseColor}22` }}>
-              <span style={{ fontSize: "14px" }}>📋</span>
-              <p className="text-xs font-semibold" style={{ color: phaseColor }}>
-                {jour.type === "cure_s1" ? "Cure semaine 1 · Détox & Purification" :
-                 jour.type === "cure_s2" ? "Cure semaine 2 · Énergie & Vitalité" :
-                 jour.type === "off" ? "Journée libre — reste dans l'esprit de la cure" :
-                 "Phase de reprise — réintroduction progressive"}
-              </p>
+          <div className="fade-up space-y-3">
+
+            {/* Cure terminée */}
+            {currentDay > 21 && (
+              <div className="rounded-2xl p-8 text-center"
+                style={{ background: "rgba(4,10,22,0.7)", border: "1px solid rgba(159,215,109,0.3)" }}>
+                <div style={{ fontSize: "48px" }}>🎉</div>
+                <h2 className="font-black mt-3 mb-2" style={{ color: "#fff", fontSize: "22px" }}>Cure terminée !</h2>
+                <p className="text-sm mb-5" style={{ color: "rgba(255,255,255,0.6)", lineHeight: "1.7" }}>
+                  Tu as tenu les 21 jours. Les habitudes que tu as construites sont maintenant les tiennes.
+                </p>
+                <Link href="/dashboard"
+                  className="inline-block rounded-xl px-6 py-3 font-bold text-sm"
+                  style={{ background: "var(--green)", color: "#060e12" }}>
+                  Voir mon bilan
+                </Link>
+              </div>
+            )}
+
+            {/* Week-end libre */}
+            {currentDay <= 21 && dbMenu?.is_weekend && (
+              <div className="space-y-3">
+                <div className="rounded-2xl p-6 text-center"
+                  style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.1)" }}>
+                  <div style={{ fontSize: "36px" }}>🌿</div>
+                  <h2 className="font-black mt-3 mb-1" style={{ color: "#fff", fontSize: "18px" }}>Week-end libre</h2>
+                  <p className="text-sm" style={{ color: "rgba(255,255,255,0.5)", lineHeight: "1.7" }}>
+                    Reste dans l'esprit Verissimo — légumes, fruits, légumineuses.
+                    Mange selon ta faim et ce qui te fait envie.
+                  </p>
+                </div>
+                {dbMenu.astuce_umami && (
+                  <div className="rounded-2xl p-4"
+                    style={{ background: "rgba(191,125,44,0.07)", border: "1px solid rgba(191,125,44,0.22)", borderLeft: "3px solid #BF7D2C" }}>
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <span style={{ fontSize: "16px" }}>✨</span>
+                      <span className="text-xs font-bold uppercase tracking-widest" style={{ color: "#BF7D2C" }}>Inspiration du week-end</span>
+                    </div>
+                    <p className="text-sm italic leading-relaxed" style={{ color: "rgba(191,125,44,0.9)" }}>{dbMenu.astuce_umami}</p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Jours normaux */}
+            {currentDay <= 21 && !dbMenu?.is_weekend && (
+              <>
+                {/* Phase label */}
+                <div className="rounded-2xl p-3 flex items-center gap-2"
+                  style={{ background: `${phaseColor}10`, border: `1px solid ${phaseColor}22` }}>
+                  <span style={{ fontSize: "14px" }}>📋</span>
+                  <p className="text-xs font-semibold" style={{ color: phaseColor }}>
+                    {jour.type === "s1" ? "Semaine 1 · Fondations — végétalien" :
+                     jour.type === "s2" ? "Semaine 2 · Équilibre — végétalien" :
+                     jour.type === "s3" ? "Semaine 3 · Ancrage — 100% végétalien" :
+                     "Semaine 3 · Ancrage — dîner volaille bio"}
+                  </p>
+                </div>
+
+                {/* Rituel du matin */}
+                <div className="rounded-2xl p-3 flex items-center gap-2.5"
+                  style={{ background: "rgba(159,215,109,0.07)", border: "1px solid rgba(159,215,109,0.18)" }}>
+                  <span style={{ fontSize: "15px" }}>💧</span>
+                  <p className="text-xs font-medium" style={{ color: "rgba(159,215,109,0.85)" }}>
+                    Rituel du matin · eau tiède + ½ citron · étirements 5-10 min
+                  </p>
+                </div>
+
+                {/* Meals from DB */}
+                {MEAL_META.map(({ key, icon, label, snack, color }) => {
+                  const content = dbMenu ? dbMenu[key] : null
+                  const isOverridden = dbMenu?.overriddenFields?.includes(key)
+                  return (
+                    <div key={key} className="rounded-2xl p-4 group"
+                      style={{
+                        background: snack ? "rgba(255,255,255,0.03)" : "rgba(4,10,22,0.6)",
+                        border: `1px solid ${isOverridden ? "rgba(255,210,0,0.25)" : snack ? "rgba(255,255,255,0.07)" : color + "28"}`,
+                        borderLeft: `3px solid ${isOverridden ? "rgba(255,210,0,0.6)" : color}`,
+                      }}>
+                      <div className="flex items-center gap-2 mb-1.5">
+                        <span style={{ fontSize: "16px" }}>{icon}</span>
+                        <span className="text-xs font-bold uppercase tracking-widest flex-1" style={{ color: isOverridden ? "#ffd700" : color }}>
+                          {label}{snack ? " · si faim" : ""}
+                        </span>
+                        {!snack && userId && content && (
+                          <button
+                            onClick={() => { setDislikeModal({ field: key, content: content ?? "" }); setDislikeIngredient("") }}
+                            className="opacity-0 group-hover:opacity-100 transition-opacity text-xs rounded-lg px-2 py-0.5"
+                            style={{ background: "rgba(255,100,100,0.12)", color: "rgba(255,120,120,0.7)", border: "1px solid rgba(255,100,100,0.2)" }}>
+                            Je n'aime pas ça
+                          </button>
+                        )}
+                      </div>
+                      <p className="text-sm leading-relaxed"
+                        style={{ color: snack ? "rgba(255,255,255,0.5)" : "var(--text-secondary)" }}>
+                        {content ?? <span style={{ color: "rgba(255,255,255,0.2)", fontStyle: "italic" }}>Chargement…</span>}
+                      </p>
+                    </div>
+                  )
+                })}
+
+                {/* Astuce umami */}
+                {dbMenu?.astuce_umami && (
+                  <div className="rounded-2xl p-4"
+                    style={{ background: "rgba(191,125,44,0.07)", border: "1px solid rgba(191,125,44,0.22)", borderLeft: "3px solid #BF7D2C" }}>
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <span style={{ fontSize: "16px" }}>✨</span>
+                      <span className="text-xs font-bold uppercase tracking-widest" style={{ color: "#BF7D2C" }}>Astuce umami</span>
+                    </div>
+                    <p className="text-sm italic leading-relaxed" style={{ color: "rgba(191,125,44,0.9)" }}>{dbMenu.astuce_umami}</p>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        )}
+
+        {/* ── Modal "Je n'aime pas ça" ── */}
+        {dislikeModal && (
+          <div className="fixed inset-0 z-50 flex items-end justify-center p-4 sm:items-center"
+            style={{ background: "rgba(0,0,0,0.65)", backdropFilter: "blur(8px)" }}>
+            <div className="w-full max-w-sm rounded-2xl p-5 space-y-4"
+              style={{ background: "#0f1117", border: "1px solid rgba(255,255,255,0.12)" }}>
+              {dislikeConfirm ? (
+                <div className="text-center py-4">
+                  <div style={{ fontSize: "32px" }}>✅</div>
+                  <p className="font-bold mt-2" style={{ color: "var(--green)" }}>Enregistré, merci !</p>
+                  <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.4)" }}>Le coach en sera informé.</p>
+                </div>
+              ) : (
+                <>
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-bold text-sm" style={{ color: "#fff" }}>Je n'aime pas ça</h3>
+                    <button onClick={() => setDislikeModal(null)} style={{ color: "rgba(255,255,255,0.4)" }}>✕</button>
+                  </div>
+                  <p className="text-xs rounded-xl p-3" style={{ background: "rgba(255,255,255,0.05)", color: "rgba(255,255,255,0.5)", lineHeight: "1.6" }}>
+                    {dislikeModal.content}
+                  </p>
+                  <div>
+                    <label className="text-xs font-semibold mb-1.5 block" style={{ color: "rgba(255,255,255,0.4)" }}>
+                      Quel ingrédient posait problème ?
+                    </label>
+                    <input
+                      autoFocus
+                      value={dislikeIngredient}
+                      onChange={(e) => setDislikeIngredient(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && handleDislikeSave()}
+                      placeholder="ex : fenouil, ail, shiitake…"
+                      className="w-full rounded-xl px-3 py-2 text-sm outline-none"
+                      style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.15)", color: "#fff" }}
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    {(["dislike", "allergy", "intolerance"] as const).map((t) => (
+                      <button key={t} onClick={() => setDislikeType(t)}
+                        className="flex-1 rounded-xl py-2 text-xs font-bold"
+                        style={{
+                          background: dislikeType === t ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.05)",
+                          color: dislikeType === t ? "#fff" : "rgba(255,255,255,0.35)",
+                          border: dislikeType === t ? "1px solid rgba(255,255,255,0.2)" : "1px solid transparent",
+                        }}>
+                        {t === "dislike" ? "N'aime pas" : t === "allergy" ? "Allergie" : "Intolérance"}
+                      </button>
+                    ))}
+                  </div>
+                  <button onClick={handleDislikeSave} disabled={dislikeSaving || !dislikeIngredient.trim()}
+                    className="w-full rounded-xl py-2.5 font-bold text-sm"
+                    style={{ background: "var(--green)", color: "#060e12", opacity: !dislikeIngredient.trim() ? 0.4 : 1 }}>
+                    {dislikeSaving ? "…" : "Signaler au coach"}
+                  </button>
+                </>
+              )}
             </div>
-            <MealsBlock jour={jour} />
           </div>
         )}
 
@@ -416,10 +607,10 @@ export default function ProgrammePage() {
                 <div>
                   <p className="font-bold text-sm" style={{ color: "var(--text-primary)" }}>{jour.phase}</p>
                   <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-                    {jour.type === "cure_s1" ? "Jus + dîner léger · détox active" :
-                     jour.type === "cure_s2" ? "Jus + légumineuses · vitalité" :
-                     jour.type === "off" ? "Alimentation alcaline libre" :
-                     "Réintroduction progressive"}
+                    {jour.type === "s1" ? "Repas solides · 100% végétalien · fondations" :
+                     jour.type === "s2" ? "Repas solides · 100% végétalien · équilibre" :
+                     jour.type === "s3" ? "Repas solides · 100% végétalien · ancrage" :
+                     "Repas solides · volaille bio au dîner"}
                   </p>
                 </div>
               </div>

@@ -1,6 +1,6 @@
 "use client"
 import { useState, useEffect, useMemo } from "react"
-import { PROGRAM, WEEK_THEMES, calcCurrentDay, calcRawDay, type UserProfile, type Meal } from "@/data/program"
+import { PROGRAM, WEEK_THEMES, calcCurrentDay, calcRawDay, getConseilDuJour, type UserProfile, type Meal } from "@/data/program"
 import MealCard from "@/components/MealCard"
 import JournalForm from "@/components/JournalForm"
 import Timeline21 from "@/components/Timeline21"
@@ -9,6 +9,7 @@ import PrincipesSection from "@/components/PrincipesSection"
 import WeightTracker from "@/components/WeightTracker"
 import ShoppingList from "@/components/ShoppingList"
 import EnergyCheckin from "@/components/EnergyCheckin"
+import QuestionFooter from "@/components/QuestionFooter"
 import { createClient } from "@/lib/supabase/client"
 import { useAuth } from "@/lib/auth-context"
 import WelcomeScreen from "@/components/WelcomeScreen"
@@ -44,7 +45,6 @@ export default function Dashboard() {
   const [viewDay, setViewDay] = useState(1)
   const [mealLogs, setMealLogs] = useState<Record<string, string[]>>({})
   const [openMoments, setOpenMoments] = useState<Set<string>>(new Set(["matin"]))
-  const [hydrationLiters, setHydrationLiters] = useState<number>(0)
   const [programStartDate, setProgramStartDate] = useState<string | null>(null)
   const [exclusions, setExclusions] = useState<Record<string, boolean | string[]>>({})
 
@@ -83,7 +83,7 @@ export default function Dashboard() {
       if (user) {
         const { data: dbProfile } = await supabase
           .from("profiles")
-          .select("prenom, age, program_start, welcome_seen_at")
+          .select("prenom, age, genre, taille, poids, program_start, welcome_seen_at")
           .eq("id", user.id)
           .maybeSingle()
 
@@ -98,7 +98,10 @@ export default function Dashboard() {
         const supabaseProfile: UserProfile | null = dbProfile?.prenom
           ? {
               prenom: dbProfile.prenom,
-              age: dbProfile.age ?? 0,
+              age: dbProfile.age ?? undefined,
+              genre: dbProfile.genre ?? undefined,
+              taille: dbProfile.taille ?? undefined,
+              poids: dbProfile.poids ?? undefined,
               start_date: startDate ?? undefined,
             }
           : null
@@ -144,8 +147,6 @@ export default function Dashboard() {
           .catch(() => {})
       }
 
-      const savedHydration = localStorage.getItem(`btenergy_hydration_day_${computedDay}`)
-      if (savedHydration) setHydrationLiters(parseFloat(savedHydration))
 
       setChecking(false)
     }
@@ -159,7 +160,10 @@ export default function Dashboard() {
     if (user) {
       await supabase.from("profiles").update({
         prenom: p.prenom,
-        age: p.age,
+        age: p.age ?? null,
+        genre: p.genre ?? null,
+        taille: p.taille ?? null,
+        poids: p.poids ?? null,
         ...(p.start_date ? { program_start: p.start_date } : {}),
       }).eq("id", user.id)
       if (p.start_date) setCurrentDay(calcCurrentDay(p.start_date))
@@ -192,12 +196,7 @@ export default function Dashboard() {
     loadViewDay()
   }, [viewDay, checking]) // eslint-disable-line
 
-  const handleHydrationChange = (liters: number) => {
-    setHydrationLiters(liters)
-    localStorage.setItem(`btenergy_hydration_day_${currentDay}`, liters.toString())
-  }
-
-  const saveMealLog = async (moment: string, items: string[]) => {
+const saveMealLog = async (moment: string, items: string[]) => {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
     await supabase.from("meal_logs").upsert(
@@ -313,452 +312,400 @@ export default function Dashboard() {
     )
   }
 
-  return (
-    <div className="min-h-screen" style={{ background: "linear-gradient(160deg, #0b1e38 0%, #07111e 55%, #050e1a 100%)" }}>
+  const WEEK_LIGHT: Record<number, { text: string; bg: string; border: string }> = {
+    1: { text: "#15803d", bg: "#dcfce7", border: "#86efac" },
+    2: { text: "#0369a1", bg: "#e0f2fe", border: "#7dd3fc" },
+    3: { text: "#b45309", bg: "#fef3c7", border: "#fcd34d" },
+  }
+  const MEAL_BORDER: Record<string, string> = {
+    "matin":      "#f59e0b",
+    "midi":       "#22c55e",
+    "après-midi": "#fb923c",
+    "soir":       "#818cf8",
+  }
+  const wLight = WEEK_LIGHT[day.week] ?? WEEK_LIGHT[1]
 
-      <header className="sticky top-0 z-50 px-5 py-3.5"
-        style={{ background: "rgba(5,14,26,0.82)", backdropFilter: "blur(28px)", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
-        <div className="max-w-2xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl flex items-center justify-center text-sm font-black"
-              style={{ background: "linear-gradient(135deg, var(--green-dim), var(--blue-dim))", color: "#050e1a" }}>
-              B
+  return (
+    <div className="min-h-screen" style={{ background: "#f0f4f8" }}>
+
+      {/* ── Header ── */}
+      <header className="sticky top-0 z-50"
+        style={{ background: "rgba(255,255,255,0.92)", backdropFilter: "blur(20px)", borderBottom: "1px solid #e2e8f0", padding: "12px 20px" }}>
+        <div style={{ maxWidth: "640px", margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <button
+            onClick={() => setActiveTab("programme")}
+            style={{ background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex", alignItems: "center", gap: "6px" }}>
+            {activeTab === "reperes" && (
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M19 12H5"/><path d="M12 5l-7 7 7 7"/>
+              </svg>
+            )}
+            <span style={{ fontWeight: 900, fontSize: "12px", letterSpacing: "-0.01em" }}>
+              <span style={{ color: "#16a34a" }}>Backt</span><span style={{ color: "#1e293b" }}>o</span><span style={{ color: "#16a34a" }}>energy</span>
+            </span>
+          </button>
+          {prenom && (
+            <span style={{ fontSize: "14px", fontWeight: 700, color: "#0f172a" }}>Hello {prenom} 👋</span>
+          )}
+          <button
+            onClick={() => setActiveTab("reperes")}
+            style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "2px", background: "none", border: "none", cursor: "pointer", padding: 0 }}>
+            <div style={{ width: 36, height: 36, borderRadius: "50%", background: "#16a34a", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", flexShrink: 0 }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+              </svg>
             </div>
-            <span className="font-black text-sm gradient-text">Backtoenergy</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="tag" style={{ borderColor: `${weekInfo.color}40`, color: weekInfo.color }}>
-              S{day.week} · J{currentDay}
-            </div>
-            <button
-              onClick={() => setActiveTab("reperes")}
-              className="flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold transition-all"
-              style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.75)" }}>
-              Mes repères ↗
-            </button>
-          </div>
+            <span style={{ fontSize: "9px", fontWeight: 700, color: "#16a34a", letterSpacing: "0.02em" }}>Mes repères</span>
+          </button>
         </div>
       </header>
 
-      <main className="max-w-2xl mx-auto px-4 pb-28 pt-6">
+      <main style={{ maxWidth: "640px", margin: "0 auto", padding: "16px 16px 100px" }}>
 
-        {/* Hero du jour */}
-        <div className="fade-up mb-5"
-          style={{
-            background: "rgba(4,10,22,0.72)",
-            border: `1px solid ${weekInfo.color}30`,
-            borderRadius: "26px",
-            padding: "24px",
-            backdropFilter: "blur(28px)",
-            boxShadow: `0 1px 0 rgba(255,255,255,0.06) inset, 0 16px 48px rgba(0,0,0,0.4), 0 0 60px ${weekInfo.color}08`,
-          }}>
-
-          <div className="flex items-center gap-2 mb-4">
-            <div className="rounded-lg px-3 py-1 text-xs font-bold tracking-widest uppercase"
-              style={{ background: `${weekInfo.color}14`, color: weekInfo.color, border: `1px solid ${weekInfo.color}22`, letterSpacing: "0.1em" }}>
-              Semaine {day.week} · {weekInfo.title.split(" & ")[0]}
-            </div>
-          </div>
-          <p className="font-bold mb-3" style={{ color: "var(--text-primary)", fontSize: "15px" }}>
-            {day.theme}
-          </p>
-
-          <div className="flex items-start justify-between gap-4 mb-5">
-            <div className="flex-1">
-              <h1 className="font-black mb-2 leading-tight" style={{ color: "var(--text-primary)", fontSize: "26px" }}>
-                Bonjour, {prenom ?? "toi"} 👋
-              </h1>
-              <p className="italic leading-relaxed" style={{ color: weekInfo.color, opacity: 0.85, fontSize: "14px" }}>
-                &ldquo;{day.coachWord}&rdquo;
-              </p>
-            </div>
-            <div className="flex-shrink-0 flex flex-col items-center justify-center rounded-2xl"
-              style={{ background: `${weekInfo.color}0e`, border: `1px solid ${weekInfo.color}20`, width: "68px", height: "68px" }}>
-              <div className="font-black gradient-text leading-none" style={{ fontSize: "32px" }}>{currentDay}</div>
-              <div className="font-semibold" style={{ color: "var(--text-muted)", fontSize: "11px" }}>/ 21</div>
-            </div>
-          </div>
-
-          <div className="mb-4">
-            <div className="flex justify-between mb-2">
-              <span style={{ color: "var(--text-muted)", fontSize: "12px" }}>Progression du programme</span>
-              <span className="font-bold" style={{ color: weekInfo.color, fontSize: "12px" }}>{Math.round((currentDay / 21) * 100)}%</span>
-            </div>
-            <div className="progress-bar">
-              <div className="progress-fill" style={{ width: `${(currentDay / 21) * 100}%`, background: `linear-gradient(90deg, ${weekInfo.color}, var(--blue))` }} />
-            </div>
-          </div>
-
-          {/* Hydratation */}
-          <div className="rounded-xl px-4 py-3"
-            style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}>
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-2">
-                <span style={{ fontSize: "15px" }}>💧</span>
-                <span style={{ color: "rgba(255,255,255,0.62)", fontSize: "13px" }}>{day.hydration}</span>
+      {activeTab === "reperes" ? (
+        /* ══════════════════════════════════════════
+           MES REPÈRES — vue complète
+           ══════════════════════════════════════════ */
+        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+          {profile && (
+            <div style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: "16px", padding: "16px" }}>
+              <p style={{ fontSize: "10px", fontWeight: 800, letterSpacing: "0.1em", color: "#16a34a", marginBottom: "12px" }}>MON PROFIL</p>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+                {[
+                  { label: "Prénom", value: profile.prenom },
+                  { label: "Genre", value: profile.genre ?? "—" },
+                  { label: "Taille", value: profile.taille ? `${profile.taille} cm` : "—" },
+                  { label: "Poids", value: profile.poids ? `${profile.poids} kg` : "—" },
+                  { label: "Âge", value: profile.age ? `${profile.age} ans` : "—" },
+                  { label: "Jour en cours", value: `J${currentDay} / 21` },
+                ].map(({ label, value }) => (
+                  <div key={label} style={{ background: "#fff", borderRadius: "10px", padding: "10px 12px" }}>
+                    <p style={{ fontSize: "9px", fontWeight: 700, color: "#94a3b8", letterSpacing: "0.08em", marginBottom: "2px" }}>{label.toUpperCase()}</p>
+                    <p style={{ fontSize: "14px", fontWeight: 700, color: "#0f172a" }}>{value}</p>
+                  </div>
+                ))}
               </div>
-              <span className="font-bold text-sm" style={{ color: "var(--blue)" }}>
-                {hydrationLiters.toFixed(1)}L
-              </span>
             </div>
-            <div className="flex gap-2">
-              {[0.25, 0.5, 1].map(v => (
-                <button
-                  key={v}
-                  onClick={() => handleHydrationChange(Math.min(3, hydrationLiters + v))}
-                  className="flex-1 py-1.5 rounded-lg text-xs font-semibold transition-all"
-                  style={{
-                    background: "rgba(76,201,240,0.1)",
-                    border: "1px solid rgba(76,201,240,0.2)",
-                    color: "var(--blue)",
-                  }}>
-                  +{v}L
-                </button>
-              ))}
-              <button
-                onClick={() => handleHydrationChange(0)}
-                className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
-                style={{
-                  background: "rgba(255,255,255,0.05)",
-                  border: "1px solid rgba(255,255,255,0.08)",
-                  color: "var(--text-muted)",
-                }}>
-                ↺
-              </button>
-            </div>
+          )}
+          <div style={{ background: "#fff", borderRadius: "16px", padding: "16px", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
+            <p style={{ fontSize: "10px", fontWeight: 800, letterSpacing: "0.1em", color: "#94a3b8", marginBottom: "14px" }}>MODIFIER MES INFORMATIONS</p>
+            <ProfilForm onSave={handleSaveProfile} initial={profile} />
+          </div>
+          <div style={{ background: "#fff", borderRadius: "16px", padding: "16px", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
+            <p style={{ fontSize: "12px", color: "#94a3b8", marginBottom: "10px" }}>Se déconnecter ferme ta session. Tes données sont sauvegardées.</p>
+            <button onClick={handleSignOut}
+              style={{ width: "100%", padding: "10px", borderRadius: "10px", fontWeight: 600, fontSize: "13px", background: "#fff1f2", color: "#e11d48", border: "1px solid #fecdd3", cursor: "pointer" }}>
+              Se déconnecter
+            </button>
           </div>
         </div>
+      ) : (
+        /* ══════════════════════════════════════════
+           VUE PRINCIPALE (tous les autres onglets)
+           ══════════════════════════════════════════ */
+        <>
 
-        {/* Rituel du matin */}
-        <div className="card fade-up mb-3 px-5 py-4 flex items-start gap-4">
-          <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
-            style={{ background: "rgba(159,215,109,0.1)", border: "1px solid rgba(159,215,109,0.22)", fontSize: "16px" }}>🌅</div>
+        {/* ── Hero card ── */}
+        <div style={{ background: "#fff", borderRadius: "20px", padding: "20px", marginBottom: "12px", boxShadow: "0 1px 4px rgba(0,0,0,0.07)" }}>
+
+          {/* Phase badge */}
+          <div style={{
+            display: "inline-flex", alignItems: "center",
+            background: wLight.bg, color: wLight.text,
+            border: `1px solid ${wLight.border}`,
+            borderRadius: "20px", padding: "4px 12px",
+            fontSize: "11px", fontWeight: 700, letterSpacing: "0.06em", marginBottom: "14px",
+          }}>
+            S{day.week} · {weekInfo.title.toUpperCase()}
+          </div>
+
+          {/* Quote + day counter */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", marginBottom: "16px" }}>
+            <p style={{ fontSize: "13px", fontStyle: "italic", color: wLight.text, lineHeight: 1.5 }}>
+              &ldquo;{day.theme}&rdquo;
+            </p>
+            <div style={{
+              flexShrink: 0, width: 64, height: 64, borderRadius: "16px",
+              background: wLight.bg, border: `1px solid ${wLight.border}`,
+              display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+            }}>
+              <span style={{ fontSize: "26px", fontWeight: 900, color: wLight.text, lineHeight: 1 }}>{currentDay}</span>
+              <span style={{ fontSize: "10px", color: "#94a3b8", fontWeight: 600 }}>/ 21</span>
+            </div>
+          </div>
+
+          {/* Progress */}
           <div>
-            <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: "#9fd76d" }}>Rituel du matin</p>
-            <p style={{ color: "var(--text-secondary)", lineHeight: "1.75", fontSize: "14px" }}>{day.morningRitual}</p>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px" }}>
+              <span style={{ fontSize: "12px", color: "#64748b" }}>Progression</span>
+              <span style={{ fontSize: "12px", fontWeight: 700, color: wLight.text }}>{Math.round((currentDay / 21) * 100)}%</span>
+            </div>
+            <div style={{ height: "6px", background: "#f1f5f9", borderRadius: "3px", overflow: "hidden" }}>
+              <div style={{ height: "100%", width: `${(currentDay / 21) * 100}%`, background: wLight.text, borderRadius: "3px", transition: "width 0.4s" }} />
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between", marginTop: "5px" }}>
+              {["●J1", "●J7", "●J14", "●J21"].map(m => (
+                <span key={m} style={{ fontSize: "10px", color: "#cbd5e1" }}>{m}</span>
+              ))}
+            </div>
           </div>
         </div>
 
-        {/* Tip du jour */}
-        <div className="card fade-up mb-5 px-5 py-4 flex items-start gap-4">
-          <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
-            style={{ background: "rgba(76,201,240,0.1)", border: "1px solid rgba(76,201,240,0.18)", fontSize: "16px" }}>✨</div>
-          <p style={{ color: "var(--text-secondary)", lineHeight: "1.75", fontSize: "14px" }}>{day.tip}</p>
+        {/* ── Mot du coach ── */}
+        <div style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: "16px", padding: "14px 16px", marginBottom: "12px" }}>
+          <p style={{ fontSize: "10px", fontWeight: 800, letterSpacing: "0.1em", color: "#16a34a", marginBottom: "5px" }}>MOT DU JOUR</p>
+          <p style={{ fontSize: "13px", color: "#15803d", lineHeight: 1.65 }}>
+            {override?.coach_note ?? day.coachWord}
+          </p>
         </div>
 
-        {/* Tabs */}
-        <div className="flex gap-1 mb-6 p-1.5 rounded-2xl"
-          style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}>
+        {/* ── Conseil du jour ── */}
+        {(() => {
+          const conseil = getConseilDuJour(currentDay)
+          return (
+            <div style={{ background: "#f5f3ff", border: "1px solid #ddd6fe", borderRadius: "16px", padding: "14px 16px", marginBottom: "12px", borderLeft: "3px solid #8b5cf6" }}>
+              <p style={{ fontSize: "10px", fontWeight: 800, letterSpacing: "0.1em", color: "#7c3aed", marginBottom: "5px" }}>
+                {conseil.icon} CONSEIL DU JOUR
+              </p>
+              <p style={{ fontSize: "12px", fontWeight: 700, color: "#5b21b6", marginBottom: "3px" }}>{conseil.titre}</p>
+              <p style={{ fontSize: "13px", color: "#4c1d95", lineHeight: 1.65, opacity: 0.85 }}>{conseil.texte}</p>
+            </div>
+          )
+        })()}
+
+        {/* ── Rituels du jour ── */}
+        <div style={{ background: "#fff", borderRadius: "16px", overflow: "hidden", marginBottom: "16px", boxShadow: "0 1px 4px rgba(0,0,0,0.06)", borderLeft: "3px solid #22c55e" }}>
+          <div style={{ padding: "14px 16px" }}>
+            <p style={{ fontSize: "10px", fontWeight: 800, letterSpacing: "0.1em", color: "#16a34a", marginBottom: "12px" }}>🌿 RITUELS DU JOUR</p>
+            {[
+              { icon: "🌅", label: "MATIN", text: day.morningRitual },
+              { icon: "💧", label: "HYDRATATION", text: day.hydration },
+              { icon: "🏃", label: "MOUVEMENT", text: "30 min d'activité douce : marche, vélo, yoga ou étirements" },
+              { icon: "🌙", label: "SOIR", text: day.ritual?.soir ?? "Dîner avant 20h · commencer par les crudités" },
+            ].map(({ icon, label, text }, i, arr) => (
+              <div key={label} style={{ display: "flex", gap: "10px", paddingBottom: i < arr.length - 1 ? "10px" : 0, marginBottom: i < arr.length - 1 ? "10px" : 0, borderBottom: i < arr.length - 1 ? "1px solid #f1f5f9" : "none" }}>
+                <span style={{ fontSize: "18px", flexShrink: 0, lineHeight: 1.3 }}>{icon}</span>
+                <div>
+                  <p style={{ fontSize: "9px", fontWeight: 800, color: "#94a3b8", letterSpacing: "0.1em", marginBottom: "2px" }}>{label}</p>
+                  <p style={{ fontSize: "13px", color: "#334155", lineHeight: 1.55 }}>{text}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* ── Tabs ── */}
+        <div style={{ display: "flex", borderBottom: "1px solid #e2e8f0", marginBottom: "16px" }}>
           {([
-            { key: "programme",   label: "Repas" },
+            { key: "programme",   label: "Aliments" },
             { key: "journal",     label: "Journal" },
-            { key: "courses",     label: "Courses" },
-            { key: "progression", label: "Progrès" },
-            { key: "principes",   label: "💡" },
+            { key: "progression", label: "Poids" },
+            { key: "principes",   label: "Principes" },
           ] as const).map(({ key, label }) => (
             <button key={key} onClick={() => setActiveTab(key)}
-              className="flex-1 py-2.5 rounded-xl font-semibold transition-all"
               style={{
-                background: activeTab === key ? "rgba(255,255,255,0.1)" : "transparent",
-                color: activeTab === key ? "#ffffff" : "rgba(255,255,255,0.4)",
-                boxShadow: activeTab === key ? "0 1px 0 rgba(255,255,255,0.08) inset" : "none",
-                fontSize: "13px",
-                letterSpacing: "0.01em",
-                borderBottom: activeTab === key ? `2px solid var(--blue)` : "2px solid transparent",
+                flex: 1, padding: "10px 4px", fontSize: "13px", fontWeight: 600,
+                color: activeTab === key ? "#16a34a" : "#94a3b8",
+                background: "none", border: "none", cursor: "pointer",
+                borderBottom: activeTab === key ? "2px solid #16a34a" : "2px solid transparent",
+                transition: "color 0.15s",
               }}>
               {label}
             </button>
           ))}
         </div>
 
-        {/* ── Programme ── */}
+        {/* ── Aliments ── */}
         {activeTab === "programme" && (
-          <div className="space-y-4">
+          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
 
             {programStartDate && (() => {
               const target = new Date(programStartDate)
               const today = new Date()
-              target.setHours(0, 0, 0, 0)
-              today.setHours(0, 0, 0, 0)
-              const daysLeft = Math.floor((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
-              return daysLeft >= 1 && daysLeft <= 3
-                ? <PreparationPhase programStartDate={programStartDate} />
-                : null
+              target.setHours(0, 0, 0, 0); today.setHours(0, 0, 0, 0)
+              const daysLeft = Math.floor((target.getTime() - today.getTime()) / 86400000)
+              return daysLeft >= 1 && daysLeft <= 3 ? <PreparationPhase programStartDate={programStartDate} /> : null
             })()}
 
             {/* Navigation jours */}
-            <div className="flex items-center justify-between rounded-2xl px-4 py-3"
-              style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}>
-              <button
-                onClick={() => setViewDay(d => Math.max(1, d - 1))}
-                disabled={viewDay === 1}
-                className="w-9 h-9 rounded-xl flex items-center justify-center transition-all font-bold"
-                style={{
-                  background: viewDay === 1 ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.1)",
-                  color: viewDay === 1 ? "rgba(255,255,255,0.2)" : "rgba(255,255,255,0.8)",
-                  border: "1px solid rgba(255,255,255,0.08)",
-                  fontSize: "16px",
-                }}>←</button>
-
-              <div className="text-center">
-                <div className="font-black" style={{ color: "var(--text-primary)", fontSize: "15px" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#fff", borderRadius: "14px", padding: "10px 16px", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
+              <button onClick={() => setViewDay(d => Math.max(1, d - 1))} disabled={viewDay === 1}
+                style={{ fontSize: "18px", color: viewDay === 1 ? "#cbd5e1" : "#0f172a", background: "none", border: "none", cursor: viewDay === 1 ? "default" : "pointer", width: 32, height: 32 }}>←</button>
+              <div style={{ textAlign: "center" }}>
+                <div style={{ fontWeight: 800, color: "#0f172a", fontSize: "14px" }}>
                   Jour {viewDay}
                   {viewDay === currentDay && (
-                    <span className="ml-2 rounded-full px-2 py-0.5 text-xs font-bold"
-                      style={{ background: "rgba(125,232,255,0.15)", color: "var(--blue)", fontSize: "10px" }}>
+                    <span style={{ marginLeft: "6px", background: wLight.bg, color: wLight.text, borderRadius: "20px", padding: "1px 8px", fontSize: "10px", fontWeight: 700 }}>
                       Aujourd&apos;hui
                     </span>
                   )}
                 </div>
-                <div className="text-xs mt-0.5" style={{ color: "var(--text-muted)" }}>
+                <div style={{ fontSize: "11px", color: "#94a3b8", marginTop: "2px" }}>
                   {viewDay < currentDay ? "🕐 Passé" : viewDay > currentDay ? "📅 À venir" : viewWeekInfo.title}
                 </div>
               </div>
-
-              <button
-                onClick={() => setViewDay(d => Math.min(21, d + 1))}
-                disabled={viewDay === 21}
-                className="w-9 h-9 rounded-xl flex items-center justify-center transition-all font-bold"
-                style={{
-                  background: viewDay === 21 ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.1)",
-                  color: viewDay === 21 ? "rgba(255,255,255,0.2)" : "rgba(255,255,255,0.8)",
-                  border: "1px solid rgba(255,255,255,0.08)",
-                  fontSize: "16px",
-                }}>→</button>
+              <button onClick={() => setViewDay(d => Math.min(21, d + 1))} disabled={viewDay === 21}
+                style={{ fontSize: "18px", color: viewDay === 21 ? "#cbd5e1" : "#0f172a", background: "none", border: "none", cursor: viewDay === 21 ? "default" : "pointer", width: 32, height: 32 }}>→</button>
             </div>
 
-            {/* Note coach */}
+            {/* Note coach override */}
             {override?.coach_note && (
-              <div className="rounded-xl p-4 fade-up flex gap-3"
-                style={{ background: "rgba(76,201,240,0.07)", border: "1px solid rgba(76,201,240,0.25)" }}>
-                <span className="text-lg flex-shrink-0">💬</span>
+              <div style={{ background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: "14px", padding: "12px 14px", display: "flex", gap: "10px" }}>
+                <span style={{ fontSize: "16px", flexShrink: 0 }}>💬</span>
                 <div>
-                  <p className="text-xs font-bold mb-1" style={{ color: "var(--blue)" }}>Message de ton coach</p>
-                  <p className="text-sm" style={{ color: "var(--text-secondary)", lineHeight: "1.7" }}>
-                    {override.coach_note}
-                  </p>
+                  <p style={{ fontSize: "10px", fontWeight: 800, color: "#1d4ed8", letterSpacing: "0.08em", marginBottom: "3px" }}>MESSAGE DE TON COACH</p>
+                  <p style={{ fontSize: "13px", color: "#1e40af", lineHeight: 1.6 }}>{override.coach_note}</p>
                 </div>
               </div>
             )}
 
-            <EnergyCheckin currentDay={viewDay} onCheckin={() => {}} />
+            {/* Meal cards */}
+            {viewDayData.meals.map((meal: Meal, i: number) => {
+              const overrideMeals = override?.meal_overrides?.[meal.moment]
+              const baseMeal = overrideMeals?.length ? { ...meal, items: overrideMeals } : meal
+              const meta = MEAL_META[meal.moment] ?? { icon: "🍴", label: meal.moment, horaire: "" }
+              const isOpen = openMoments.has(meal.moment)
+              const borderColor = MEAL_BORDER[meal.moment] ?? "#94a3b8"
+              const isLastMeal = i === viewDayData.meals.length - 1
 
-            {/* Repas en accordéon */}
-            <div className="space-y-2">
-              {viewDayData.meals.map((meal: Meal, i: number) => {
-                const overrideMeals = override?.meal_overrides?.[meal.moment]
-                const baseMeal = overrideMeals?.length ? { ...meal, items: overrideMeals } : meal
-                const meta = MEAL_META[meal.moment] ?? { icon: "🍴", label: meal.moment, horaire: "" }
-                const isOpen = openMoments.has(meal.moment)
-
-                return (
-                  <div key={i} className="rounded-2xl overflow-hidden transition-all"
-                    style={{ border: "1px solid rgba(255,255,255,0.08)", background: "rgba(4,10,22,0.6)" }}>
-                    <button
-                      onClick={() => toggleMoment(meal.moment)}
-                      className="w-full flex items-center justify-between px-4 py-3.5 transition-all"
-                      style={{ background: isOpen ? "rgba(255,255,255,0.05)" : "transparent" }}>
-                      <div className="flex items-center gap-3">
-                        <span style={{ fontSize: "18px" }}>{meta.icon}</span>
-                        <div className="text-left">
-                          <p className="font-bold text-sm" style={{ color: "var(--text-primary)" }}>{meta.label}</p>
-                          <p className="text-xs" style={{ color: "var(--text-muted)" }}>{meta.horaire}</p>
+              return (
+                <div key={i} style={{ background: "#fff", borderRadius: "16px", overflow: "hidden", boxShadow: "0 1px 3px rgba(0,0,0,0.06)", borderLeft: `3px solid ${borderColor}` }}>
+                  <button onClick={() => toggleMoment(meal.moment)}
+                    style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", background: isOpen ? "#fafafa" : "#fff", border: "none", cursor: "pointer", textAlign: "left" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                      <span style={{ fontSize: "20px" }}>{meta.icon}</span>
+                      <div>
+                        <p style={{ fontWeight: 700, fontSize: "14px", color: "#0f172a", margin: 0 }}>{meta.label}</p>
+                        <p style={{ fontSize: "11px", color: "#94a3b8", margin: 0 }}>{meta.horaire}</p>
+                      </div>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                      <span style={{ background: "#f1f5f9", borderRadius: "20px", padding: "3px 10px", fontSize: "11px", fontWeight: 600, color: "#64748b" }}>
+                        {baseMeal.items.length} aliments
+                      </span>
+                      <span style={{ color: "#94a3b8", fontSize: "13px", transform: isOpen ? "rotate(180deg)" : "rotate(0)", transition: "transform 0.2s", display: "inline-block" }}>▾</span>
+                    </div>
+                  </button>
+                  {isOpen && (
+                    <div style={{ padding: "0 16px 14px", borderTop: "1px solid #f8fafc" }}>
+                      {baseMeal.items.map((item, k) => (
+                        <div key={k} style={{ display: "flex", alignItems: "flex-start", gap: "8px", padding: "4px 0" }}>
+                          <span style={{ color: borderColor, fontSize: "14px", marginTop: "1px", flexShrink: 0, lineHeight: 1 }}>·</span>
+                          <span style={{ fontSize: "13px", color: "#334155", lineHeight: 1.55 }}>{item}</span>
                         </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="rounded-full px-2 py-0.5 text-xs font-semibold"
-                          style={{ background: "rgba(255,255,255,0.07)", color: "var(--text-muted)" }}>
-                          {baseMeal.items.length} aliments
-                        </span>
-                        <span style={{
-                          color: "var(--text-muted)",
-                          fontSize: "12px",
-                          transform: isOpen ? "rotate(180deg)" : "rotate(0deg)",
-                          transition: "transform 0.2s",
-                          display: "inline-block",
-                        }}>▾</span>
-                      </div>
-                    </button>
-                    {isOpen && (
-                      <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
-                        <MealCard
-                          meal={baseMeal}
-                          isCustomized={!!overrideMeals?.length}
-                          mealLog={mealLogs[meal.moment]}
-                          onSaveLog={items => saveMealLog(meal.moment, items)}
-                        />
-                      </div>
-                    )}
-                  </div>
-                )
-              })}
-            </div>
+                      ))}
+                      {baseMeal.conseil && (
+                        <p style={{ fontSize: "12px", color: "#16a34a", marginTop: "8px", fontStyle: "italic", paddingTop: "8px", borderTop: "1px solid #f0fdf4" }}>
+                          💡 {baseMeal.conseil}
+                        </p>
+                      )}
+                      {isLastMeal && day.tip && (
+                        <div style={{ marginTop: "10px", paddingTop: "10px", borderTop: "1px solid #fef3c7", display: "flex", gap: "8px", alignItems: "flex-start" }}>
+                          <span style={{ fontSize: "14px", flexShrink: 0 }}>✨</span>
+                          <p style={{ fontSize: "12px", color: "#92400e", lineHeight: 1.55, fontStyle: "italic" }}>{day.tip}</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+
+            {/* Comment je me sens */}
+            <EnergyCheckin currentDay={viewDay} onCheckin={() => {}} />
 
           </div>
         )}
 
         {/* ── Journal ── */}
         {activeTab === "journal" && (
-          <JournalForm
-            currentDay={currentDay}
-            hydrationLiters={hydrationLiters}
-            onHydrationChange={handleHydrationChange}
-          />
+          <JournalForm currentDay={currentDay} />
         )}
 
-        {/* ── Progression ── */}
+        {/* ── Poids ── */}
         {activeTab === "progression" && (
-          <div className="space-y-4">
+          <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
             <WeightTracker initialWeight={undefined} />
             <Timeline21 totalDays={21} currentDay={currentDay} completedDays={completedDays} />
-
-            <div className="space-y-3">
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
               {([1, 2, 3] as const).map(w => {
                 const wInfo = WEEK_THEMES[w]
+                const wLight2 = WEEK_LIGHT[w] ?? WEEK_LIGHT[1]
                 const wDays = PROGRAM.filter(d => d.week === w)
-                const done  = wDays.filter(d => completedDays.includes(d.day)).length
+                const done = wDays.filter(d => completedDays.includes(d.day)).length
                 return (
-                  <div key={w} className="card p-4">
-                    <div className="flex items-center justify-between mb-2">
+                  <div key={w} style={{ background: "#fff", borderRadius: "14px", padding: "14px 16px", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "8px" }}>
                       <div>
-                        <span className="text-xs uppercase tracking-widest font-semibold" style={{ color: wInfo.color }}>
-                          Semaine {w}
-                        </span>
-                        <p className="font-bold text-sm mt-0.5" style={{ color: "var(--text-primary)" }}>{wInfo.title}</p>
-                        <p className="text-xs mt-0.5" style={{ color: "var(--text-muted)" }}>{wInfo.desc}</p>
+                        <span style={{ fontSize: "10px", fontWeight: 800, letterSpacing: "0.08em", color: wLight2.text }}>SEMAINE {w}</span>
+                        <p style={{ fontWeight: 700, fontSize: "13px", color: "#0f172a", margin: "2px 0 1px" }}>{wInfo.title}</p>
+                        <p style={{ fontSize: "11px", color: "#94a3b8" }}>{wInfo.desc}</p>
                       </div>
-                      <span className="tag">{done}/7</span>
+                      <span style={{ background: wLight2.bg, color: wLight2.text, borderRadius: "20px", padding: "3px 10px", fontSize: "12px", fontWeight: 700 }}>{done}/7</span>
                     </div>
-                    <div className="progress-bar">
-                      <div className="progress-fill" style={{ width: `${(done / 7) * 100}%`, background: `linear-gradient(90deg, ${wInfo.color}, ${wInfo.color}88)` }} />
+                    <div style={{ height: "5px", background: "#f1f5f9", borderRadius: "3px" }}>
+                      <div style={{ height: "100%", width: `${(done / 7) * 100}%`, background: wLight2.text, borderRadius: "3px" }} />
                     </div>
                   </div>
                 )
               })}
             </div>
-
-            <div className="grid grid-cols-3 gap-3">
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "8px" }}>
               {[
-                { label: "Jours actifs",    value: completedDays.length.toString(), icon: "🔥" },
-                { label: "Semaine en cours", value: `S${day.week}`,                icon: "📅" },
-                { label: "Série actuelle",   value: `${completedDays.length}j`,    icon: "🎯" },
+                { label: "Jours actifs",     value: completedDays.length.toString(), icon: "🔥" },
+                { label: "Semaine",          value: `S${day.week}`,                  icon: "📅" },
+                { label: "Série actuelle",   value: `${completedDays.length}j`,      icon: "🎯" },
               ].map(({ label, value, icon }) => (
-                <div key={label} className="card p-3 text-center">
-                  <div className="text-lg mb-1">{icon}</div>
-                  <div className="text-lg font-black gradient-text">{value}</div>
-                  <div className="text-xs mt-0.5" style={{ color: "var(--text-muted)" }}>{label}</div>
+                <div key={label} style={{ background: "#fff", borderRadius: "14px", padding: "14px 8px", textAlign: "center", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
+                  <div style={{ fontSize: "20px", marginBottom: "4px" }}>{icon}</div>
+                  <div style={{ fontSize: "18px", fontWeight: 900, color: "#16a34a" }}>{value}</div>
+                  <div style={{ fontSize: "10px", color: "#94a3b8", marginTop: "2px" }}>{label}</div>
                 </div>
               ))}
             </div>
           </div>
         )}
 
-        {/* ── Courses ── */}
-        {activeTab === "courses" && (
-          <div className="space-y-4">
-            <ShoppingList currentDay={currentDay} horizon={7} />
-          </div>
-        )}
-
         {/* ── Principes ── */}
-        {activeTab === "principes" && <PrincipesSection />}
-
-        {/* ── Mes repères ── */}
-        {activeTab === "reperes" && (
-          <div className="space-y-4">
-
-            {/* Exclusions actives */}
-            <div className="card p-5">
-              <h2 className="font-bold text-base mb-4" style={{ color: "var(--text-primary)" }}>📋 Tes repères</h2>
-
-              <p className="text-xs uppercase tracking-widest mb-3" style={{ color: "var(--text-muted)" }}>Exclusions actives</p>
-              {activeExclusions.length > 0 ? (
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {activeExclusions.map(ex => (
-                    <span key={ex} className="rounded-full px-3 py-1 text-xs font-semibold"
-                      style={{ background: "rgba(231,111,81,0.15)", color: "#E76F51", border: "1px solid rgba(231,111,81,0.3)" }}>
-                      {ex}
-                    </span>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm mb-4" style={{ color: "var(--text-secondary)" }}>Aucune exclusion active.</p>
-              )}
-
-              <div className="rounded-xl p-4 mb-4"
-                style={{ background: "rgba(42,157,143,0.08)", border: "1px solid rgba(42,157,143,0.2)" }}>
-                <p className="text-xs font-semibold mb-1" style={{ color: "#2A9D8F" }}>📦 Liste de courses</p>
-                <a href="/courses" className="text-sm font-bold"
-                  style={{ color: "var(--text-primary)", textDecoration: "none" }}>
-                  Voir ma liste de courses adaptée →
-                </a>
-              </div>
-
-              <a href="/dashboard"
-                className="w-full block text-center py-3 rounded-xl font-bold text-sm"
-                style={{
-                  background: "linear-gradient(135deg, #2dd4a0, #4cc9f0)",
-                  color: "#050e1a",
-                  textDecoration: "none",
-                }}>
-                Commencer le Jour 1 →
-              </a>
-            </div>
-
-            {/* Profil */}
-            <div className="card p-5">
-              <h2 className="font-bold text-base mb-4" style={{ color: "var(--text-primary)" }}>Mon programme</h2>
-              <ProfilForm onSave={handleSaveProfile} initial={profile} />
-            </div>
-
-            {/* Déconnexion */}
-            <div className="card p-5">
-              <p className="text-xs mb-3" style={{ color: "var(--text-muted)" }}>
-                Se déconnecter ferme ta session sur cet appareil. Tes données sont sauvegardées.
-              </p>
-              <button
-                onClick={handleSignOut}
-                className="w-full py-2 rounded-lg font-semibold text-sm"
-                style={{ background: "rgba(220,53,69,0.15)", color: "#ff6b7a", border: "1px solid rgba(220,53,69,0.3)" }}>
-                Se déconnecter
-              </button>
-            </div>
-          </div>
+        {activeTab === "principes" && (
+          <PrincipesSection />
         )}
+
+        {/* Courses (accessible via state mais pas dans nav) */}
+        {activeTab === "courses" && (
+          <ShoppingList currentDay={currentDay} horizon={7} />
+        )}
+
+        </> /* fin vue principale */
+      )} {/* fin ternaire reperes */}
 
       </main>
 
-      {/* Bottom nav */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50"
-        style={{ background: "rgba(5,12,22,0.94)", backdropFilter: "blur(28px)", borderTop: "1px solid rgba(255,255,255,0.07)" }}>
-        <div className="max-w-2xl mx-auto flex items-center justify-around px-2 py-1">
+      {/* ── Bottom nav ── */}
+      <nav style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 50, background: "rgba(255,255,255,0.96)", backdropFilter: "blur(20px)", borderTop: "1px solid #e2e8f0" }}>
+        <div style={{ maxWidth: "640px", margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-around", padding: "8px 8px 6px" }}>
           {([
-            { icon: "🍽️", label: "Repas",     tab: "programme" },
-            { icon: "📓", label: "Journal",   tab: "journal" },
-            { icon: "🛒", label: "Courses",   tab: "courses" },
-            { icon: "📈", label: "Progrès",   tab: "progression" },
-            { icon: "💡", label: "Principes", tab: "principes" },
+            { icon: "🍽️", label: "Aliments",  tab: "programme"   },
+            { icon: "📓", label: "Journal",   tab: "journal"     },
+            { icon: "⚖️", label: "Poids",     tab: "progression" },
+            { icon: "💡", label: "Principes",  tab: "principes"   },
           ] as const).map(({ icon, label, tab }) => {
             const isActive = activeTab === tab
             return (
-              <button key={tab}
-                onClick={() => setActiveTab(tab)}
-                className="flex flex-col items-center gap-0.5 py-2 flex-1 transition-all"
-                style={{ color: isActive ? "var(--blue)" : "var(--text-muted)" }}>
-                <span className="text-xl leading-none"
-                  style={{ filter: isActive ? "drop-shadow(0 0 6px rgba(76,201,240,0.6))" : "none" }}>
-                  {icon}
-                </span>
-                <span className="text-xs font-semibold" style={{ fontSize: "10px" }}>{label}</span>
-                {isActive && (
-                  <div className="w-4 h-0.5 rounded-full mt-0.5"
-                    style={{ background: "var(--blue)" }} />
-                )}
+              <button key={tab} onClick={() => setActiveTab(tab)}
+                style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "2px", padding: "6px 16px", background: "none", border: "none", cursor: "pointer", color: isActive ? "#16a34a" : "#94a3b8" }}>
+                <span style={{ fontSize: "22px", lineHeight: 1 }}>{icon}</span>
+                <span style={{ fontSize: "10px", fontWeight: 600 }}>{label}</span>
+                {isActive && <div style={{ width: "18px", height: "2px", background: "#16a34a", borderRadius: "1px", marginTop: "1px" }} />}
               </button>
             )
           })}
         </div>
       </nav>
+
+      {/* ── Footer questions + micro ── */}
+      <QuestionFooter currentDay={currentDay} prenom={prenom} />
+
     </div>
   )
 }

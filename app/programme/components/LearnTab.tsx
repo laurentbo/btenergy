@@ -2,13 +2,13 @@
 import { useState } from "react"
 
 const PRINCIPES = [
-  { num: 1, icon: "🌅", titre: "L'eau citronnée à jeun", corps: "Chaque matin, avant tout aliment : un grand verre d'eau tiède avec le jus d'un demi-citron. Active le foie, stimule la bile, alcalinise le sang. 15 à 20 minutes avant le premier jus.", couleur: "#f59e0b" },
-  { num: 2, icon: "🥤", titre: "Trois jus par jour", corps: "Matin, midi et 16h. Les jus apportent des micronutriments directement assimilables, sans solliciter la digestion. Le jus Very Green à midi est fixe — il ne change jamais.", couleur: "var(--green)" },
-  { num: 3, icon: "🍇", titre: "Le jus de raisin dilué", corps: "Tout au long de la journée, en dehors des jus : 33 cl de jus de raisin bio pour 1 L d'eau. Effet coupe-faim naturel, drainant, énergisant. Arrêter 30 min avant le dîner.", couleur: "var(--accent-cyan)" },
+  { num: 1, icon: "🌅", titre: "L'eau citronnée à jeun", corps: "Chaque matin, avant tout aliment : un grand verre d'eau tiède avec le jus d'un demi-citron. Active le foie, stimule la bile, alcalinise le sang. Puis 5 à 10 minutes d'étirements ou de marche.", couleur: "#f59e0b" },
+  { num: 2, icon: "🍽️", titre: "Cinq moments de repas", corps: "Petit-déjeuner · collation si faim · déjeuner · collation si faim · dîner. Les collations ne sont pas obligatoires — écoute ta faim. Respecter 4 à 5 heures entre chaque repas.", couleur: "var(--green)" },
+  { num: 3, icon: "🍎", titre: "Les fruits seuls", corps: "Les fruits se consomment toujours à jeun ou entre les repas — jamais en fin de repas. En dehors des repas, ils se digèrent seuls en 20-30 min. Mélangés aux autres aliments, ils fermentent et gonflent.", couleur: "var(--accent-cyan)" },
   { num: 4, icon: "🌿", titre: "Commencer par le cru", corps: "Chaque dîner commence par des crudités. Les enzymes des aliments crus activent la digestion et préparent l'intestin à absorber le cuit. Ne jamais commencer par quelque chose de chaud.", couleur: "var(--accent-mint)" },
-  { num: 5, icon: "🚫", titre: "Dissocier les protéines", corps: "Les protéines animales ne se mélangent pas avec les céréales ou les féculents. Protéines + légumes : ✅. Céréales + légumes : ✅. Protéines + céréales : ❌. Cette règle reste valable après la cure.", couleur: "#f87171" },
+  { num: 5, icon: "🚫", titre: "Zéro gluten, zéro lactose, zéro sucre raffiné", corps: "Pendant 21 jours : pas de blé, pas de produits laitiers animaux, pas de sucre blanc. Les céréales autorisées sont le riz, quinoa, millet, sarrasin. Le miel brut et les dattes sont les seuls sucrants.", couleur: "#f87171" },
   { num: 6, icon: "⏱️", titre: "Respecter les fenêtres", corps: "Dîner avant 20h. Jeûne nocturne de 12h minimum. Le corps détoxifie, répare et synthétise ses hormones la nuit — à condition d'arrêter de manger assez tôt.", couleur: "#818cf8" },
-  { num: 7, icon: "🌙", titre: "Respecter le week-end off", corps: "Les jours off sont intégrés à la cure — pas une exception. Le corps continue d'éliminer même sans jus. Rester dans l'esprit : végétal, vivant, sans toxiques.", couleur: "#a78bfa" },
+  { num: 7, icon: "🐓", titre: "La volaille bio en semaine 3 seulement", corps: "Les semaines 1 et 2 sont 100% végétaliennes. À partir du jour 16, la volaille bio (poulet, canard, pintade) peut être introduite au dîner — 2 à 3 fois maximum sur la semaine 3. Qualité label rouge ou bio impérative.", couleur: "#a78bfa" },
 ]
 
 const ASSOCIATIONS = [
@@ -86,7 +86,7 @@ export default function LearnTab() {
 
       {/* 7 principes */}
       <div>
-        <p className="section-title">⚡ Les 7 principes Verissimo</p>
+        <p className="section-title">⚡ Les 7 règles d'or du Pari</p>
         <div className="card-dark rounded-2xl overflow-hidden">
           {PRINCIPES.map((p, i) => (
             <div key={p.num}

@@ -4,7 +4,18 @@ import "./globals.css"
 
 export const metadata: Metadata = {
   title: "Backtoenergy — Programme 21 Jours",
-  description: "Détox, énergie et vitalité pour les collaborateurs",
+  description: "Détox, énergie et vitalité — programme de 21 jours",
+  themeColor: "#16a34a",
+  appleWebApp: {
+    capable: true,
+    title: "Backtoenergy",
+    statusBarStyle: "default",
+  },
+  openGraph: {
+    title: "Backtoenergy",
+    description: "Programme de 21 jours — énergie & vitalité",
+    type: "website",
+  },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

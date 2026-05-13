@@ -27,54 +27,67 @@ export default function WelcomeScreen({ prenom, onDone }: Props) {
   return (
     <div
       className="min-h-screen flex flex-col items-center justify-center px-6"
-      style={{ background: "#07111e" }}
+      style={{ background: "#f7f4ef" }}
     >
       <div className="max-w-sm w-full text-center">
-        {/* Logo */}
-        <div
-          className="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl font-black mx-auto mb-8"
-          style={{
-            background: "linear-gradient(135deg, #2dd4a0, #4cc9f0)",
-            color: "#050e1a",
-          }}
-        >
-          B
+
+        {/* Logo texte */}
+        <div className="mb-8">
+          <p style={{ fontWeight: 900, fontSize: "28px", letterSpacing: "-0.5px", lineHeight: 1 }}>
+            <span style={{ color: "#16a34a" }}>Backt</span>
+            <span style={{ color: "#1e293b" }}>o</span>
+            <span style={{ color: "#16a34a" }}>energy</span>
+          </p>
+          <div style={{ width: "40px", height: "3px", background: "#16a34a", borderRadius: "2px", margin: "8px auto 0" }} />
         </div>
 
         {/* Prénom */}
         {displayName && (
           <p
-            className="font-black mb-4 leading-tight"
-            style={{ fontSize: "38px", color: "#ffffff" }}
+            className="font-black mb-6 leading-tight"
+            style={{ fontSize: "36px", color: "#0f172a" }}
           >
-            {displayName}
+            Bonjour {displayName} 👋
           </p>
         )}
 
-        {/* Carte glassmorphism */}
+        {/* Carte */}
         <div
           className="rounded-2xl p-7 mb-8 text-left"
           style={{
-            background: "rgba(255,255,255,0.05)",
-            border: "1px solid rgba(45,212,160,0.25)",
-            backdropFilter: "blur(20px)",
+            background: "#ffffff",
+            border: "1px solid #e8e0d4",
+            boxShadow: "0 4px 20px rgba(0,0,0,0.06)",
           }}
         >
           <p
             className="font-black mb-3"
-            style={{ fontSize: "20px", color: "#ffffff" }}
+            style={{ fontSize: "18px", color: "#0f172a", lineHeight: 1.35 }}
           >
             Bienvenue dans votre programme Backtoenergy.
           </p>
           <p
             style={{
-              color: "rgba(255,255,255,0.65)",
+              color: "#64748b",
               lineHeight: "1.75",
               fontSize: "15px",
             }}
           >
-            Vous avez fait le premier pas vers une énergie durable.
+            Vous avez fait le premier pas vers une énergie durable. 21 jours pour transformer votre rapport à l&apos;alimentation.
           </p>
+
+          <div style={{ marginTop: "16px", display: "flex", flexDirection: "column", gap: "8px" }}>
+            {[
+              { icon: "🌿", text: "Sans gluten · sans lactose · sans sucre raffiné" },
+              { icon: "💧", text: "Eau citronnée à jeun chaque matin" },
+              { icon: "🌙", text: "Dîner avant 20h, jeûne nocturne de 12h" },
+            ].map(({ icon, text }) => (
+              <div key={text} style={{ display: "flex", alignItems: "flex-start", gap: "10px" }}>
+                <span style={{ fontSize: "14px", flexShrink: 0, marginTop: "1px" }}>{icon}</span>
+                <p style={{ fontSize: "13px", color: "#475569", lineHeight: 1.5 }}>{text}</p>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* CTA */}
@@ -82,14 +95,21 @@ export default function WelcomeScreen({ prenom, onDone }: Props) {
           onClick={handleStart}
           className="w-full py-4 rounded-2xl font-black text-base transition-all"
           style={{
-            background: "linear-gradient(135deg, #2dd4a0, #4cc9f0)",
-            color: "#050e1a",
-            letterSpacing: "0.04em",
+            background: "#16a34a",
+            color: "#ffffff",
+            letterSpacing: "0.02em",
             fontSize: "16px",
+            border: "none",
+            cursor: "pointer",
+            boxShadow: "0 4px 14px rgba(22,163,74,0.35)",
           }}
         >
           Commencer mon programme →
         </button>
+
+        <p style={{ marginTop: "14px", fontSize: "12px", color: "#94a3b8" }}>
+          Programme de 21 jours · Backtoenergy
+        </p>
       </div>
     </div>
   )

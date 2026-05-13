@@ -49,7 +49,7 @@ export async function proxy(request: NextRequest) {
   if (publicApis.includes(pathname)) return supabaseResponse
 
   // Pages publiques : accessibles sans auth, redirect vers /dashboard si déjà connecté
-  if (pathname === "/" || pathname.startsWith("/login") || pathname.startsWith("/auth") || pathname.startsWith("/email-preview")) {
+  if (pathname === "/" || pathname.startsWith("/login") || pathname.startsWith("/auth") || pathname.startsWith("/email-preview") || pathname.startsWith("/preview-themes")) {
     if (user && pathname !== "/auth/reset-password") return NextResponse.redirect(new URL("/dashboard", request.url))
     return supabaseResponse
   }

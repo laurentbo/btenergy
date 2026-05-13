@@ -4,64 +4,152 @@ import type { UserProfile } from "@/data/program"
 
 type Props = { onSave: (p: UserProfile) => void; initial?: UserProfile | null }
 
-const INPUT_STYLE = {
-  background: "var(--bg-secondary)",
-  border: "1px solid var(--border)",
-  borderRadius: "12px",
-  color: "var(--text-primary)",
+const INPUT: React.CSSProperties = {
+  background: "#f8fafc",
+  border: "1px solid #e2e8f0",
+  borderRadius: "10px",
+  color: "#0f172a",
   padding: "10px 14px",
   fontSize: "14px",
   outline: "none",
   width: "100%",
-  transition: "border-color 0.2s",
+}
+
+const LABEL: React.CSSProperties = {
+  display: "block",
+  fontSize: "10px",
+  fontWeight: 700,
+  letterSpacing: "0.08em",
+  color: "#94a3b8",
+  marginBottom: "6px",
+  textTransform: "uppercase" as const,
 }
 
 export default function ProfilForm({ onSave, initial }: Props) {
   const [form, setForm] = useState<Partial<UserProfile>>(initial ?? {})
 
-  const set = (k: keyof UserProfile, v: string | number) => {
+  const set = (k: keyof UserProfile, v: string | number) =>
     setForm(f => ({ ...f, [k]: v }))
-  }
 
   const isValid = !!form.prenom
 
   return (
-    <div className="fade-up space-y-5">
+    <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+
       {/* Prénom */}
       <div>
-        <label className="block text-xs uppercase tracking-widest mb-2" style={{ color: "var(--text-muted)" }}>Prénom</label>
+        <label style={LABEL}>Prénom</label>
         <input
           type="text"
           placeholder="Ton prénom"
           value={form.prenom ?? ""}
           onChange={e => set("prenom", e.target.value)}
-          style={INPUT_STYLE}
+          style={INPUT}
+        />
+      </div>
+
+      {/* Genre */}
+      <div>
+        <label style={LABEL}>Genre</label>
+        <div style={{ display: "flex", gap: "8px" }}>
+          {(["homme", "femme", "autre"] as const).map(g => (
+            <button
+              key={g}
+              onClick={() => set("genre", g)}
+              style={{
+                flex: 1,
+                padding: "9px 4px",
+                borderRadius: "10px",
+                fontSize: "13px",
+                fontWeight: 600,
+                cursor: "pointer",
+                border: form.genre === g ? "2px solid #16a34a" : "1px solid #e2e8f0",
+                background: form.genre === g ? "#f0fdf4" : "#f8fafc",
+                color: form.genre === g ? "#16a34a" : "#64748b",
+              }}
+            >
+              {g === "homme" ? "Homme" : g === "femme" ? "Femme" : "Autre"}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Taille + Poids côte à côte */}
+      <div style={{ display: "flex", gap: "12px" }}>
+        <div style={{ flex: 1 }}>
+          <label style={LABEL}>Taille (cm)</label>
+          <input
+            type="number"
+            placeholder="170"
+            min={100} max={230}
+            value={form.taille ?? ""}
+            onChange={e => set("taille", parseInt(e.target.value) || 0)}
+            style={INPUT}
+          />
+        </div>
+        <div style={{ flex: 1 }}>
+          <label style={LABEL}>Poids (kg)</label>
+          <input
+            type="number"
+            placeholder="70"
+            min={30} max={300}
+            step={0.1}
+            value={form.poids ?? ""}
+            onChange={e => set("poids", parseFloat(e.target.value) || 0)}
+            style={INPUT}
+          />
+        </div>
+      </div>
+
+      {/* Âge */}
+      <div>
+        <label style={LABEL}>Âge</label>
+        <input
+          type="number"
+          placeholder="35"
+          min={10} max={100}
+          value={form.age ?? ""}
+          onChange={e => set("age", parseInt(e.target.value) || 0)}
+          style={INPUT}
         />
       </div>
 
       {/* Date de démarrage */}
       <div>
-        <label className="block text-xs uppercase tracking-widest mb-2" style={{ color: "var(--text-muted)" }}>
-          Date de démarrage du programme
-        </label>
+        <label style={LABEL}>Date de démarrage</label>
         <input
           type="date"
           value={form.start_date ?? new Date().toISOString().split("T")[0]}
           min={new Date(Date.now() - 21 * 86400000).toISOString().split("T")[0]}
           max={new Date(Date.now() + 30 * 86400000).toISOString().split("T")[0]}
           onChange={e => set("start_date", e.target.value)}
-          style={{ ...INPUT_STYLE, colorScheme: "dark" as const }}
+          style={{ ...INPUT, colorScheme: "light" }}
         />
-        <p className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>
-          Jour 1 de ton programme de 21 jours
-        </p>
+        <p style={{ fontSize: "11px", color: "#94a3b8", marginTop: "4px" }}>Jour 1 de ton programme de 21 jours</p>
       </div>
 
       <button
         disabled={!isValid}
-        onClick={() => isValid && onSave({ prenom: form.prenom!, age: form.age ?? 0, start_date: form.start_date ?? new Date().toISOString().split("T")[0] })}
-        className="btn-primary w-full text-sm"
-        style={{ opacity: isValid ? 1 : 0.4, cursor: isValid ? "pointer" : "not-allowed" }}
+        onClick={() => isValid && onSave({
+          prenom: form.prenom!,
+          age: form.age,
+          genre: form.genre,
+          taille: form.taille,
+          poids: form.poids,
+          start_date: form.start_date ?? new Date().toISOString().split("T")[0],
+        })}
+        style={{
+          width: "100%",
+          padding: "12px",
+          borderRadius: "12px",
+          fontWeight: 700,
+          fontSize: "14px",
+          background: isValid ? "#16a34a" : "#e2e8f0",
+          color: isValid ? "#fff" : "#94a3b8",
+          border: "none",
+          cursor: isValid ? "pointer" : "not-allowed",
+          transition: "background 0.15s",
+        }}
       >
         Enregistrer →
       </button>
