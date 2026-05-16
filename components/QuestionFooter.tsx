@@ -93,7 +93,8 @@ export default function QuestionFooter({ currentDay, prenom }: Props) {
       setSubmitted(true)
       setTimeout(() => { setSubmitted(false); setText("") }, 2000)
     } else {
-      alert("Erreur lors de l'envoi. Réessaie.")
+      console.error("[question] insert error:", error)
+      alert(`Erreur : ${error.message}`)
     }
   }
 
@@ -239,24 +240,32 @@ export default function QuestionFooter({ currentDay, prenom }: Props) {
         </div>
       </div>
 
-      {/* FAB micro */}
+      {/* FAB */}
       <button
         onClick={() => setOpen(o => !o)}
         style={{
           position: "fixed", right: 16, bottom: 78, zIndex: 54,
-          width: 50, height: 50, borderRadius: "50%",
+          height: 40, borderRadius: "20px",
+          padding: "0 16px",
           background: open ? "#f1f5f9" : "#16a34a",
           border: open ? "1.5px solid #e2e8f0" : "none",
           boxShadow: open ? "none" : "0 4px 16px rgba(22,163,74,0.45)",
-          display: "flex", alignItems: "center", justifyContent: "center",
+          display: "flex", alignItems: "center", gap: "8px",
           cursor: "pointer", transition: "all 0.2s",
+          whiteSpace: "nowrap",
         }}>
         {open
-          ? <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-          : <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/>
-              <path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/>
-            </svg>
+          ? <>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              <span style={{ fontSize: "13px", fontWeight: 600, color: "#64748b" }}>Fermer</span>
+            </>
+          : <>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/>
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/>
+              </svg>
+              <span style={{ fontSize: "13px", fontWeight: 700, color: "white" }}>Une question à poser ?</span>
+            </>
         }
       </button>
     </>
