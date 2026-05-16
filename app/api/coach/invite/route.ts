@@ -91,14 +91,16 @@ function inviteEmail(prenom: string, email: string, password: string): string {
 }
 
 export async function POST(request: NextRequest) {
-  // Vérifie que l'appelant est un coach connecté
+  // Vérifie la session avec le client anon
   const supabase = await createClient()
   const { data: { user }, error: authError } = await supabase.auth.getUser()
   if (authError || !user) {
     return NextResponse.json({ error: "Non authentifié." }, { status: 401 })
   }
 
-  const { data: coachProfile } = await supabase
+  // Lit le profil avec service_role pour bypasser la RLS
+  const db = adminClient()
+  const { data: coachProfile } = await db
     .from("profiles")
     .select("role")
     .eq("id", user.id)
