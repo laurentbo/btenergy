@@ -39,27 +39,6 @@ export default function ProfilForm({ onSave, initial }: Props) {
         </div>
       )}
 
-      {/* Genre */}
-      <div>
-        <p style={{ fontSize: "13px", color: "#64748b", marginBottom: "8px" }}>
-          🙋 Tu es…
-        </p>
-        <div style={{ display: "flex", gap: "8px" }}>
-          {(["homme", "femme", "autre"] as const).map(g => (
-            <button key={g} onClick={() => set("genre", g)} style={{
-              flex: 1, padding: "10px 4px", borderRadius: "12px",
-              fontSize: "13px", fontWeight: 600, cursor: "pointer",
-              border: form.genre === g ? "2px solid #16a34a" : "1.5px solid #e2e8f0",
-              background: form.genre === g ? "#f0fdf4" : "#fff",
-              color: form.genre === g ? "#16a34a" : "#64748b",
-              transition: "all 0.15s",
-            }}>
-              {g === "homme" ? "Un homme" : g === "femme" ? "Une femme" : "Autre"}
-            </button>
-          ))}
-        </div>
-      </div>
-
       {/* Taille + Poids */}
       <div>
         <p style={{ fontSize: "13px", color: "#64748b", marginBottom: "8px" }}>
@@ -91,23 +70,6 @@ export default function ProfilForm({ onSave, initial }: Props) {
             />
           </div>
         </div>
-      </div>
-
-      {/* Âge */}
-      <div>
-        <p style={{ fontSize: "13px", color: "#64748b", marginBottom: "8px" }}>
-          🎂 Ton âge
-        </p>
-        <input
-          type="number" placeholder="ex : 35" min={10} max={100}
-          value={form.age || ""}
-          onChange={e => set("age", parseInt(e.target.value) || 0)}
-          style={{
-            width: "100%", padding: "11px 14px", borderRadius: "12px",
-            border: "1.5px solid #e2e8f0", fontSize: "14px", color: "#0f172a",
-            background: "#f8fafc", outline: "none", boxSizing: "border-box",
-          }}
-        />
       </div>
 
       <button
