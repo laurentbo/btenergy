@@ -21,7 +21,7 @@ function header() {
         <div style="width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,#2dd4a0,#4cc9f0);display:inline-block;text-align:center;line-height:48px;font-size:22px;font-weight:900;color:#070d0f;">B</div>
       </td></tr>
       <tr><td align="center">
-        <span style="font-size:26px;font-weight:900;background:linear-gradient(135deg,#2dd4a0,#4cc9f0);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:0.01em;">Backtoenergy</span>
+        <span style="font-size:26px;font-weight:900;background:linear-gradient(135deg,#2dd4a0,#4cc9f0);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:0.01em;">Back to Energy</span>
       </td></tr>
     </table>
   </td></tr>
@@ -40,7 +40,7 @@ function footer() {
   return `
   <tr><td align="center" style="padding-top:28px;">
     <p style="margin:0;font-size:11px;color:rgba(255,255,255,0.3);line-height:1.8;">
-      Backtoenergy · backtoenergy.fr<br>
+      Back to Energy · backtoenergy.fr<br>
       Ce message est automatique, merci de ne pas y répondre.
     </p>
   </td></tr>
@@ -60,16 +60,15 @@ function btn(url: string, label: string) {
 // ─── MAGIC LINK ─────────────────────────────────────────────────────────────
 
 export function magicLinkEmail(prenom: string, url: string): string {
-  const nom = prenom.charAt(0).toUpperCase() + prenom.slice(1).toLowerCase()
   return BASE + header() + card(`
-    <h1 style="margin:0 0 16px;font-size:24px;font-weight:900;color:#ffffff;line-height:1.2;">Bonjour ${nom} 🌿</h1>
+    <h1 style="margin:0 0 16px;font-size:24px;font-weight:900;color:#ffffff;line-height:1.2;">Ta connexion au programme 21 jours 🌿</h1>
     <p style="margin:0 0 24px;font-size:15px;color:rgba(255,255,255,0.65);line-height:1.7;">
-      Appuyez sur ce bouton pour accéder à votre programme <strong style="color:#ffffff;">Backtoenergy</strong>.<br>
-      Ce lien est valable <strong style="color:#ffffff;">1 heure</strong> et ne peut être utilisé qu'une seule fois.
+      Clique sur le bouton ci-dessous pour accéder à ton espace BacktoEnergy.<br>
+      Ce lien est personnel, sécurisé et valable 1 heure.
     </p>
     ${btn(url, "Accéder à mon programme →")}
     <p style="margin:24px 0 0;font-size:12px;color:rgba(255,255,255,0.35);text-align:center;">
-      Si vous n'avez pas demandé ce lien, ignorez cet email.
+      Si tu n'es pas à l'origine de cette demande, ignore, merci.
     </p>
   `) + footer() + CLOSE
 }
@@ -82,7 +81,7 @@ export function welcomeEmail(prenom: string, appUrl: string): string {
     <p style="margin:0 0 6px;font-size:13px;font-weight:600;letter-spacing:0.12em;color:#2dd4a0;text-transform:uppercase;">Accès confirmé</p>
     <h1 style="margin:0 0 16px;font-size:24px;font-weight:900;color:#ffffff;line-height:1.2;">Bienvenue ${nom} 🌱</h1>
     <p style="margin:0 0 24px;font-size:15px;color:rgba(255,255,255,0.65);line-height:1.8;">
-      Votre programme <strong style="color:#ffffff;">Backtoenergy — 21 jours</strong> commence maintenant.<br>
+      Votre programme <strong style="color:#ffffff;">Back to Energy — 21 jours</strong> commence maintenant.<br>
       Pendant 3 semaines, vous allez retrouver une énergie durable, un nettoyage digestif en profondeur, un corps plus léger et une clarté mentale que vous n'avez peut-être plus ressentie depuis longtemps.
     </p>
 
@@ -132,7 +131,7 @@ export function invitationEmail(prenom: string | null, url: string): string {
     <p style="margin:0 0 6px;font-size:13px;font-weight:600;letter-spacing:0.12em;color:#2dd4a0;text-transform:uppercase;">Votre accès est prêt</p>
     <h1 style="margin:0 0 16px;font-size:24px;font-weight:900;color:#ffffff;line-height:1.2;">${greeting}</h1>
     <p style="margin:0 0 20px;font-size:15px;color:rgba(255,255,255,0.65);line-height:1.7;">
-      Votre coach vous a ouvert un accès au programme <strong style="color:#ffffff;">Backtoenergy — 21 jours</strong>.<br>
+      Votre coach vous a ouvert un accès au programme <strong style="color:#ffffff;">Back to Energy — 21 jours</strong>.<br>
       Cliquez sur le bouton ci-dessous pour créer votre espace et démarrer votre parcours.
     </p>
     <table width="100%" cellpadding="0" cellspacing="0" style="background:rgba(45,212,160,0.07);border:1px solid rgba(45,212,160,0.2);border-radius:14px;margin-bottom:24px;">
@@ -159,7 +158,7 @@ export function resetPasswordEmail(prenom: string, url: string): string {
     <h1 style="margin:0 0 16px;font-size:24px;font-weight:900;color:#ffffff;line-height:1.2;">Réinitialisation<br>du mot de passe</h1>
     <p style="margin:0 0 24px;font-size:15px;color:rgba(255,255,255,0.65);line-height:1.7;">
       Bonjour ${nom},<br><br>
-      Une demande de réinitialisation de mot de passe a été effectuée pour votre compte coach Backtoenergy.<br>
+      Une demande de réinitialisation de mot de passe a été effectuée pour votre compte coach Back to Energy.<br>
       Ce lien est valable <strong style="color:#ffffff;">1 heure</strong>.
     </p>
     ${btn(url, "Réinitialiser mon mot de passe →")}
@@ -268,7 +267,7 @@ export function postCureEmail(prenom: string, appUrl: string): string {
     <p style="margin:0 0 6px;font-size:13px;font-weight:600;letter-spacing:0.12em;color:#2dd4a0;text-transform:uppercase;">Programme Terminé</p>
     <h1 style="margin:0 0 16px;font-size:24px;font-weight:900;color:#ffffff;line-height:1.2;">${nom}, vous avez réussi ! 🎉</h1>
     <p style="margin:0 0 24px;font-size:15px;color:rgba(255,255,255,0.65);line-height:1.7;">
-      Félicitations pour avoir complété le programme Backtoenergy. Les 21 jours sont derrière vous — ce qui vient maintenant, c'est de maintenir et renforcer ce que vous avez construit.
+      Félicitations pour avoir complété le programme Back to Energy. Les 21 jours sont derrière vous — ce qui vient maintenant, c'est de maintenir et renforcer ce que vous avez construit.
     </p>
 
     <table width="100%" cellpadding="0" cellspacing="0" style="background:rgba(129,140,248,0.07);border:1px solid rgba(129,140,248,0.2);border-radius:14px;margin-bottom:20px;">
@@ -289,7 +288,50 @@ export function postCureEmail(prenom: string, appUrl: string): string {
 
     ${btn(appUrl, "Voir mon bilan →")}
     <p style="margin:20px 0 0;text-align:center;font-size:12px;color:rgba(255,255,255,0.3);">
-      Merci d'avoir suivi le programme Backtoenergy. Votre wellbeing commence ici 🌿
+      Merci d'avoir suivi le programme Back to Energy. Votre wellbeing commence ici 🌿
     </p>
+  `) + footer() + CLOSE
+}
+
+// ─── INVITATION PROGRAMME ────────────────────────────────────────────────────
+
+export function invitationProgrammeEmail(prenom: string, inscriptionUrl: string): string {
+  const nom = prenom.charAt(0).toUpperCase() + prenom.slice(1).toLowerCase()
+  return BASE + header() + card(`
+    <p style="margin:0 0 6px;font-size:13px;font-weight:600;letter-spacing:0.12em;color:#2dd4a0;text-transform:uppercase;">Votre accès est prêt</p>
+    <h1 style="margin:0 0 16px;font-size:24px;font-weight:900;color:#ffffff;line-height:1.2;">Votre programme Back to Energy est prêt, ${nom} 🌱</h1>
+    <p style="margin:0 0 28px;font-size:15px;color:rgba(255,255,255,0.65);line-height:1.7;">
+      En 21 jours, vous retrouvez une énergie que vous n'avez peut-être plus ressentie depuis longtemps.
+    </p>
+
+    <p style="margin:0 0 12px;font-size:12px;font-weight:700;letter-spacing:0.1em;color:rgba(255,255,255,0.4);text-transform:uppercase;">Votre parcours en 3 semaines</p>
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
+      ${[
+        ["🌅", "Semaine 1", "Détox &amp; Purification"],
+        ["⚡", "Semaine 2", "Énergie &amp; Vitalité"],
+        ["🏔️", "Semaine 3", "Ancrage &amp; Performance"],
+      ].map(([emoji, week, title]) => `
+        <tr><td style="padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.06);">
+          <span style="font-size:15px;font-weight:700;color:#ffffff;">${emoji} ${week} — ${title}</span>
+        </td></tr>
+      `).join("")}
+    </table>
+
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:rgba(45,212,160,0.07);border:1px solid rgba(45,212,160,0.2);border-radius:14px;margin-bottom:28px;">
+      <tr><td style="padding:20px;">
+        <p style="margin:0 0 12px;font-size:12px;font-weight:700;letter-spacing:0.1em;color:#2dd4a0;text-transform:uppercase;">Les principes de la méthode</p>
+        <p style="margin:0 0 8px;font-size:13px;color:rgba(255,255,255,0.7);line-height:1.7;">
+          🍋 <strong style="color:#ffffff;">Eau citronnée à jeun</strong> chaque matin — le premier geste qui change tout.
+        </p>
+        <p style="margin:0 0 8px;font-size:13px;color:rgba(255,255,255,0.7);line-height:1.7;">
+          🥗 <strong style="color:#ffffff;">50 % de l'assiette vivante</strong> — crudités et légumes peu cuits à chaque repas.
+        </p>
+        <p style="margin:0;font-size:13px;color:rgba(255,255,255,0.7);line-height:1.7;">
+          🚫 <strong style="color:#ffffff;">Sans sucre raffiné, sans blé, sans lait de vache</strong> — le temps de laisser votre corps respirer.
+        </p>
+      </td></tr>
+    </table>
+
+    ${btn(inscriptionUrl, "Accéder à mon programme →")}
   `) + footer() + CLOSE
 }

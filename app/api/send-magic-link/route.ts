@@ -60,12 +60,14 @@ export async function POST(request: NextRequest) {
   const callbackUrl = `${SITE}/auth/callback?token_hash=${data.properties.hashed_token}&type=magiclink`
 
   // 4. Envoie l'email via Resend
-  const { error: sendError } = await resend.emails.send({
+  const { data: sendData, error: sendError } = await resend.emails.send({
     from: FROM,
     to: emailLower,
-    subject: "Votre lien de connexion Backtoenergy",
+    subject: "Ta connexion au programme 21 jours",
     html: magicLinkEmail(prenom, callbackUrl),
   })
+
+  console.log("[magic-link] resend result:", { sendData, sendError })
 
   if (sendError) {
     console.error("Resend error:", sendError)
