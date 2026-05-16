@@ -155,7 +155,7 @@ export default function QuestionFooter({ currentDay, prenom }: Props) {
             ) : (
               <>
                 <p style={{ fontSize: "13px", color: "#64748b", marginBottom: "12px", lineHeight: 1.5 }}>
-                  {prenom ? `${prenom}, q` : "Q"}uelle question veux-tu poser à ton coach ?
+                  Une question pour ton coach ?
                 </p>
                 <div style={{ position: "relative", marginBottom: "12px" }}>
                   <textarea

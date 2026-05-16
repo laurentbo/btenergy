@@ -273,14 +273,14 @@ const saveMealLog = async (moment: string, items: string[]) => {
             <h1 className="text-2xl font-black gradient-text mb-1">Backtoenergy</h1>
           </div>
           <div className="card p-5 mb-4">
-            <h2 className="font-bold text-base mb-1" style={{ color: "var(--text-primary)" }}>Bienvenue 👋</h2>
+            <h2 className="font-bold text-base mb-1" style={{ color: "var(--text-primary)" }}>Tes repères de départ 📏</h2>
             <p className="text-sm mb-5" style={{ color: "var(--text-secondary)" }}>
-              Renseigne ton prénom et la date de démarrage pour personnaliser ton programme.
+              Taille et poids pour suivre ta progression sur 21 jours.
             </p>
             <ProfilForm onSave={handleSaveProfile} initial={profile} />
           </div>
           <button
-            onClick={() => { setShowProfileSetup(false); setProfile({ prenom: "Participant", age: 35, start_date: new Date().toISOString().split("T")[0] }) }}
+            onClick={() => { setShowProfileSetup(false); setProfile({ prenom: profile?.prenom ?? "", start_date: new Date().toISOString().split("T")[0] }) }}
             className="w-full text-center text-xs py-2"
             style={{ color: "var(--text-muted)" }}>
             Passer cette étape →
