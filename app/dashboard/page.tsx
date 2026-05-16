@@ -16,6 +16,7 @@ import WelcomeScreen from "@/components/WelcomeScreen"
 import PreparationPhase from "@/components/PreparationPhase"
 import { useDayMenu } from "@/lib/hooks/useDayMenu"
 import type { MealFieldName } from "@/lib/supabase/types"
+import ChangePasswordForm from "@/components/ChangePasswordForm"
 
 const MEAL_META: Record<string, { icon: string; label: string; horaire: string }> = {
   "matin":        { icon: "🌅", label: "Petit-déjeuner", horaire: "7h – 9h" },
@@ -56,7 +57,7 @@ type Override = {
   ritual_soir_override: string | null
 }
 
-type Tab = "programme" | "journal" | "progression" | "courses" | "principes" | "reperes"
+type Tab = "programme" | "journal" | "progression" | "courses" | "principes" | "reperes" | "compte"
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState<Tab>("programme")
@@ -769,6 +770,13 @@ const saveMealLog = async (moment: string, items: string[]) => {
           <ShoppingList currentDay={currentDay} horizon={7} />
         )}
 
+        {/* Compte */}
+        {activeTab === "compte" && (
+          <div style={{ paddingBottom: "32px" }}>
+            <ChangePasswordForm />
+          </div>
+        )}
+
         </> /* fin vue principale */
       )} {/* fin ternaire reperes */}
 
@@ -782,6 +790,7 @@ const saveMealLog = async (moment: string, items: string[]) => {
             { icon: "📓", label: "Journal",   tab: "journal"     },
             { icon: "⚖️", label: "Poids",     tab: "progression" },
             { icon: "💡", label: "Principes",  tab: "principes"   },
+            { icon: "🔑", label: "Compte",    tab: "compte"      },
           ] as const).map(({ icon, label, tab }) => {
             const isActive = activeTab === tab
             return (

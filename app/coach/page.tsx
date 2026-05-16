@@ -29,26 +29,53 @@ export default function CoachDashboard() {
   const [editing, setEditing]   = useState<CollabWithJournal | null>(null)
   const [mealLogs, setMealLogs] = useState<Record<string, MealLog[]>>({})
   const [logsLoading, setLogsLoading] = useState(false)
-  const [linkSending, setLinkSending]   = useState<Record<string, boolean>>({})
-  const [linkSent, setLinkSent]         = useState<Record<string, boolean>>({})
-  const [inviteSending, setInviteSending] = useState<Record<string, boolean>>({})
-  const [inviteSent, setInviteSent]       = useState<Record<string, boolean>>({})
   const supabase = createClient()
+
+  // ── Invitation modal ──────────────────────────────────────────────────────
+  const [showInvite, setShowInvite] = useState(false)
+  const [invitePrenom, setInvitePrenom] = useState("")
+  const [inviteEmail, setInviteEmail]   = useState("")
+  const [inviteLoading, setInviteLoading] = useState(false)
+  const [inviteResult, setInviteResult]   = useState<{ ok: boolean; message: string } | null>(null)
+
+  const sendInvite = async () => {
+    setInviteLoading(true)
+    setInviteResult(null)
+    const res = await fetch("/api/coach/invite", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: inviteEmail, prenom: invitePrenom }),
+    })
+    const data = await res.json()
+    setInviteLoading(false)
+    if (!res.ok) {
+      setInviteResult({ ok: false, message: data.error ?? "Erreur inconnue" })
+    } else {
+      setInviteResult({ ok: true, message: `✅ Invitation envoyée ! Un email a été envoyé à ${inviteEmail}.` })
+      setInvitePrenom("")
+      setInviteEmail("")
+      // Re-fetch la liste
+      const collabRes = await fetch("/api/collabs")
+      if (collabRes.ok) setCollabs(await collabRes.json())
+    }
+  }
+
+  const closeInvite = () => {
+    setShowInvite(false)
+    setInvitePrenom("")
+    setInviteEmail("")
+    setInviteResult(null)
+  }
 
   useEffect(() => {
     async function load() {
-      // Profil coach via API sécurisée
       const meRes = await fetch("/api/me")
       if (!meRes.ok) return
       const me = await meRes.json()
       setCoachProfile({ id: me.id, prenom: me.prenom, role: me.role })
 
-      // Collaborateurs via API sécurisée (service_role, bypass RLS)
       const collabRes = await fetch("/api/collabs")
-      if (collabRes.ok) {
-        const data = await collabRes.json()
-        setCollabs(data as CollabWithJournal[])
-      }
+      if (collabRes.ok) setCollabs(await collabRes.json())
       setLoading(false)
     }
     load()
@@ -79,32 +106,6 @@ export default function CoachDashboard() {
     setLogsLoading(false)
   }
 
-  const sendMagicLink = async (c: CollabWithJournal) => {
-    if (!c.email) return
-    setLinkSending(s => ({ ...s, [c.id]: true }))
-    await fetch("/api/send-magic-link", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: c.email }),
-    })
-    setLinkSending(s => ({ ...s, [c.id]: false }))
-    setLinkSent(s => ({ ...s, [c.id]: true }))
-    setTimeout(() => setLinkSent(s => ({ ...s, [c.id]: false })), 3000)
-  }
-
-  const sendInvitation = async (c: CollabWithJournal) => {
-    if (!c.email) return
-    setInviteSending(s => ({ ...s, [c.id]: true }))
-    await fetch("/api/send-invitation", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: c.email }),
-    })
-    setInviteSending(s => ({ ...s, [c.id]: false }))
-    setInviteSent(s => ({ ...s, [c.id]: true }))
-    setTimeout(() => setInviteSent(s => ({ ...s, [c.id]: false })), 3000)
-  }
-
   const signOut = async () => {
     const { createClient } = await import("@/lib/supabase/client")
     await createClient().auth.signOut()
@@ -122,6 +123,71 @@ export default function CoachDashboard() {
           coachId={coachProfile?.id ?? ""}
           onClose={() => setEditing(null)}
         />
+      )}
+
+      {/* Modal invitation */}
+      {showInvite && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center px-4"
+          style={{ background: "rgba(0,0,0,0.55)", backdropFilter: "blur(4px)" }}
+          onClick={e => { if (e.target === e.currentTarget) closeInvite() }}>
+          <div className="card w-full p-6" style={{ maxWidth: 420 }}>
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="font-black text-base" style={{ color: "var(--text-primary)" }}>
+                ✉️ Inviter un collaborateur
+              </h2>
+              <button onClick={closeInvite}
+                className="text-sm"
+                style={{ color: "var(--text-muted)" }}>✕</button>
+            </div>
+
+            {inviteResult?.ok ? (
+              <div>
+                <p className="text-sm mb-4" style={{ color: "var(--green)" }}>{inviteResult.message}</p>
+                <button onClick={closeInvite} className="btn-primary w-full text-sm">Fermer</button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs uppercase tracking-widest mb-2 font-semibold"
+                    style={{ color: "var(--text-muted)" }}>Prénom</label>
+                  <input
+                    type="text"
+                    value={invitePrenom}
+                    onChange={e => setInvitePrenom(e.target.value)}
+                    placeholder="Prénom du collaborateur"
+                    className="w-full rounded-xl px-4 py-3 text-sm outline-none"
+                    style={{ background: "var(--bg-secondary)", border: "1px solid var(--border)", color: "var(--text-primary)" }}
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs uppercase tracking-widest mb-2 font-semibold"
+                    style={{ color: "var(--text-muted)" }}>Email</label>
+                  <input
+                    type="email"
+                    value={inviteEmail}
+                    onChange={e => setInviteEmail(e.target.value)}
+                    placeholder="adresse@exemple.com"
+                    className="w-full rounded-xl px-4 py-3 text-sm outline-none"
+                    style={{ background: "var(--bg-secondary)", border: "1px solid var(--border)", color: "var(--text-primary)" }}
+                  />
+                </div>
+
+                {inviteResult && !inviteResult.ok && (
+                  <p className="text-xs text-red-400">❌ Erreur : {inviteResult.message}</p>
+                )}
+
+                <button
+                  onClick={sendInvite}
+                  disabled={!invitePrenom || !inviteEmail || inviteLoading}
+                  className="btn-primary w-full text-sm"
+                  style={{ opacity: (!invitePrenom || !inviteEmail || inviteLoading) ? 0.5 : 1 }}>
+                  {inviteLoading ? "Envoi en cours…" : "Envoyer l'invitation →"}
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
       )}
 
       {/* Header */}
@@ -161,8 +227,8 @@ export default function CoachDashboard() {
           ))}
         </div>
 
-        {/* Filtres */}
-        <div className="flex gap-2 mb-4">
+        {/* Filtres + bouton invitation */}
+        <div className="flex gap-2 mb-4 flex-wrap">
           {(["tous", "actifs", "inactifs"] as const).map(f => (
             <button key={f} onClick={() => setFilter(f)}
               className="px-3 py-1.5 rounded-lg text-xs font-semibold capitalize transition-all"
@@ -177,6 +243,12 @@ export default function CoachDashboard() {
           <span className="ml-auto text-xs self-center" style={{ color: "var(--text-muted)" }}>
             {filtered.length} résultat{filtered.length > 1 ? "s" : ""}
           </span>
+          <button
+            onClick={() => setShowInvite(true)}
+            className="btn-primary text-xs flex items-center gap-1.5"
+            style={{ padding: "6px 14px" }}>
+            + Inviter un collaborateur
+          </button>
         </div>
 
         {/* Liste collaborateurs */}
@@ -186,9 +258,12 @@ export default function CoachDashboard() {
           <div className="card p-8 text-center">
             <p className="text-lg mb-2">👥</p>
             <p className="font-semibold mb-1" style={{ color: "var(--text-primary)" }}>Aucun collaborateur</p>
-            <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
-              Partagez votre code entreprise pour inviter des collaborateurs.
+            <p className="text-sm mb-4" style={{ color: "var(--text-secondary)" }}>
+              Invite tes amis pour qu&apos;ils rejoignent le programme.
             </p>
+            <button onClick={() => setShowInvite(true)} className="btn-primary text-sm">
+              + Inviter un collaborateur
+            </button>
           </div>
         ) : (
           <div className="space-y-3">
@@ -344,32 +419,6 @@ export default function CoachDashboard() {
                           👁 Voir l&apos;espace
                         </button>
                       </div>
-                      <button
-                        onClick={e => { e.stopPropagation(); sendInvitation(c) }}
-                        disabled={inviteSending[c.id] || inviteSent[c.id]}
-                        className="w-full text-xs rounded-xl font-semibold transition-all mt-2"
-                        style={{
-                          padding: "8px",
-                          background: inviteSent[c.id] ? "rgba(45,212,160,0.12)" : "rgba(45,212,160,0.08)",
-                          border: `1px solid ${inviteSent[c.id] ? "rgba(45,212,160,0.35)" : "rgba(45,212,160,0.2)"}`,
-                          color: "var(--green)",
-                          opacity: inviteSending[c.id] ? 0.6 : 1,
-                        }}>
-                        {inviteSending[c.id] ? "Envoi en cours…" : inviteSent[c.id] ? "✓ Invitation envoyée" : "📨 Envoyer l'invitation"}
-                      </button>
-                      <button
-                        onClick={e => { e.stopPropagation(); sendMagicLink(c) }}
-                        disabled={linkSending[c.id] || linkSent[c.id]}
-                        className="w-full text-xs rounded-xl font-semibold transition-all mt-2"
-                        style={{
-                          padding: "8px",
-                          background: linkSent[c.id] ? "rgba(45,212,160,0.12)" : "rgba(76,201,240,0.08)",
-                          border: `1px solid ${linkSent[c.id] ? "rgba(45,212,160,0.35)" : "rgba(76,201,240,0.2)"}`,
-                          color: linkSent[c.id] ? "var(--green)" : "var(--blue)",
-                          opacity: linkSending[c.id] ? 0.6 : 1,
-                        }}>
-                        {linkSending[c.id] ? "Envoi en cours…" : linkSent[c.id] ? "✓ Lien envoyé" : "🔗 Renvoyer un lien de connexion"}
-                      </button>
                     </div>
                   )}
                 </button>

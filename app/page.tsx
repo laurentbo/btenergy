@@ -1,41 +1,24 @@
-"use client"
-import { useState } from "react"
 import Link from "next/link"
 
 export default function AccueilPublic() {
-  const [email, setEmail] = useState("")
-  const [submitted, setSubmitted] = useState(false)
-  const [loading, setLoading] = useState(false)
-
-  async function handleInscription(e: React.FormEvent) {
-    e.preventDefault()
-    if (!email) return
-    setLoading(true)
-    await fetch("/api/auth/inscription", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: email.trim() }),
-    })
-    setSubmitted(true)
-    setLoading(false)
-  }
-
   return (
     <div style={{ background: "#F8F7F4", color: "#2B2D2E", fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif", minHeight: "100vh" }}>
 
-      {/* ── Header minimal ── */}
+      {/* Header */}
       <header style={{ background: "#fff", borderBottom: "1px solid #e8e5e0", padding: "0 24px" }}>
         <div style={{ maxWidth: 900, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", height: 60 }}>
           <span style={{ fontWeight: 900, fontSize: 18, color: "#2A9D8F" }}>Back to Energy</span>
-          <Link href="/login" style={{ fontSize: 13, color: "#2A9D8F", fontWeight: 600, textDecoration: "none" }}>
-            Se connecter →
-          </Link>
+          <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
+            <Link href="/login" style={{ fontSize: 13, color: "#2A9D8F", fontWeight: 600, textDecoration: "none" }}>
+              Connexion →
+            </Link>
+          </div>
         </div>
       </header>
 
       <main style={{ maxWidth: 900, margin: "0 auto", padding: "0 20px 80px" }}>
 
-        {/* ── Bloc 1 : Héro ── */}
+        {/* Héro */}
         <section style={{ textAlign: "center", padding: "72px 0 56px" }}>
           <h1 style={{ fontSize: "clamp(32px,6vw,52px)", fontWeight: 900, lineHeight: 1.15, color: "#2B2D2E", margin: "0 0 16px" }}>
             Ballonnements, fatigue,<br />prise de poids ?
@@ -43,26 +26,42 @@ export default function AccueilPublic() {
           <p style={{ fontSize: 20, fontWeight: 700, color: "#2A9D8F", margin: "0 0 12px" }}>
             Ton corps sature. On le nettoie naturellement.
           </p>
-          <p style={{ fontSize: 15, color: "#6b6b6b", margin: "0 0 36px", letterSpacing: "0.02em" }}>
+          <p style={{ fontSize: 15, color: "#6b6b6b", margin: "0 0 40px", letterSpacing: "0.02em" }}>
             Alimentation non transformée · Associations simples · 21 jours
           </p>
-          <a href="#inscription"
-            style={{
-              display: "inline-block",
-              background: "#2A9D8F",
-              color: "#fff",
-              fontWeight: 700,
-              fontSize: 16,
-              padding: "16px 36px",
-              borderRadius: 12,
-              textDecoration: "none",
-              boxShadow: "0 4px 24px rgba(42,157,143,0.25)",
-            }}>
-            Commencer gratuitement →
-          </a>
+          <div style={{ display: "flex", gap: 16, justifyContent: "center", flexWrap: "wrap" }}>
+            <Link href="/login"
+              style={{
+                display: "inline-block",
+                background: "#2A9D8F",
+                color: "#fff",
+                fontWeight: 700,
+                fontSize: 16,
+                padding: "14px 32px",
+                borderRadius: 12,
+                textDecoration: "none",
+                boxShadow: "0 4px 24px rgba(42,157,143,0.25)",
+              }}>
+              Connexion →
+            </Link>
+            <Link href="/login/coach"
+              style={{
+                display: "inline-block",
+                background: "#fff",
+                color: "#2B2D2E",
+                fontWeight: 600,
+                fontSize: 15,
+                padding: "14px 28px",
+                borderRadius: 12,
+                textDecoration: "none",
+                border: "1.5px solid #e8e5e0",
+              }}>
+              Espace coach
+            </Link>
+          </div>
         </section>
 
-        {/* ── Bloc 2 : 4 Signes d'alerte ── */}
+        {/* Signaux */}
         <section style={{ marginBottom: 72 }}>
           <h2 style={{ textAlign: "center", fontSize: 22, fontWeight: 800, color: "#2B2D2E", marginBottom: 32 }}>
             Tu reconnais ces signaux ?
@@ -89,7 +88,7 @@ export default function AccueilPublic() {
           </div>
         </section>
 
-        {/* ── Bloc 3 : Solution naturelle ── */}
+        {/* Solution */}
         <section style={{ marginBottom: 72 }}>
           <h2 style={{ textAlign: "center", fontSize: 22, fontWeight: 800, color: "#2B2D2E", marginBottom: 32 }}>
             Une remise à zéro en 21 jours
@@ -124,67 +123,16 @@ export default function AccueilPublic() {
           </div>
         </section>
 
-        {/* ── Bloc 4 : Préparation ── */}
-        <section style={{ marginBottom: 72 }}>
-          <h2 style={{ textAlign: "center", fontSize: 22, fontWeight: 800, color: "#2B2D2E", marginBottom: 8 }}>
-            Prépare les 3 jours avant J1
-          </h2>
-          <p style={{ textAlign: "center", color: "#6b6b6b", fontSize: 14, marginBottom: 28 }}>Liste de courses initiale</p>
-          <div style={{
-            background: "#fff",
-            borderRadius: 16,
-            padding: "28px 28px 20px",
-            border: "1px solid #e8e5e0",
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: "8px 24px",
-            marginBottom: 20,
-          }}>
-            {[
-              "Citrons (5-6)",
-              "Fenouil (1 bulbe)",
-              "Fruits de saison",
-              "Abricots secs",
-              "Dattes Medjool",
-              "Figues sèches",
-              "Raisins secs",
-              "Amandes",
-              "Noix de cajou",
-              "Noix du Brésil",
-              "Miel brut",
-              "Anis étoilé",
-              "Curcuma",
-              "Cannelle",
-            ].map(item => (
-              <div key={item} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 0", borderBottom: "1px solid #f0ece7" }}>
-                <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#2A9D8F", flexShrink: 0 }} />
-                <span style={{ fontSize: 14, color: "#2B2D2E" }}>{item}</span>
-              </div>
-            ))}
-          </div>
-          <div style={{
-            background: "#fff8f0",
-            borderLeft: "4px solid #E76F51",
-            borderRadius: "0 12px 12px 0",
-            padding: "16px 20px",
-          }}>
-            <p style={{ fontSize: 14, fontWeight: 600, color: "#E76F51", margin: "0 0 6px" }}>À retirer maintenant</p>
-            <p style={{ fontSize: 14, color: "#2B2D2E", margin: 0, lineHeight: 1.6 }}>
-              Sucre ajouté, pain blanc, lait de vache, fromage industriel.
-            </p>
-          </div>
-        </section>
-
-        {/* ── Bloc 5 : Programme 3 semaines ── */}
+        {/* Programme 3 semaines */}
         <section style={{ marginBottom: 72 }}>
           <h2 style={{ textAlign: "center", fontSize: 22, fontWeight: 800, color: "#2B2D2E", marginBottom: 32 }}>
             3 semaines, 3 étapes
           </h2>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 16, marginBottom: 20 }}>
             {[
-              { label: "S1 DÉTOX",     days: "J1-7",   desc: "Le corps évacue",        bg: "#E76F51" },
-              { label: "S2 VITALITÉ",  days: "J8-14",  desc: "L'énergie remonte",      bg: "#E9C46A" },
-              { label: "S3 ANCRAGE",   days: "J15-21", desc: "Habitudes ancrées",      bg: "#2A9D8F" },
+              { label: "S1 DÉTOX",     days: "J1-7",   desc: "Le corps évacue",   bg: "#E76F51" },
+              { label: "S2 VITALITÉ",  days: "J8-14",  desc: "L'énergie remonte", bg: "#E9C46A" },
+              { label: "S3 ANCRAGE",   days: "J15-21", desc: "Habitudes ancrées", bg: "#2A9D8F" },
             ].map(({ label, days, desc, bg }) => (
               <div key={label} style={{
                 background: "#fff",
@@ -205,66 +153,25 @@ export default function AccueilPublic() {
           </p>
         </section>
 
-        {/* ── Bloc 6 : Inscription ── */}
-        <section id="inscription" style={{ maxWidth: 480, margin: "0 auto", textAlign: "center" }}>
-          <h2 style={{ fontSize: 24, fontWeight: 900, color: "#2B2D2E", marginBottom: 8 }}>
-            Prêt à démarrer ?
-          </h2>
-          <p style={{ fontSize: 15, color: "#6b6b6b", marginBottom: 32 }}>
-            Entre ton email — ton accès arrive en moins d&apos;une minute.
+        {/* CTA final */}
+        <section style={{ textAlign: "center", paddingTop: 16 }}>
+          <p style={{ fontSize: 15, color: "#6b6b6b", marginBottom: 24 }}>
+            Tu as reçu une invitation ? Connecte-toi pour démarrer ton programme.
           </p>
-
-          {submitted ? (
-            <div style={{
-              background: "#f0faf8",
-              border: "2px solid #2A9D8F",
-              borderRadius: 16,
-              padding: "32px 24px",
+          <Link href="/login"
+            style={{
+              display: "inline-block",
+              background: "#2A9D8F",
+              color: "#fff",
+              fontWeight: 700,
+              fontSize: 16,
+              padding: "14px 36px",
+              borderRadius: 12,
+              textDecoration: "none",
+              boxShadow: "0 4px 24px rgba(42,157,143,0.25)",
             }}>
-              <p style={{ fontSize: 20, margin: "0 0 8px" }}>✅</p>
-              <p style={{ fontSize: 16, fontWeight: 700, color: "#2A9D8F", margin: "0 0 8px" }}>C&apos;est parti !</p>
-              <p style={{ fontSize: 14, color: "#2B2D2E", margin: 0, lineHeight: 1.6 }}>
-                Vérifie ta boîte mail — ton lien arrive dans moins d&apos;une minute.
-              </p>
-            </div>
-          ) : (
-            <form onSubmit={handleInscription} style={{ display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "center" }}>
-              <input
-                type="email"
-                required
-                placeholder="ton@email.fr"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                style={{
-                  flex: "1 1 240px",
-                  padding: "14px 18px",
-                  borderRadius: 10,
-                  border: "1.5px solid #d8d4cc",
-                  fontSize: 15,
-                  color: "#2B2D2E",
-                  background: "#fff",
-                  outline: "none",
-                }}
-              />
-              <button
-                type="submit"
-                disabled={loading || !email}
-                style={{
-                  background: "#2A9D8F",
-                  color: "#fff",
-                  fontWeight: 700,
-                  fontSize: 15,
-                  padding: "14px 28px",
-                  borderRadius: 10,
-                  border: "none",
-                  cursor: "pointer",
-                  opacity: (!email || loading) ? 0.6 : 1,
-                  whiteSpace: "nowrap",
-                }}>
-                {loading ? "Envoi…" : "Recevoir mon lien →"}
-              </button>
-            </form>
-          )}
+            Connexion →
+          </Link>
         </section>
 
       </main>

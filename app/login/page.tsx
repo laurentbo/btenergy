@@ -14,7 +14,7 @@ export default function LoginCollaborateur() {
     setError(""); setLoading(true)
     const { error: e } = await supabase.auth.signInWithPassword({ email, password })
     if (e) { setError("Email ou mot de passe incorrect."); setLoading(false); return }
-    window.location.href = "/"
+    window.location.href = "/dashboard"
   }
 
   return (
@@ -28,7 +28,7 @@ export default function LoginCollaborateur() {
 
         <div className="card p-7">
           <p className="text-xs uppercase tracking-widest mb-5 font-semibold"
-            style={{ color: "var(--text-muted)" }}>Création de ton login</p>
+            style={{ color: "var(--text-muted)" }}>Connexion</p>
           <div className="space-y-4">
             <div>
               <label className="block text-xs uppercase tracking-widest mb-2"
