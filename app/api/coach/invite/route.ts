@@ -120,8 +120,6 @@ export async function POST(request: NextRequest) {
   const emailLower = email.toLowerCase().trim()
   const tempPassword = randomBytes(4).toString("hex") // ex: a3f2b1c4
 
-  const db = adminClient()
-
   // Crée (ou récupère) l'utilisateur dans Supabase Auth
   const { data: created, error: createError } = await db.auth.admin.createUser({
     email: emailLower,
