@@ -416,7 +416,7 @@ const saveMealLog = async (moment: string, items: string[]) => {
           )}
           <div style={{ background: "#fff", borderRadius: "16px", padding: "16px", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
             <p style={{ fontSize: "10px", fontWeight: 800, letterSpacing: "0.1em", color: "#94a3b8", marginBottom: "14px" }}>MODIFIER MES INFORMATIONS</p>
-            <ProfilForm onSave={handleSaveProfile} initial={profile} />
+            <ProfilForm onSave={handleSaveProfile} initial={profile} showGreeting={false} />
           </div>
           <div style={{ background: "#fff", borderRadius: "16px", padding: "16px", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
             <p style={{ fontSize: "12px", color: "#94a3b8", marginBottom: "10px" }}>Se déconnecter ferme ta session. Tes données sont sauvegardées.</p>

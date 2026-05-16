@@ -2,9 +2,9 @@
 import { useState } from "react"
 import type { UserProfile } from "@/data/program"
 
-type Props = { onSave: (p: UserProfile) => void; initial?: UserProfile | null }
+type Props = { onSave: (p: UserProfile) => void; initial?: UserProfile | null; showGreeting?: boolean }
 
-export default function ProfilForm({ onSave, initial }: Props) {
+export default function ProfilForm({ onSave, initial, showGreeting = true }: Props) {
   const [form, setForm] = useState<Partial<UserProfile>>(initial ?? {})
   const set = (k: keyof UserProfile, v: string | number) => setForm(f => ({ ...f, [k]: v }))
   const prenomConnu = initial?.prenom
@@ -17,7 +17,7 @@ export default function ProfilForm({ onSave, initial }: Props) {
 
       {/* Prénom — affiché si connu, sinon saisie */}
       {prenomConnu ? (
-        <p style={{ fontSize: "16px", fontWeight: 700, color: "#0f172a" }}>
+        showGreeting && <p style={{ fontSize: "16px", fontWeight: 700, color: "#0f172a" }}>
           👋 Bonjour {affichPrenom} !
         </p>
       ) : (
