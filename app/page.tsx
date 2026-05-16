@@ -26,7 +26,7 @@ export default function AccueilPublic() {
       {/* ── Header minimal ── */}
       <header style={{ background: "#fff", borderBottom: "1px solid #e8e5e0", padding: "0 24px" }}>
         <div style={{ maxWidth: 900, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", height: 60 }}>
-          <span style={{ fontWeight: 900, fontSize: 18, color: "#2A9D8F" }}>Backtoenergy</span>
+          <span style={{ fontWeight: 900, fontSize: 18, color: "#2A9D8F" }}>Back to Energy</span>
           <Link href="/login" style={{ fontSize: 13, color: "#2A9D8F", fontWeight: 600, textDecoration: "none" }}>
             Se connecter →
           </Link>
@@ -271,7 +271,7 @@ export default function AccueilPublic() {
 
       <footer style={{ borderTop: "1px solid #e8e5e0", padding: "24px", textAlign: "center" }}>
         <p style={{ fontSize: 12, color: "#9b9590", margin: 0 }}>
-          Backtoenergy · Programme 21 jours · backtoenergy.fr
+          Back to Energy · Programme 21 jours · backtoenergy.fr
         </p>
       </footer>
     </div>

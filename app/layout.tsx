@@ -3,16 +3,16 @@ import { AuthProvider } from "@/lib/auth-context"
 import "./globals.css"
 
 export const metadata: Metadata = {
-  title: "Backtoenergy — Programme 21 Jours",
+  title: "Back to Energy — Programme 21 Jours",
   description: "Détox, énergie et vitalité — programme de 21 jours",
   themeColor: "#16a34a",
   appleWebApp: {
     capable: true,
-    title: "Backtoenergy",
+    title: "Back to Energy",
     statusBarStyle: "default",
   },
   openGraph: {
-    title: "Backtoenergy",
+    title: "Back to Energy",
     description: "Programme de 21 jours — énergie & vitalité",
     type: "website",
   },
