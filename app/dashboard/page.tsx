@@ -112,7 +112,7 @@ export default function Dashboard() {
         setUserId(user.id)
         const { data: dbProfile } = await supabase
           .from("profiles")
-          .select("prenom, age, genre, taille, poids, program_start, welcome_seen_at")
+          .select("prenom, age, genre, taille, poids, program_start")
           .eq("id", user.id)
           .maybeSingle()
 
@@ -140,9 +140,7 @@ export default function Dashboard() {
           const merged = { ...activeProfile, start_date: startDate ?? activeProfile.start_date }
           localStorage.setItem("btenergy_profile", JSON.stringify(merged))
           setProfile(merged)
-          if (!dbProfile?.welcome_seen_at) {
-            setShowWelcome(true)
-          }
+          setShowWelcome(true)
         } else {
           setShowProfileSetup(true)
         }
