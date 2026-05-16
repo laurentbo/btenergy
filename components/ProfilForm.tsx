@@ -7,28 +7,37 @@ type Props = { onSave: (p: UserProfile) => void; initial?: UserProfile | null }
 export default function ProfilForm({ onSave, initial }: Props) {
   const [form, setForm] = useState<Partial<UserProfile>>(initial ?? {})
   const set = (k: keyof UserProfile, v: string | number) => setForm(f => ({ ...f, [k]: v }))
-  const isValid = !!form.prenom
+  const prenomConnu = initial?.prenom
+  const isValid = !!(form.prenom || prenomConnu)
+  const affichPrenom = (form.prenom || prenomConnu || "")
+    .charAt(0).toUpperCase() + (form.prenom || prenomConnu || "").slice(1).toLowerCase()
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
 
-      {/* Prénom */}
-      <div>
-        <p style={{ fontSize: "13px", color: "#64748b", marginBottom: "8px" }}>
-          👋 Comment tu t&apos;appelles ?
+      {/* Prénom — affiché si connu, sinon saisie */}
+      {prenomConnu ? (
+        <p style={{ fontSize: "16px", fontWeight: 700, color: "#0f172a" }}>
+          👋 Bonjour {affichPrenom} !
         </p>
-        <input
-          type="text"
-          placeholder="Ton prénom"
-          value={form.prenom ?? ""}
-          onChange={e => set("prenom", e.target.value)}
-          style={{
-            width: "100%", padding: "12px 14px", borderRadius: "12px",
-            border: "1.5px solid #e2e8f0", fontSize: "15px", color: "#0f172a",
-            background: "#f8fafc", outline: "none", boxSizing: "border-box",
-          }}
-        />
-      </div>
+      ) : (
+        <div>
+          <p style={{ fontSize: "13px", color: "#64748b", marginBottom: "8px" }}>
+            👋 Comment tu t&apos;appelles ?
+          </p>
+          <input
+            type="text"
+            placeholder="Ton prénom"
+            value={form.prenom ?? ""}
+            onChange={e => set("prenom", e.target.value)}
+            style={{
+              width: "100%", padding: "12px 14px", borderRadius: "12px",
+              border: "1.5px solid #e2e8f0", fontSize: "15px", color: "#0f172a",
+              background: "#f8fafc", outline: "none", boxSizing: "border-box",
+            }}
+          />
+        </div>
+      )}
 
       {/* Genre */}
       <div>
@@ -120,7 +129,7 @@ export default function ProfilForm({ onSave, initial }: Props) {
           transition: "background 0.15s",
         }}
       >
-        {isValid ? `C'est parti ${form.prenom} 🌿` : "Enregistre tes repères →"}
+        {isValid ? `C'est parti ${affichPrenom} 🌿` : "Enregistre tes repères →"}
       </button>
 
     </div>
