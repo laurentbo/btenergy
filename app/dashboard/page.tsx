@@ -1,811 +1,1193 @@
 "use client"
-import { useState, useEffect, useMemo } from "react"
-import { PROGRAM, WEEK_THEMES, calcCurrentDay, calcRawDay, getConseilDuJour, type UserProfile, type Meal } from "@/data/program"
-import MealCard from "@/components/MealCard"
-import JournalForm from "@/components/JournalForm"
-import Timeline21 from "@/components/Timeline21"
-import ProfilForm from "@/components/ProfilForm"
-import PrincipesSection from "@/components/PrincipesSection"
-import WeightTracker from "@/components/WeightTracker"
-import ShoppingList from "@/components/ShoppingList"
-import EnergyCheckin from "@/components/EnergyCheckin"
-import QuestionFooter from "@/components/QuestionFooter"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { useAuth } from "@/lib/auth-context"
-import WelcomeScreen from "@/components/WelcomeScreen"
-import PreparationPhase from "@/components/PreparationPhase"
-import { useDayMenu } from "@/lib/hooks/useDayMenu"
-import type { MealFieldName } from "@/lib/supabase/types"
-import ChangePasswordForm from "@/components/ChangePasswordForm"
+import {
+  PROGRAM_NEW,
+  PRINCIPLES_V2,
+  PRINCIPLE_GROUPS,
+  CHAPTER_FOR_DAY,
+  calcCurrentDay,
+} from "@/data/program"
 
-const MEAL_META: Record<string, { icon: string; label: string; horaire: string }> = {
-  "matin":        { icon: "🌅", label: "Petit-déjeuner", horaire: "7h – 9h" },
-  "midi":         { icon: "🌞", label: "Déjeuner",       horaire: "12h – 14h" },
-  "après-midi":   { icon: "🌤",  label: "Collation",      horaire: "15h – 17h" },
-  "soir":         { icon: "🌙", label: "Dîner",           horaire: "18h – 20h" },
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+type JournalMessage = {
+  id: string
+  coachee_id: string
+  author: "coachee" | "coach"
+  body: string | null
+  photo_url: string | null
+  is_question: boolean
+  created_at: string
 }
 
-const DB_MEAL_META: Record<MealFieldName, { icon: string; label: string; horaire: string } | null> = {
-  petit_dejeuner:       { icon: "🌅", label: "Petit-déjeuner",     horaire: "7h – 9h"   },
-  collation_matin:      { icon: "🍎", label: "Collation matin",     horaire: "10h – 11h" },
-  dejeuner:             { icon: "🌞", label: "Déjeuner",            horaire: "12h – 14h" },
-  collation_apres_midi: { icon: "🌤", label: "Collation après-midi", horaire: "15h – 17h" },
-  diner:                { icon: "🌙", label: "Dîner",               horaire: "18h – 20h" },
-  astuce_umami:         null,
+type WeightLog = {
+  id: string
+  coachee_id: string
+  day_number: number
+  kg: number
+  created_at: string
 }
 
-const DB_MEAL_BORDER: Record<MealFieldName, string> = {
-  petit_dejeuner:       "#f59e0b",
-  collation_matin:      "#fb923c",
-  dejeuner:             "#22c55e",
-  collation_apres_midi: "#fb923c",
-  diner:                "#818cf8",
-  astuce_umami:         "#94a3b8",
+type Profile = {
+  id: string
+  prenom: string | null
+  program_start: string | null
+  poids: number | null
+  coach_id: string | null
 }
 
-function parseDbMeal(value: string | null): string[] {
-  if (!value) return []
-  return value.split("\n").map(s => s.trim()).filter(Boolean)
-}
-
-type Override = {
+type CoachNote = {
   coach_note: string | null
-  tip_override: string | null
-  intention_override: string | null
-  meal_overrides: Record<string, string[]> | null
-  ritual_matin_override: string | null
-  ritual_soir_override: string | null
 }
 
-type Tab = "programme" | "journal" | "progression" | "courses" | "principes" | "reperes" | "compte"
+type Tab = "today" | "journal" | "meals" | "journey" | "principles"
 
-export default function Dashboard() {
-  const [activeTab, setActiveTab] = useState<Tab>("programme")
-  const [profile, setProfile] = useState<UserProfile | null>(null)
-  const [showProfileSetup, setShowProfileSetup] = useState(false)
-  const [showWelcome, setShowWelcome] = useState(false)
-  const [showJ1Onboarding, setShowJ1Onboarding] = useState(false)
-  const [override, setOverride] = useState<Override | null>(null)
-  const [checking, setChecking] = useState(true)
-  const [currentDay, setCurrentDay] = useState(1)
-  const [viewDay, setViewDay] = useState(1)
-  const [mealLogs, setMealLogs] = useState<Record<string, string[]>>({})
-  const [openMoments, setOpenMoments] = useState<Set<string>>(new Set(["matin"]))
-  const [programStartDate, setProgramStartDate] = useState<string | null>(null)
-  const [exclusions, setExclusions] = useState<Record<string, boolean | string[]>>({})
-  const [userId, setUserId] = useState<string | null>(null)
+const TABS: { id: Tab; label: string }[] = [
+  { id: "today",      label: "Aujourd'hui" },
+  { id: "journal",    label: "Journal" },
+  { id: "meals",      label: "Repas" },
+  { id: "journey",    label: "Parcours" },
+  { id: "principles", label: "Principes" },
+]
 
-  const supabase = useMemo(() => createClient(), [])
-  const { signOut } = useAuth()
-  const { menu: dbMenu } = useDayMenu(userId, viewDay)
+const COACH = { name: "Camille", initial: "C" }
 
-  const handleSignOut = async () => {
-    await signOut()
-    window.location.href = "/"
-  }
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
-  const prenom = profile?.prenom
-    ? profile.prenom.charAt(0).toUpperCase() + profile.prenom.slice(1).toLowerCase()
-    : null
+function cap(s: string | null | undefined): string {
+  if (!s) return ""
+  return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase()
+}
 
-  const toggleMoment = (moment: string) => {
-    setOpenMoments(prev => {
-      const next = new Set(prev)
-      next.has(moment) ? next.delete(moment) : next.add(moment)
-      return next
-    })
-  }
+function todayLong(): string {
+  return new Date().toLocaleDateString("fr-FR", {
+    weekday: "long", day: "numeric", month: "long",
+  })
+}
 
-  useEffect(() => {
-    async function init() {
-      const res = await fetch("/api/me")
-      if (res.status === 401) { window.location.href = "/"; return }
+function formatTime(iso: string): string {
+  return new Date(iso).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })
+}
 
-      const { role } = await res.json()
-      if (role === "coach" || role === "admin") {
-        window.location.href = "/coach"; return
-      }
+function formatDateLabel(iso: string): string {
+  const d = new Date(iso)
+  const now = new Date()
+  const yesterday = new Date(now)
+  yesterday.setDate(now.getDate() - 1)
+  const isToday     = d.toDateString() === now.toDateString()
+  const isYesterday = d.toDateString() === yesterday.toDateString()
+  if (isToday)     return `Aujourd'hui · ${d.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric" })}`
+  if (isYesterday) return "Hier"
+  return d.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })
+}
 
-      const { data: { user } } = await supabase.auth.getUser()
-      let computedDay = 1
-      if (user) {
-        setUserId(user.id)
-        const { data: dbProfile } = await supabase
-          .from("profiles")
-          .select("prenom, age, genre, taille, poids, program_start")
-          .eq("id", user.id)
-          .maybeSingle()
+// ─── UI primitives ────────────────────────────────────────────────────────────
 
-        const saved = localStorage.getItem("btenergy_profile")
-        const localProfile: UserProfile | null = saved ? JSON.parse(saved) : null
-        const startDate = dbProfile?.program_start ?? localProfile?.start_date
-        if (startDate) setProgramStartDate(startDate)
-        computedDay = calcCurrentDay(startDate)
-        setCurrentDay(computedDay)
-        setViewDay(computedDay)
+function Eyebrow({ children, color }: { children: React.ReactNode; color?: string }) {
+  return (
+    <div style={{
+      fontSize: 10.5, fontWeight: 500,
+      letterSpacing: "0.16em", textTransform: "uppercase" as const,
+      color: color ?? "var(--text-mute)",
+    }}>{children}</div>
+  )
+}
 
-        const supabaseProfile: UserProfile | null = dbProfile?.prenom
-          ? {
-              prenom: dbProfile.prenom,
-              age: dbProfile.age ?? undefined,
-              genre: dbProfile.genre ?? undefined,
-              taille: dbProfile.taille ?? undefined,
-              poids: dbProfile.poids ?? undefined,
-              start_date: startDate ?? undefined,
-            }
-          : null
+function Avatar({ who, size = 26 }: { who: "coach" | "me"; size?: number }) {
+  const isCoach = who === "coach"
+  return (
+    <div style={{
+      width: size, height: size, borderRadius: 999, flexShrink: 0,
+      background: isCoach ? "rgba(168,187,165,0.14)" : "rgba(236,228,210,0.08)",
+      border: `1px solid ${isCoach ? "rgba(168,187,165,0.25)" : "rgba(236,228,210,0.12)"}`,
+      display: "flex", alignItems: "center", justifyContent: "center",
+      color: isCoach ? "var(--coach)" : "var(--text-dim)",
+      fontFamily: "var(--serif)", fontStyle: "italic",
+      fontSize: size * 0.5, fontWeight: 400,
+    }}>
+      {isCoach ? COACH.initial : ""}
+    </div>
+  )
+}
 
-        const activeProfile = supabaseProfile ?? localProfile
-        if (activeProfile) {
-          const merged = { ...activeProfile, start_date: startDate ?? activeProfile.start_date }
-          localStorage.setItem("btenergy_profile", JSON.stringify(merged))
-          setProfile(merged)
-          setShowWelcome(true)
-        } else {
-          setShowProfileSetup(true)
-        }
+// ─── Mobile header ────────────────────────────────────────────────────────────
 
-        // Charger les exclusions depuis coach_settings via l'API
-        fetch("/api/admin/exclusions")
-          .then(r => r.json())
-          .then(d => { if (d.exclusions) setExclusions(d.exclusions) })
-          .catch(() => {})
-      } else {
-        window.location.href = "/"; return
-      }
-
-      if (computedDay === 1 && !localStorage.getItem("btenergy_onboarding_done")) {
-        setShowJ1Onboarding(true)
-      }
-
-      const rawDay = calcRawDay(
-        (() => { try { return JSON.parse(localStorage.getItem("btenergy_profile") ?? "{}").start_date } catch { return undefined } })()
-      )
-      const emailDay = Math.min(22, rawDay)
-      const emailSentKey = `btenergy_email_sent_${emailDay}`
-      if (!localStorage.getItem(emailSentKey) && emailDay >= 1 && emailDay <= 22) {
-        fetch("/api/send-step-email", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ day: emailDay }),
-        })
-          .then(r => r.json())
-          .then(d => { if (d.ok) localStorage.setItem(emailSentKey, "1") })
-          .catch(() => {})
-      }
-
-
-      setChecking(false)
-    }
-    init()
-  }, []) // eslint-disable-line
-
-  const handleSaveProfile = async (p: UserProfile) => {
-    setProfile(p)
-    localStorage.setItem("btenergy_profile", JSON.stringify(p))
-    const { data: { user } } = await supabase.auth.getUser()
-    if (user) {
-      await supabase.from("profiles").update({
-        prenom: p.prenom,
-        age: p.age ?? null,
-        genre: p.genre ?? null,
-        taille: p.taille ?? null,
-        poids: p.poids ?? null,
-        ...(p.start_date ? { program_start: p.start_date } : {}),
-      }).eq("id", user.id)
-      if (p.start_date) setCurrentDay(calcCurrentDay(p.start_date))
-    }
-    setShowProfileSetup(false)
-    setActiveTab("programme")
-  }
-
-  useEffect(() => {
-    if (checking) return
-    async function loadViewDay() {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
-      const { data: ov } = await supabase
-        .from("program_overrides")
-        .select("*")
-        .eq("collaborateur_id", user.id)
-        .eq("day", viewDay)
-        .maybeSingle()
-      setOverride(ov as Override ?? null)
-      const { data: logs } = await supabase
-        .from("meal_logs")
-        .select("moment, items")
-        .eq("user_id", user.id)
-        .eq("day", viewDay)
-      const logsMap: Record<string, string[]> = {}
-      if (logs) logs.forEach((l: { moment: string; items: string[] }) => { logsMap[l.moment] = l.items })
-      setMealLogs(logsMap)
-    }
-    loadViewDay()
-  }, [viewDay, checking]) // eslint-disable-line
-
-const saveMealLog = async (moment: string, items: string[]) => {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return
-    await supabase.from("meal_logs").upsert(
-      { user_id: user.id, day: viewDay, moment, items },
-      { onConflict: "user_id,day,moment" }
-    )
-    setMealLogs(prev => ({ ...prev, [moment]: items }))
-  }
-
-  const day = PROGRAM[currentDay - 1]
-  const weekInfo = WEEK_THEMES[day.week]
-  const viewDayData = PROGRAM[viewDay - 1]
-  const viewWeekInfo = WEEK_THEMES[viewDayData.week]
-  const completedDays = Array.from({ length: currentDay - 1 }, (_, i) => i + 1)
-
-  const activeExclusions = Object.entries(exclusions)
-    .filter(([key, val]) => key !== "autres" && val === true)
-    .map(([key]) => key.replace(/_/g, " "))
-
-  // ─── CHARGEMENT ──────────────────────────────────────────────────────────────
-  if (checking) {
-    return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--bg-primary)" }}>
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-xl font-black"
-            style={{ background: "linear-gradient(135deg, var(--green-dim), var(--blue-dim))", color: "#070d0f" }}>B</div>
-          <div className="w-6 h-6 rounded-full border-2 border-t-transparent animate-spin"
-            style={{ borderColor: "var(--blue)", borderTopColor: "transparent" }} />
+function AppHeader({ currentDay }: { currentDay: number }) {
+  return (
+    <div className="mobile-header" style={{
+      padding: "env(safe-area-inset-top, 44px) 22px 14px",
+      paddingTop: "max(44px, env(safe-area-inset-top, 44px))",
+      display: "flex", alignItems: "center", justifyContent: "space-between",
+      borderBottom: "1px solid var(--line-soft)", flexShrink: 0,
+    }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        <Avatar who="coach" size={28} />
+        <div>
+          <div style={{ fontSize: 13, fontWeight: 500, color: "var(--text)", lineHeight: 1.1 }}>{COACH.name}</div>
+          <div style={{ fontSize: 11, color: "var(--text-mute)", marginTop: 2 }}>ta coach</div>
         </div>
       </div>
-    )
-  }
+      <div style={{
+        fontFamily: "var(--serif)", fontStyle: "italic",
+        fontSize: 13, color: "var(--text-mute)",
+      }}>jour {currentDay}</div>
+    </div>
+  )
+}
 
-  if (showWelcome) {
-    return <WelcomeScreen prenom={profile?.prenom ?? null} onDone={() => setShowWelcome(false)} />
-  }
+// ─── Tab bar ──────────────────────────────────────────────────────────────────
 
-  if (showProfileSetup) {
-    return (
-      <div className="min-h-screen flex flex-col" style={{ background: "var(--bg-primary)" }}>
-        <div className="flex-1 max-w-lg mx-auto w-full px-4 py-8">
-          <div className="text-center mb-8">
-            <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-2xl font-black mx-auto mb-4"
-              style={{ background: "linear-gradient(135deg, var(--green-dim), var(--blue-dim))", color: "#070d0f" }}>
-              B
-            </div>
-            <h1 className="text-2xl font-black gradient-text mb-1">Backtoenergy</h1>
-          </div>
-          <div className="card p-5 mb-4">
-            <h2 className="font-bold text-base mb-1" style={{ color: "var(--text-primary)" }}>Tes repères de départ 📏</h2>
-            <p className="text-sm mb-5" style={{ color: "var(--text-secondary)" }}>
-              Taille et poids pour suivre ta progression sur 21 jours.
-            </p>
-            <ProfilForm onSave={handleSaveProfile} initial={profile} />
-          </div>
-          <button
-            onClick={() => { setShowProfileSetup(false); setProfile({ prenom: profile?.prenom ?? "", start_date: new Date().toISOString().split("T")[0] }) }}
-            className="w-full text-center text-xs py-2"
-            style={{ color: "var(--text-muted)" }}>
-            Passer cette étape →
-          </button>
-        </div>
-      </div>
-    )
-  }
-
-  if (showJ1Onboarding) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center px-4"
-        style={{ background: "linear-gradient(160deg, #0b1e38 0%, #07111e 55%, #050e1a 100%)" }}>
-        <div className="max-w-sm w-full text-center">
-          <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl font-black mx-auto mb-6"
-            style={{ background: "linear-gradient(135deg, var(--green-dim), var(--blue-dim))", color: "#050e1a" }}>
-            B
-          </div>
-          <h1 className="text-3xl font-black gradient-text mb-8">Backtoenergy</h1>
-
-          <div className="card p-6 mb-6 text-left"
-            style={{ border: "1px solid rgba(45,212,160,0.25)", background: "rgba(4,10,22,0.72)" }}>
-            <p className="font-bold mb-3" style={{ color: "var(--text-primary)", fontSize: "16px" }}>
-              Bienvenue {prenom ? `, ${prenom}` : ""} 🌿
-            </p>
-            <p className="text-sm mb-4" style={{ color: "var(--text-secondary)", lineHeight: "1.75" }}>
-              Ton programme de 21 jours commence aujourd&apos;hui. Les 3 règles d&apos;or :
-            </p>
-            {[
-              { icon: "💧", text: "Eau citronnée à jeun chaque matin, 15 min avant de manger" },
-              { icon: "🍽️", text: "Protéines uniquement avec des légumes — jamais avec des céréales" },
-              { icon: "🌙", text: "Dîner avant 20h, jeûne nocturne de 12h minimum" },
-            ].map(({ icon, text }) => (
-              <div key={text} className="flex items-start gap-3 mb-3">
-                <span style={{ fontSize: "16px", flexShrink: 0 }}>{icon}</span>
-                <p className="text-sm" style={{ color: "rgba(255,255,255,0.7)", lineHeight: "1.6" }}>{text}</p>
-              </div>
-            ))}
-          </div>
-
-          <button
-            onClick={() => {
-              localStorage.setItem("btenergy_onboarding_done", "1")
-              setShowJ1Onboarding(false)
-            }}
-            className="w-full py-4 rounded-2xl font-black text-base transition-all"
-            style={{
-              background: "linear-gradient(135deg, #2dd4a0, #4cc9f0)",
-              color: "#050e1a",
-              letterSpacing: "0.04em",
+function TabBar({ active, onChange }: { active: Tab; onChange: (t: Tab) => void }) {
+  return (
+    <div className="mobile-tabbar" style={{
+      flexShrink: 0,
+      padding: "10px 8px env(safe-area-inset-bottom, 12px)",
+      borderTop: "1px solid var(--line-soft)",
+      background: "color-mix(in oklab, var(--bg) 92%, transparent)",
+      backdropFilter: "blur(20px)",
+      WebkitBackdropFilter: "blur(20px)",
+    }}>
+      <div style={{ display: "flex" }}>
+        {TABS.map(t => {
+          const on = active === t.id
+          return (
+            <button key={t.id} onClick={() => onChange(t.id)} style={{
+              flex: 1, background: "transparent", border: 0, cursor: "pointer",
+              padding: "10px 2px",
+              fontFamily: "var(--sans)",
+              fontSize: 11.5, fontWeight: on ? 500 : 400,
+              color: on ? "var(--text)" : "var(--text-mute)",
+              position: "relative",
+              transition: "color .25s ease",
             }}>
-            Commencer le Jour 1 →
-          </button>
+              {t.label}
+              <span style={{
+                position: "absolute", left: "50%", transform: "translateX(-50%)",
+                bottom: 0, width: on ? 16 : 0, height: 1,
+                background: "var(--brand)", opacity: on ? 0.85 : 0,
+                transition: "width .3s ease, opacity .3s ease",
+                display: "block",
+              }} />
+            </button>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+// ─── Side nav (desktop) ───────────────────────────────────────────────────────
+
+function SideNav({ active, onChange, currentDay }: {
+  active: Tab; onChange: (t: Tab) => void; currentDay: number
+}) {
+  const logoUrl = process.env.NEXT_PUBLIC_LOGO_DARK_URL ?? ""
+  return (
+    <aside className="desktop-nav">
+      {logoUrl
+        ? <img src={logoUrl} alt="Back to Energy" className="dnav-logo" />
+        : <div style={{ fontSize: 16, fontFamily: "var(--serif)", fontStyle: "italic", color: "var(--text)", marginBottom: 28, paddingLeft: 8 }}>Back to Energy</div>
+      }
+      <div className="dnav-coach">
+        <Avatar who="coach" size={36} />
+        <div>
+          <div className="dnav-coach-name">{COACH.name}</div>
+          <div className="dnav-coach-role">ta coach</div>
         </div>
       </div>
-    )
-  }
+      <hr className="dnav-rule" />
+      <nav>
+        <ul className="dnav-list">
+          {TABS.map(t => (
+            <li key={t.id}>
+              <button
+                className={"dnav-item" + (active === t.id ? " active" : "")}
+                onClick={() => onChange(t.id)}
+              >{t.label}</button>
+            </li>
+          ))}
+        </ul>
+      </nav>
+      <div className="dnav-spacer" />
+      <div className="dnav-day">
+        <div className="dnav-day-label">jour {currentDay}</div>
+        <div className="dnav-day-meta">{todayLong()}</div>
+      </div>
+    </aside>
+  )
+}
 
-  const WEEK_LIGHT: Record<number, { text: string; bg: string; border: string }> = {
-    1: { text: "#15803d", bg: "#dcfce7", border: "#86efac" },
-    2: { text: "#0369a1", bg: "#e0f2fe", border: "#7dd3fc" },
-    3: { text: "#b45309", bg: "#fef3c7", border: "#fcd34d" },
-  }
-  const MEAL_BORDER: Record<string, string> = {
-    "matin":      "#f59e0b",
-    "midi":       "#22c55e",
-    "après-midi": "#fb923c",
-    "soir":       "#818cf8",
-  }
-  const wLight = WEEK_LIGHT[day.week] ?? WEEK_LIGHT[1]
+// ─── Screen 1 : Aujourd'hui ───────────────────────────────────────────────────
+
+function TodayScreen({
+  prenom,
+  currentDay,
+  coachNote,
+  onOpenJournal,
+}: {
+  prenom: string
+  currentDay: number
+  coachNote: string | null
+  onOpenJournal: () => void
+}) {
+  const prog = PROGRAM_NEW[currentDay - 1] ?? PROGRAM_NEW[0]
 
   return (
-    <div className="min-h-screen" style={{ background: "#f0f4f8" }}>
+    <div className="scroll" style={{ flex: 1, overflowY: "auto", padding: "26px 22px 30px" }}>
+      <Eyebrow>{todayLong()}</Eyebrow>
+      <h1 style={{
+        margin: "10px 0 0", fontFamily: "var(--serif)",
+        fontWeight: 400, fontSize: 36, lineHeight: 1.05,
+        letterSpacing: "-0.02em", color: "var(--text)",
+      }}>
+        Bonjour <em style={{ fontStyle: "italic", color: "var(--brand)" }}>{cap(prenom)}</em>.
+      </h1>
 
-      {/* ── Header ── */}
-      <header className="sticky top-0 z-50"
-        style={{ background: "rgba(255,255,255,0.92)", backdropFilter: "blur(20px)", borderBottom: "1px solid #e2e8f0", padding: "12px 20px" }}>
-        <div style={{ maxWidth: "640px", margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <button
-            onClick={() => setActiveTab("programme")}
-            style={{ background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex", alignItems: "center", gap: "6px" }}>
-            {activeTab === "reperes" && (
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#16a34a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M19 12H5"/><path d="M12 5l-7 7 7 7"/>
-              </svg>
-            )}
-            <span style={{ fontWeight: 900, fontSize: "12px", letterSpacing: "-0.01em" }}>
-              <span style={{ color: "#16a34a" }}>Backt</span><span style={{ color: "#1e293b" }}>o</span><span style={{ color: "#16a34a" }}>energy</span>
-            </span>
-          </button>
-          {prenom && (
-            <span style={{ fontSize: "14px", fontWeight: 700, color: "#0f172a" }}>Hello {prenom} 👋</span>
-          )}
-          <button
-            onClick={() => setActiveTab("reperes")}
-            style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "2px", background: "none", border: "none", cursor: "pointer", padding: 0 }}>
-            <div style={{ width: 36, height: 36, borderRadius: "50%", background: "#16a34a", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", flexShrink: 0 }}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
-              </svg>
-            </div>
-            <span style={{ fontSize: "9px", fontWeight: 700, color: "#16a34a", letterSpacing: "0.02em" }}>Mes repères</span>
-          </button>
-        </div>
-      </header>
-
-      <main style={{ maxWidth: "640px", margin: "0 auto", padding: "16px 16px 100px" }}>
-
-      {activeTab === "reperes" ? (
-        /* ══════════════════════════════════════════
-           MES REPÈRES — vue complète
-           ══════════════════════════════════════════ */
-        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-          {profile && (
-            <div style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: "16px", padding: "16px" }}>
-              <p style={{ fontSize: "10px", fontWeight: 800, letterSpacing: "0.1em", color: "#16a34a", marginBottom: "12px" }}>MON PROFIL</p>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
-                {[
-                  { label: "Prénom", value: profile.prenom },
-                  { label: "Genre", value: profile.genre ?? "—" },
-                  { label: "Taille", value: profile.taille ? `${profile.taille} cm` : "—" },
-                  { label: "Poids", value: profile.poids ? `${profile.poids} kg` : "—" },
-                  { label: "Âge", value: profile.age ? `${profile.age} ans` : "—" },
-                  { label: "Jour en cours", value: `J${currentDay} / 21` },
-                ].map(({ label, value }) => (
-                  <div key={label} style={{ background: "#fff", borderRadius: "10px", padding: "10px 12px" }}>
-                    <p style={{ fontSize: "9px", fontWeight: 700, color: "#94a3b8", letterSpacing: "0.08em", marginBottom: "2px" }}>{label.toUpperCase()}</p>
-                    <p style={{ fontSize: "14px", fontWeight: 700, color: "#0f172a" }}>{value}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-          <div style={{ background: "#fff", borderRadius: "16px", padding: "16px", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
-            <p style={{ fontSize: "10px", fontWeight: 800, letterSpacing: "0.1em", color: "#94a3b8", marginBottom: "14px" }}>MODIFIER MES INFORMATIONS</p>
-            <ProfilForm onSave={handleSaveProfile} initial={profile} showGreeting={false} />
-          </div>
-          <div style={{ background: "#fff", borderRadius: "16px", padding: "16px", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
-            <p style={{ fontSize: "12px", color: "#94a3b8", marginBottom: "10px" }}>Se déconnecter ferme ta session. Tes données sont sauvegardées.</p>
-            <button onClick={handleSignOut}
-              style={{ width: "100%", padding: "10px", borderRadius: "10px", fontWeight: 600, fontSize: "13px", background: "#fff1f2", color: "#e11d48", border: "1px solid #fecdd3", cursor: "pointer" }}>
-              Se déconnecter
-            </button>
-          </div>
-        </div>
-      ) : (
-        /* ══════════════════════════════════════════
-           VUE PRINCIPALE (tous les autres onglets)
-           ══════════════════════════════════════════ */
+      {coachNote && (
         <>
-
-        {/* ── Hero card ── */}
-        <div style={{ background: "#fff", borderRadius: "20px", padding: "20px", marginBottom: "12px", boxShadow: "0 1px 4px rgba(0,0,0,0.07)" }}>
-
-          {/* Phase badge */}
-          <div style={{
-            display: "inline-flex", alignItems: "center",
-            background: wLight.bg, color: wLight.text,
-            border: `1px solid ${wLight.border}`,
-            borderRadius: "20px", padding: "4px 12px",
-            fontSize: "11px", fontWeight: 700, letterSpacing: "0.06em", marginBottom: "14px",
-          }}>
-            S{day.week} · {weekInfo.title.toUpperCase()}
-          </div>
-
-          {/* Quote + day counter */}
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", marginBottom: "16px" }}>
-            <p style={{ fontSize: "13px", fontStyle: "italic", color: wLight.text, lineHeight: 1.5 }}>
-              &ldquo;{day.theme}&rdquo;
-            </p>
-            <div style={{
-              flexShrink: 0, width: 64, height: 64, borderRadius: "16px",
-              background: wLight.bg, border: `1px solid ${wLight.border}`,
-              display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-            }}>
-              <span style={{ fontSize: "26px", fontWeight: 900, color: wLight.text, lineHeight: 1 }}>{currentDay}</span>
-              <span style={{ fontSize: "10px", color: "#94a3b8", fontWeight: 600 }}>/ 21</span>
-            </div>
-          </div>
-
-          {/* Progress */}
-          <div>
-            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px" }}>
-              <span style={{ fontSize: "12px", color: "#64748b" }}>Progression</span>
-              <span style={{ fontSize: "12px", fontWeight: 700, color: wLight.text }}>{Math.round((currentDay / 21) * 100)}%</span>
-            </div>
-            <div style={{ height: "6px", background: "#f1f5f9", borderRadius: "3px", overflow: "hidden" }}>
-              <div style={{ height: "100%", width: `${(currentDay / 21) * 100}%`, background: wLight.text, borderRadius: "3px", transition: "width 0.4s" }} />
-            </div>
-            <div style={{ display: "flex", justifyContent: "space-between", marginTop: "5px" }}>
-              {["●J1", "●J7", "●J14", "●J21"].map(m => (
-                <span key={m} style={{ fontSize: "10px", color: "#cbd5e1" }}>{m}</span>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* ── Mot du coach ── */}
-        <div style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: "16px", padding: "14px 16px", marginBottom: "12px" }}>
-          <p style={{ fontSize: "10px", fontWeight: 800, letterSpacing: "0.1em", color: "#16a34a", marginBottom: "5px" }}>MOT DU JOUR</p>
-          <p style={{ fontSize: "13px", color: "#15803d", lineHeight: 1.65 }}>
-            {override?.coach_note ?? day.coachWord}
+          <p style={{ margin: "12px 0 0", fontSize: 14.5, lineHeight: 1.55, color: "var(--text-dim)", maxWidth: "32ch" }}>
+            {COACH.name} t'a laissé un mot ce matin.
           </p>
-        </div>
-
-        {/* ── Conseil du jour ── */}
-        {(() => {
-          const conseil = getConseilDuJour(currentDay)
-          return (
-            <div style={{ background: "#f5f3ff", border: "1px solid #ddd6fe", borderRadius: "16px", padding: "14px 16px", marginBottom: "12px", borderLeft: "3px solid #8b5cf6" }}>
-              <p style={{ fontSize: "10px", fontWeight: 800, letterSpacing: "0.1em", color: "#7c3aed", marginBottom: "5px" }}>
-                {conseil.icon} CONSEIL DU JOUR
-              </p>
-              <p style={{ fontSize: "12px", fontWeight: 700, color: "#5b21b6", marginBottom: "3px" }}>{conseil.titre}</p>
-              <p style={{ fontSize: "13px", color: "#4c1d95", lineHeight: 1.65, opacity: 0.85 }}>{conseil.texte}</p>
-            </div>
-          )
-        })()}
-
-        {/* ── Rituels du jour ── */}
-        <div style={{ background: "#fff", borderRadius: "16px", overflow: "hidden", marginBottom: "16px", boxShadow: "0 1px 4px rgba(0,0,0,0.06)", borderLeft: "3px solid #22c55e" }}>
-          <div style={{ padding: "14px 16px" }}>
-            <p style={{ fontSize: "10px", fontWeight: 800, letterSpacing: "0.1em", color: "#16a34a", marginBottom: "12px" }}>🌿 RITUELS DU JOUR</p>
-            {[
-              { icon: "🌅", label: "MATIN", text: day.morningRitual },
-              { icon: "💧", label: "HYDRATATION", text: day.hydration },
-              { icon: "🏃", label: "MOUVEMENT", text: "30 min d'activité douce : marche, vélo, yoga ou étirements" },
-              { icon: "🌙", label: "SOIR", text: day.ritual?.soir ?? "Dîner avant 20h · commencer par les crudités" },
-            ].map(({ icon, label, text }, i, arr) => (
-              <div key={label} style={{ display: "flex", gap: "10px", paddingBottom: i < arr.length - 1 ? "10px" : 0, marginBottom: i < arr.length - 1 ? "10px" : 0, borderBottom: i < arr.length - 1 ? "1px solid #f1f5f9" : "none" }}>
-                <span style={{ fontSize: "18px", flexShrink: 0, lineHeight: 1.3 }}>{icon}</span>
-                <div>
-                  <p style={{ fontSize: "9px", fontWeight: 800, color: "#94a3b8", letterSpacing: "0.1em", marginBottom: "2px" }}>{label}</p>
-                  <p style={{ fontSize: "13px", color: "#334155", lineHeight: 1.55 }}>{text}</p>
-                </div>
+          <div style={{ marginTop: 24, paddingTop: 24, borderTop: "1px solid var(--line)" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
+              <Avatar who="coach" size={26} />
+              <div style={{ fontSize: 12, color: "var(--text-dim)" }}>
+                {COACH.name}
+                <span style={{ color: "var(--text-faint)", margin: "0 6px" }}>·</span>
+                <span style={{ color: "var(--text-mute)" }}>ce matin</span>
               </div>
-            ))}
+            </div>
+            <p style={{
+              margin: 0,
+              fontFamily: "var(--serif)", fontStyle: "italic",
+              fontSize: 19, lineHeight: 1.45, color: "var(--text)",
+              letterSpacing: "0.005em",
+            }}>« {coachNote} »</p>
           </div>
-        </div>
+        </>
+      )}
 
-        {/* ── Tabs ── */}
-        <div style={{ display: "flex", borderBottom: "1px solid #e2e8f0", marginBottom: "16px" }}>
-          {([
-            { key: "programme",   label: "Aliments" },
-            { key: "journal",     label: "Journal" },
-            { key: "progression", label: "Poids" },
-            { key: "principes",   label: "Principes" },
-          ] as const).map(({ key, label }) => (
-            <button key={key} onClick={() => setActiveTab(key)}
-              style={{
-                flex: 1, padding: "10px 4px", fontSize: "13px", fontWeight: 600,
-                color: activeTab === key ? "#16a34a" : "#94a3b8",
-                background: "none", border: "none", cursor: "pointer",
-                borderBottom: activeTab === key ? "2px solid #16a34a" : "2px solid transparent",
-                transition: "color 0.15s",
-              }}>
-              {label}
-            </button>
+      <div style={{ marginTop: coachNote ? 32 : 28 }}>
+        <Eyebrow>aujourd'hui · les repas</Eyebrow>
+        <div style={{ marginTop: 14 }}>
+          {prog.meals.map((m, i) => (
+            <div key={i} style={{
+              display: "flex", gap: 16, alignItems: "baseline",
+              padding: "13px 0",
+              borderBottom: i < prog.meals.length - 1 ? "1px solid var(--line-soft)" : "none",
+            }}>
+              <div style={{
+                fontFamily: "var(--serif)", fontStyle: "italic",
+                fontSize: 13, color: "var(--text-mute)",
+                width: 32, flexShrink: 0,
+              }}>{m.time}</div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 13.5, color: "var(--text)", marginBottom: 3 }}>{m.label}</div>
+                <div style={{ fontSize: 12, color: "var(--text-dim)", lineHeight: 1.5 }}>{m.items}</div>
+              </div>
+            </div>
           ))}
         </div>
+      </div>
 
-        {/* ── Aliments ── */}
-        {activeTab === "programme" && (
-          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+      <button onClick={onOpenJournal} style={{
+        marginTop: 28, width: "100%",
+        background: "transparent",
+        border: "1px solid var(--line)",
+        borderRadius: 999,
+        padding: "13px 20px",
+        textAlign: "left",
+        cursor: "pointer",
+        display: "flex", alignItems: "center", gap: 12,
+        fontFamily: "var(--sans)",
+        color: "var(--text-dim)", fontSize: 13.5,
+      }}>
+        <PenIcon />
+        <span style={{ flex: 1 }}>Comment tu te sens, là ?</span>
+        <span style={{ color: "var(--text-faint)", fontSize: 16 }}>→</span>
+      </button>
+    </div>
+  )
+}
 
-            {programStartDate && (() => {
-              const target = new Date(programStartDate)
-              const today = new Date()
-              target.setHours(0, 0, 0, 0); today.setHours(0, 0, 0, 0)
-              const daysLeft = Math.floor((target.getTime() - today.getTime()) / 86400000)
-              return daysLeft >= 1 && daysLeft <= 3 ? <PreparationPhase programStartDate={programStartDate} /> : null
-            })()}
+// ─── Screen 2 : Journal ───────────────────────────────────────────────────────
 
-            {/* Navigation jours */}
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#fff", borderRadius: "14px", padding: "10px 16px", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
-              <button onClick={() => setViewDay(d => Math.max(1, d - 1))} disabled={viewDay === 1}
-                style={{ fontSize: "18px", color: viewDay === 1 ? "#cbd5e1" : "#0f172a", background: "none", border: "none", cursor: viewDay === 1 ? "default" : "pointer", width: 32, height: 32 }}>←</button>
-              <div style={{ textAlign: "center" }}>
-                <div style={{ fontWeight: 800, color: "#0f172a", fontSize: "14px" }}>
-                  Jour {viewDay}
-                  {viewDay === currentDay && (
-                    <span style={{ marginLeft: "6px", background: wLight.bg, color: wLight.text, borderRadius: "20px", padding: "1px 8px", fontSize: "10px", fontWeight: 700 }}>
-                      Aujourd&apos;hui
-                    </span>
-                  )}
-                </div>
-                <div style={{ fontSize: "11px", color: "#94a3b8", marginTop: "2px" }}>
-                  {viewDay < currentDay ? "🕐 Passé" : viewDay > currentDay ? "📅 À venir" : viewWeekInfo.title}
-                </div>
-              </div>
-              <button onClick={() => setViewDay(d => Math.min(21, d + 1))} disabled={viewDay === 21}
-                style={{ fontSize: "18px", color: viewDay === 21 ? "#cbd5e1" : "#0f172a", background: "none", border: "none", cursor: viewDay === 21 ? "default" : "pointer", width: 32, height: 32 }}>→</button>
-            </div>
+function JournalScreen({
+  messages,
+  prefill,
+  onPrefillConsumed,
+  onSend,
+}: {
+  messages: JournalMessage[]
+  prefill: string
+  onPrefillConsumed: () => void
+  onSend: (body: string, isQuestion: boolean) => Promise<void>
+}) {
+  const [draft, setDraft] = useState("")
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const inputRef  = useRef<HTMLInputElement>(null)
+  const [sending, setSending] = useState(false)
 
-            {/* Note coach override */}
-            {override?.coach_note && (
-              <div style={{ background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: "14px", padding: "12px 14px", display: "flex", gap: "10px" }}>
-                <span style={{ fontSize: "16px", flexShrink: 0 }}>💬</span>
-                <div>
-                  <p style={{ fontSize: "10px", fontWeight: 800, color: "#1d4ed8", letterSpacing: "0.08em", marginBottom: "3px" }}>MESSAGE DE TON COACH</p>
-                  <p style={{ fontSize: "13px", color: "#1e40af", lineHeight: 1.6 }}>{override.coach_note}</p>
-                </div>
-              </div>
-            )}
+  useEffect(() => {
+    if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight
+  }, [messages])
 
-            {/* Meal cards — DB si disponible, sinon static */}
-            {dbMenu && !dbMenu.is_weekend ? (
-              <>
-                {(["petit_dejeuner", "collation_matin", "dejeuner", "collation_apres_midi", "diner"] as MealFieldName[]).map((field) => {
-                  const meta = DB_MEAL_META[field]
-                  if (!meta) return null
-                  const items = parseDbMeal(dbMenu[field as keyof typeof dbMenu] as string | null)
-                  if (items.length === 0) return null
-                  const isOpen = openMoments.has(field)
-                  const borderColor = DB_MEAL_BORDER[field]
-                  const isOverridden = dbMenu.overriddenFields.includes(field)
+  useEffect(() => {
+    if (prefill) {
+      setDraft(prefill)
+      inputRef.current?.focus()
+      onPrefillConsumed()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [prefill])
 
-                  return (
-                    <div key={field} style={{ background: "#fff", borderRadius: "16px", overflow: "hidden", boxShadow: "0 1px 3px rgba(0,0,0,0.06)", borderLeft: `3px solid ${borderColor}` }}>
-                      <button onClick={() => toggleMoment(field)}
-                        style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", background: isOpen ? "#fafafa" : "#fff", border: "none", cursor: "pointer", textAlign: "left" }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                          <span style={{ fontSize: "20px" }}>{meta.icon}</span>
-                          <div>
-                            <p style={{ fontWeight: 700, fontSize: "14px", color: "#0f172a", margin: 0 }}>
-                              {meta.label}
-                              {isOverridden && <span style={{ marginLeft: "6px", fontSize: "10px", background: "#fef3c7", color: "#92400e", borderRadius: "20px", padding: "1px 7px", fontWeight: 700 }}>adapté</span>}
-                            </p>
-                            <p style={{ fontSize: "11px", color: "#94a3b8", margin: 0 }}>{meta.horaire}</p>
-                          </div>
-                        </div>
-                        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                          <span style={{ background: "#f1f5f9", borderRadius: "20px", padding: "3px 10px", fontSize: "11px", fontWeight: 600, color: "#64748b" }}>
-                            {items.length} aliment{items.length > 1 ? "s" : ""}
-                          </span>
-                          <span style={{ color: "#94a3b8", fontSize: "13px", transform: isOpen ? "rotate(180deg)" : "rotate(0)", transition: "transform 0.2s", display: "inline-block" }}>▾</span>
-                        </div>
-                      </button>
-                      {isOpen && (
-                        <div style={{ padding: "0 16px 14px", borderTop: "1px solid #f8fafc" }}>
-                          {items.map((item, k) => (
-                            <div key={k} style={{ display: "flex", alignItems: "flex-start", gap: "8px", padding: "4px 0" }}>
-                              <span style={{ color: borderColor, fontSize: "14px", marginTop: "1px", flexShrink: 0, lineHeight: 1 }}>·</span>
-                              <span style={{ fontSize: "13px", color: "#334155", lineHeight: 1.55 }}>{item}</span>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  )
-                })}
-                {dbMenu.astuce_umami && (
-                  <div style={{ background: "#fefce8", border: "1px solid #fde68a", borderRadius: "14px", padding: "12px 14px", display: "flex", gap: "10px", alignItems: "flex-start" }}>
-                    <span style={{ fontSize: "16px", flexShrink: 0 }}>✨</span>
-                    <div>
-                      <p style={{ fontSize: "10px", fontWeight: 800, color: "#92400e", letterSpacing: "0.08em", marginBottom: "3px" }}>ASTUCE UMAMI</p>
-                      <p style={{ fontSize: "13px", color: "#78350f", lineHeight: 1.6 }}>{dbMenu.astuce_umami}</p>
-                    </div>
-                  </div>
-                )}
-              </>
-            ) : dbMenu?.is_weekend ? (
-              <div style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: "16px", padding: "20px", textAlign: "center" }}>
-                <p style={{ fontSize: "28px", marginBottom: "8px" }}>🌿</p>
-                <p style={{ fontWeight: 700, fontSize: "15px", color: "#15803d", marginBottom: "6px" }}>Week-end libre</p>
-                <p style={{ fontSize: "13px", color: "#4ade80", lineHeight: 1.6 }}>
-                  Profite du week-end pour cuisiner librement en respectant les grands principes du programme.
-                </p>
-              </div>
-            ) : (
-              viewDayData.meals.map((meal: Meal, i: number) => {
-                const overrideMeals = override?.meal_overrides?.[meal.moment]
-                const baseMeal = overrideMeals?.length ? { ...meal, items: overrideMeals } : meal
-                const meta = MEAL_META[meal.moment] ?? { icon: "🍴", label: meal.moment, horaire: "" }
-                const isOpen = openMoments.has(meal.moment)
-                const borderColor = MEAL_BORDER[meal.moment] ?? "#94a3b8"
-                const isLastMeal = i === viewDayData.meals.length - 1
+  const handleSend = async () => {
+    const body = draft.trim()
+    if (!body || sending) return
+    setSending(true)
+    setDraft("")
+    await onSend(body, body.toLowerCase().startsWith("j'ai une question"))
+    setSending(false)
+  }
 
-                return (
-                  <div key={i} style={{ background: "#fff", borderRadius: "16px", overflow: "hidden", boxShadow: "0 1px 3px rgba(0,0,0,0.06)", borderLeft: `3px solid ${borderColor}` }}>
-                    <button onClick={() => toggleMoment(meal.moment)}
-                      style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 16px", background: isOpen ? "#fafafa" : "#fff", border: "none", cursor: "pointer", textAlign: "left" }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                        <span style={{ fontSize: "20px" }}>{meta.icon}</span>
-                        <div>
-                          <p style={{ fontWeight: 700, fontSize: "14px", color: "#0f172a", margin: 0 }}>{meta.label}</p>
-                          <p style={{ fontSize: "11px", color: "#94a3b8", margin: 0 }}>{meta.horaire}</p>
-                        </div>
-                      </div>
-                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                        <span style={{ background: "#f1f5f9", borderRadius: "20px", padding: "3px 10px", fontSize: "11px", fontWeight: 600, color: "#64748b" }}>
-                          {baseMeal.items.length} aliments
-                        </span>
-                        <span style={{ color: "#94a3b8", fontSize: "13px", transform: isOpen ? "rotate(180deg)" : "rotate(0)", transition: "transform 0.2s", display: "inline-block" }}>▾</span>
-                      </div>
-                    </button>
-                    {isOpen && (
-                      <div style={{ padding: "0 16px 14px", borderTop: "1px solid #f8fafc" }}>
-                        {baseMeal.items.map((item, k) => (
-                          <div key={k} style={{ display: "flex", alignItems: "flex-start", gap: "8px", padding: "4px 0" }}>
-                            <span style={{ color: borderColor, fontSize: "14px", marginTop: "1px", flexShrink: 0, lineHeight: 1 }}>·</span>
-                            <span style={{ fontSize: "13px", color: "#334155", lineHeight: 1.55 }}>{item}</span>
-                          </div>
-                        ))}
-                        {baseMeal.conseil && (
-                          <p style={{ fontSize: "12px", color: "#16a34a", marginTop: "8px", fontStyle: "italic", paddingTop: "8px", borderTop: "1px solid #f0fdf4" }}>
-                            💡 {baseMeal.conseil}
-                          </p>
-                        )}
-                        {isLastMeal && day.tip && (
-                          <div style={{ marginTop: "10px", paddingTop: "10px", borderTop: "1px solid #fef3c7", display: "flex", gap: "8px", alignItems: "flex-start" }}>
-                            <span style={{ fontSize: "14px", flexShrink: 0 }}>✨</span>
-                            <p style={{ fontSize: "12px", color: "#92400e", lineHeight: 1.55, fontStyle: "italic" }}>{day.tip}</p>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                )
-              })
-            )}
+  // Group messages by date for day separators
+  const grouped: Array<{ type: "separator"; label: string } | { type: "msg"; msg: JournalMessage }> = []
+  let lastDate = ""
+  for (const msg of messages) {
+    const dateKey = new Date(msg.created_at).toDateString()
+    if (dateKey !== lastDate) {
+      grouped.push({ type: "separator", label: formatDateLabel(msg.created_at) })
+      lastDate = dateKey
+    }
+    grouped.push({ type: "msg", msg })
+  }
 
-            {/* Comment je me sens */}
-            <EnergyCheckin currentDay={viewDay} onCheckin={() => {}} />
+  return (
+    <>
+      <div ref={scrollRef} className="scroll" style={{
+        flex: 1, overflowY: "auto",
+        padding: "22px 18px 14px",
+        display: "flex", flexDirection: "column", gap: 14,
+      }}>
+        <div style={{ marginBottom: 6 }}>
+          <Eyebrow>journal partagé</Eyebrow>
+          <div style={{
+            fontFamily: "var(--serif)",
+            fontSize: 26, lineHeight: 1.15, marginTop: 8,
+            color: "var(--text)", letterSpacing: "-0.01em",
+          }}>
+            Toi et <em style={{ color: "var(--coach)", fontStyle: "italic" }}>{COACH.name}</em>.
+          </div>
+          <div style={{ fontSize: 12, color: "var(--text-mute)", marginTop: 6 }}>
+            Ce qui est noté ici reste entre vous deux.
+          </div>
+        </div>
 
+        {messages.length === 0 && (
+          <div style={{ textAlign: "center", paddingTop: 48, color: "var(--text-faint)", fontSize: 13 }}>
+            Commence à écrire — {COACH.name} te répond dans la journée.
           </div>
         )}
 
-        {/* ── Journal ── */}
-        {activeTab === "journal" && (
-          <JournalForm currentDay={currentDay} />
-        )}
+        {grouped.map((item, i) => {
+          if (item.type === "separator") {
+            return (
+              <div key={`sep-${i}`} style={{
+                display: "flex", alignItems: "center", gap: 12,
+                margin: "12px 0 4px",
+              }}>
+                <div style={{ flex: 1, height: 1, background: "var(--line-soft)" }} />
+                <div style={{
+                  fontFamily: "var(--serif)", fontStyle: "italic",
+                  fontSize: 12, color: "var(--text-mute)",
+                }}>{item.label}</div>
+                <div style={{ flex: 1, height: 1, background: "var(--line-soft)" }} />
+              </div>
+            )
+          }
+          return <JournalBubble key={item.msg.id} msg={item.msg} />
+        })}
+      </div>
 
-        {/* ── Poids ── */}
-        {activeTab === "progression" && (
-          <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-            <WeightTracker initialWeight={undefined} />
-            <Timeline21 totalDays={21} currentDay={currentDay} completedDays={completedDays} />
-            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-              {([1, 2, 3] as const).map(w => {
-                const wInfo = WEEK_THEMES[w]
-                const wLight2 = WEEK_LIGHT[w] ?? WEEK_LIGHT[1]
-                const wDays = PROGRAM.filter(d => d.week === w)
-                const done = wDays.filter(d => completedDays.includes(d.day)).length
-                return (
-                  <div key={w} style={{ background: "#fff", borderRadius: "14px", padding: "14px 16px", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "8px" }}>
-                      <div>
-                        <span style={{ fontSize: "10px", fontWeight: 800, letterSpacing: "0.08em", color: wLight2.text }}>SEMAINE {w}</span>
-                        <p style={{ fontWeight: 700, fontSize: "13px", color: "#0f172a", margin: "2px 0 1px" }}>{wInfo.title}</p>
-                        <p style={{ fontSize: "11px", color: "#94a3b8" }}>{wInfo.desc}</p>
-                      </div>
-                      <span style={{ background: wLight2.bg, color: wLight2.text, borderRadius: "20px", padding: "3px 10px", fontSize: "12px", fontWeight: 700 }}>{done}/7</span>
+      <div className="journal-composer" style={{
+        flexShrink: 0,
+        padding: "10px 14px 12px",
+        borderTop: "1px solid var(--line-soft)",
+        display: "flex", alignItems: "flex-end", gap: 8,
+      }}>
+        <IconBtn aria-label="Ajouter une photo">
+          <PhotoIcon />
+        </IconBtn>
+        <div style={{
+          flex: 1,
+          background: "var(--bg-lift)",
+          border: "1px solid var(--line)",
+          borderRadius: 22,
+          padding: "10px 14px",
+          display: "flex", alignItems: "center",
+        }}>
+          <input
+            ref={inputRef}
+            value={draft}
+            onChange={e => setDraft(e.target.value)}
+            onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend() } }}
+            placeholder="un mot, une photo, rien…"
+            style={{
+              flex: 1, background: "transparent", border: 0, outline: "none",
+              color: "var(--text)", fontFamily: "var(--sans)", fontSize: 14,
+            }}
+          />
+        </div>
+        <IconBtn
+          disabled={!draft.trim() || sending}
+          onClick={handleSend}
+          accent
+          aria-label="Envoyer"
+        >
+          <ArrowUpIcon />
+        </IconBtn>
+      </div>
+    </>
+  )
+}
+
+function JournalBubble({ msg }: { msg: JournalMessage }) {
+  const isCoach = msg.author === "coach"
+  const isMe    = msg.author === "coachee"
+  return (
+    <div style={{
+      display: "flex", gap: 10,
+      flexDirection: isMe ? "row-reverse" : "row",
+      alignItems: "flex-end",
+    }}>
+      {isCoach && <Avatar who="coach" size={26} />}
+      <div style={{
+        maxWidth: "78%", display: "flex", flexDirection: "column", gap: 5,
+        alignItems: isMe ? "flex-end" : "flex-start",
+      }}>
+        {msg.body && (
+          <div style={{
+            padding: "10px 14px",
+            background: isCoach ? "transparent" : "var(--bg-elev)",
+            border: isCoach ? "1px solid rgba(168,187,165,0.18)" : "1px solid var(--line)",
+            borderRadius: 18,
+            borderBottomLeftRadius: isCoach ? 6 : 18,
+            borderBottomRightRadius: isMe ? 6 : 18,
+            color: isCoach ? "var(--coach)" : "var(--text)",
+            fontFamily: isCoach ? "var(--serif)" : "var(--sans)",
+            fontStyle: isCoach ? "italic" : "normal",
+            fontSize: isCoach ? 15.5 : 13.5,
+            lineHeight: 1.55,
+          }}>
+            {msg.body}
+          </div>
+        )}
+        <div style={{ fontSize: 10.5, color: "var(--text-faint)", padding: "0 6px" }}>
+          {formatTime(msg.created_at)}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ─── Screen 3 : Repas ─────────────────────────────────────────────────────────
+
+function MealsScreen({ currentDay }: { currentDay: number }) {
+  const [viewDay, setViewDay] = useState(currentDay)
+  const [openIdx, setOpenIdx] = useState<number | null>(null)
+
+  const prog    = PROGRAM_NEW[viewDay - 1] ?? PROGRAM_NEW[0]
+  const chapter = CHAPTER_FOR_DAY(viewDay)
+  const isToday = viewDay === currentDay
+
+  const go = (delta: number) => {
+    const next = Math.max(1, Math.min(21, viewDay + delta))
+    setViewDay(next)
+    setOpenIdx(null)
+  }
+
+  return (
+    <div className="scroll" style={{ flex: 1, overflowY: "auto", padding: "26px 22px 28px" }}>
+      <Eyebrow>repas · {chapter.sub.toLowerCase()}</Eyebrow>
+      <h2 style={{
+        margin: "10px 0 0", fontFamily: "var(--serif)",
+        fontWeight: 400, fontSize: 32, lineHeight: 1.1,
+        letterSpacing: "-0.015em", color: "var(--text)",
+      }}>
+        Ce qui est <em style={{ fontStyle: "italic", color: "var(--brand)" }}>prévu</em>.
+      </h2>
+      <p style={{ margin: "10px 0 0", fontSize: 13.5, color: "var(--text-dim)", lineHeight: 1.55 }}>
+        Camille a composé tes repas selon le moment du parcours. Tu peux adapter selon ce que tu trouves.
+      </p>
+
+      {/* Day navigator */}
+      <div style={{
+        marginTop: 22,
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        gap: 12, padding: "10px 12px",
+        background: "var(--bg-lift)", border: "1px solid var(--line)", borderRadius: 14,
+      }}>
+        <NavBtn disabled={viewDay <= 1} onClick={() => go(-1)} aria-label="Jour précédent">
+          <ChevronLeft />
+        </NavBtn>
+        <div style={{ textAlign: "center", flex: 1 }}>
+          <div style={{
+            fontFamily: "var(--serif)", fontStyle: "italic",
+            fontSize: 17, color: isToday ? "var(--brand)" : "var(--text)", lineHeight: 1.15,
+          }}>
+            {isToday ? "Aujourd'hui · " : ""}jour {viewDay}
+          </div>
+          <div style={{ fontSize: 11, color: "var(--text-mute)", marginTop: 3 }}>{chapter.sub}</div>
+        </div>
+        <NavBtn disabled={viewDay >= 21} onClick={() => go(1)} aria-label="Jour suivant">
+          <ChevronRight />
+        </NavBtn>
+      </div>
+
+      {/* Meals accordion */}
+      <div style={{ marginTop: 20 }}>
+        {prog.meals.map((m, i) => {
+          const open = openIdx === i
+          return (
+            <div key={i} style={{
+              borderTop: "1px solid var(--line)",
+              borderBottom: i === prog.meals.length - 1 ? "1px solid var(--line)" : "none",
+            }}>
+              <button onClick={() => setOpenIdx(open ? null : i)} style={{
+                width: "100%", background: "transparent", border: 0, cursor: "pointer",
+                padding: "16px 2px",
+                display: "flex", alignItems: "baseline", gap: 16,
+                textAlign: "left",
+              }}>
+                <span style={{
+                  fontFamily: "var(--serif)", fontStyle: "italic",
+                  fontSize: 14, color: "var(--text-mute)", width: 36, flexShrink: 0,
+                }}>{m.time}</span>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 15, color: "var(--text)", marginBottom: 4 }}>{m.label}</div>
+                  <div style={{
+                    fontSize: 12.5, color: "var(--text-dim)", lineHeight: 1.5,
+                    display: "-webkit-box", WebkitLineClamp: open ? "unset" : "2",
+                    WebkitBoxOrient: "vertical" as const, overflow: "hidden",
+                  }}>{m.items}</div>
+                </div>
+                <span style={{
+                  color: "var(--text-faint)", fontSize: 11,
+                  transform: open ? "rotate(180deg)" : "rotate(0)",
+                  transition: "transform .25s ease",
+                }}>▾</span>
+              </button>
+              {open && (
+                <div style={{ padding: "0 2px 18px 54px", display: "flex", flexDirection: "column", gap: 10 }}>
+                  {m.alts && m.alts.length > 0 && (
+                    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                      {m.alts.map((alt, ai) => (
+                        <p key={ai} style={{
+                          margin: 0, fontSize: 12.5,
+                          fontFamily: "var(--serif)", fontStyle: "italic",
+                          color: "var(--coach)", lineHeight: 1.55,
+                        }}>{alt}</p>
+                      ))}
                     </div>
-                    <div style={{ height: "5px", background: "#f1f5f9", borderRadius: "3px" }}>
-                      <div style={{ height: "100%", width: `${(done / 7) * 100}%`, background: wLight2.text, borderRadius: "3px" }} />
+                  )}
+                  {m.note && (
+                    <div style={{
+                      background: "var(--bg-lift)", border: "1px solid var(--line)",
+                      borderRadius: 10, padding: "10px 12px",
+                    }}>
+                      <p style={{ margin: 0, fontSize: 12, color: "var(--text-dim)", lineHeight: 1.55 }}>{m.note}</p>
+                    </div>
+                  )}
+                  {isToday && (
+                    <button style={{
+                      background: "transparent", border: 0, cursor: "pointer",
+                      padding: "4px 0", textAlign: "left",
+                      color: "var(--brand)", fontSize: 12.5,
+                      fontFamily: "var(--serif)", fontStyle: "italic",
+                    }}>
+                      Noter ce que j'ai mangé →
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          )
+        })}
+      </div>
+
+      {/* Shopping list card */}
+      <div style={{ marginTop: 26, padding: "16px 18px", border: "1px solid var(--line)", borderRadius: 16 }}>
+        <Eyebrow>liste de courses · semaine</Eyebrow>
+        <p style={{ margin: "8px 0 12px", fontSize: 13, color: "var(--text-dim)", lineHeight: 1.55 }}>
+          Tu peux la consulter ou l'envoyer à toi-même.
+        </p>
+        <div style={{ display: "flex", gap: 10 }}>
+          <PillBtn>Voir la liste</PillBtn>
+          <PillBtn>M'envoyer</PillBtn>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ─── Screen 4 : Parcours ──────────────────────────────────────────────────────
+
+const JOURNEY_CHAPTERS = [
+  { name: "Détox",   span: 7, hint: "On allège, on laisse le corps souffler.",       start: 1  },
+  { name: "Énergie", span: 7, hint: "Le corps retrouve son rythme, on remet du jeu.", start: 8  },
+  { name: "Ancrage", span: 7, hint: "On installe ce qui restera après.",              start: 15 },
+]
+
+function JourneyScreen({
+  currentDay,
+  weights,
+  recentMessages,
+  onLogWeight,
+}: {
+  currentDay: number
+  weights: WeightLog[]
+  recentMessages: JournalMessage[]
+  onLogWeight: () => void
+}) {
+  const first   = weights[0]
+  const last    = weights[weights.length - 1]
+  const hasWeight = weights.length > 0
+
+  const deltaNum = hasWeight ? last.kg - first.kg : 0
+  const deltaStr = (deltaNum < 0 ? "−" : "+") + Math.abs(deltaNum).toFixed(1).replace(".", ",")
+  const isLoss   = deltaNum < 0
+
+  const maxKg = hasWeight ? Math.max(...weights.map(w => w.kg)) : 0
+  const minKg = hasWeight ? Math.min(...weights.map(w => w.kg)) : 0
+  const range = Math.max(0.5, maxKg - minKg)
+
+  return (
+    <div className="scroll" style={{ flex: 1, overflowY: "auto", padding: "26px 22px 28px" }}>
+      <Eyebrow>parcours · {currentDay} {currentDay > 1 ? "jours" : "jour"} derrière toi</Eyebrow>
+      <h2 style={{
+        margin: "10px 0 0", fontFamily: "var(--serif)",
+        fontWeight: 400, fontSize: 32, lineHeight: 1.1,
+        letterSpacing: "-0.015em", color: "var(--text)",
+      }}>
+        Tu en es <em style={{ fontStyle: "italic", color: "var(--brand)" }}>là</em>.
+      </h2>
+      <p style={{ margin: "10px 0 0", fontSize: 13.5, color: "var(--text-dim)", lineHeight: 1.55, maxWidth: "32ch" }}>
+        Pas de score, pas de pourcentage. Juste les jours qui passent et ce qui s'est dit en chemin.
+      </p>
+
+      {/* Timeline */}
+      <div style={{ marginTop: 30 }}>
+        {JOURNEY_CHAPTERS.map((ch, ci) => (
+          <div key={ci} style={{ marginBottom: 24 }}>
+            <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 12 }}>
+              <div>
+                <div style={{
+                  fontFamily: "var(--serif)", fontStyle: "italic",
+                  fontSize: 18, color: "var(--text)", letterSpacing: "-0.005em",
+                }}>{ch.name}</div>
+                <div style={{ fontSize: 12, color: "var(--text-mute)", marginTop: 4 }}>{ch.hint}</div>
+              </div>
+              <div style={{ fontSize: 11, color: "var(--text-faint)" }}>
+                {ch.start}–{ch.start + ch.span - 1}
+              </div>
+            </div>
+            <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+              {Array.from({ length: ch.span }).map((_, di) => {
+                const day     = ch.start + di
+                const past    = day < currentDay
+                const current = day === currentDay
+                const future  = day > currentDay
+                return (
+                  <div key={di} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
+                    <div style={{
+                      width: current ? 14 : 8, height: current ? 14 : 8,
+                      borderRadius: 999,
+                      background: current ? "var(--brand)" : past ? "rgba(168,187,165,0.45)" : "transparent",
+                      border: future ? "1px solid var(--line)" : "none",
+                      boxShadow: current ? "0 0 0 5px var(--brand-soft)" : "none",
+                      transition: "all .3s ease",
+                    }} />
+                    <div style={{
+                      fontSize: 9.5,
+                      color: current ? "var(--brand)" : "var(--text-faint)",
+                    }}>{day}</div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Poids */}
+      <div style={{ marginTop: 8, paddingTop: 22, borderTop: "1px solid var(--line)" }}>
+        <Eyebrow>ton poids</Eyebrow>
+        {hasWeight ? (
+          <>
+            <div style={{ marginTop: 14, display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 16 }}>
+              <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
+                <span style={{
+                  fontFamily: "var(--serif)", fontSize: 36, fontWeight: 400,
+                  letterSpacing: "-0.015em", lineHeight: 1, color: "var(--text)",
+                }}>{last.kg.toFixed(1).replace(".", ",")}</span>
+                <span style={{ fontSize: 13, color: "var(--text-mute)" }}>kg</span>
+              </div>
+              <div style={{
+                fontFamily: "var(--serif)", fontStyle: "italic",
+                fontSize: 13, color: isLoss ? "var(--coach)" : "var(--text-mute)",
+              }}>
+                {deltaStr} kg depuis le départ
+              </div>
+            </div>
+            <div style={{ marginTop: 16, display: "flex", gap: 14, alignItems: "flex-end", height: 38 }}>
+              {weights.map((w, i) => {
+                const fromTop = (maxKg - w.kg) / range
+                const barH = 6 + (1 - fromTop) * 28
+                const isLast = i === weights.length - 1
+                return (
+                  <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 5 }}>
+                    <div style={{
+                      width: "100%", height: barH,
+                      background: isLast ? "var(--brand)" : "rgba(168,187,165,0.28)",
+                      borderRadius: 2,
+                    }} />
+                    <div style={{ fontSize: 9.5, color: isLast ? "var(--brand)" : "var(--text-faint)" }}>
+                      j{w.day_number}
                     </div>
                   </div>
                 )
               })}
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "8px" }}>
-              {[
-                { label: "Jours actifs",     value: completedDays.length.toString(), icon: "🔥" },
-                { label: "Semaine",          value: `S${day.week}`,                  icon: "📅" },
-                { label: "Série actuelle",   value: `${completedDays.length}j`,      icon: "🎯" },
-              ].map(({ label, value, icon }) => (
-                <div key={label} style={{ background: "#fff", borderRadius: "14px", padding: "14px 8px", textAlign: "center", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
-                  <div style={{ fontSize: "20px", marginBottom: "4px" }}>{icon}</div>
-                  <div style={{ fontSize: "18px", fontWeight: 900, color: "#16a34a" }}>{value}</div>
-                  <div style={{ fontSize: "10px", color: "#94a3b8", marginTop: "2px" }}>{label}</div>
+          </>
+        ) : (
+          <p style={{ marginTop: 10, fontSize: 13, color: "var(--text-mute)" }}>
+            Pas encore de pesée enregistrée.
+          </p>
+        )}
+        <button onClick={onLogWeight} style={{
+          marginTop: 14, background: "transparent", border: 0, cursor: "pointer",
+          padding: 0, textAlign: "left", color: "var(--brand)",
+          fontFamily: "var(--serif)", fontStyle: "italic", fontSize: 13,
+        }}>
+          Noter mon poids ce matin →
+        </button>
+      </div>
+
+      {/* Ce qui s'est dit */}
+      {recentMessages.length > 0 && (
+        <div style={{ marginTop: 16, paddingTop: 22, borderTop: "1px solid var(--line)" }}>
+          <Eyebrow>ce qui s'est dit jusqu'ici</Eyebrow>
+          <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 18 }}>
+            {recentMessages.map((m, i) => (
+              <div key={i} style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
+                <div style={{
+                  fontFamily: "var(--serif)", fontStyle: "italic",
+                  fontSize: 12, color: "var(--text-mute)", width: 36, flexShrink: 0,
+                  paddingTop: 2,
+                }}>
+                  j {calcDayFromDate(m.created_at)}
                 </div>
-              ))}
-            </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{
+                    fontSize: m.author === "coach" ? 14 : 13,
+                    color: m.author === "coach" ? "var(--coach)" : "var(--text-dim)",
+                    fontFamily: m.author === "coach" ? "var(--serif)" : "var(--sans)",
+                    fontStyle: m.author === "coach" ? "italic" : "normal",
+                    lineHeight: 1.55,
+                  }}>{m.body}</div>
+                  <div style={{ fontSize: 10.5, color: "var(--text-faint)", marginTop: 4 }}>
+                    {m.author === "coach" ? COACH.name : "Toi"}
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
-        )}
-
-        {/* ── Principes ── */}
-        {activeTab === "principes" && (
-          <PrincipesSection />
-        )}
-
-        {/* Courses (accessible via state mais pas dans nav) */}
-        {activeTab === "courses" && (
-          <ShoppingList currentDay={currentDay} horizon={7} />
-        )}
-
-        {/* Compte */}
-        {activeTab === "compte" && (
-          <div style={{ paddingBottom: "32px" }}>
-            <ChangePasswordForm />
-          </div>
-        )}
-
-        </> /* fin vue principale */
-      )} {/* fin ternaire reperes */}
-
-      </main>
-
-      {/* ── Bottom nav ── */}
-      <nav style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 50, background: "rgba(255,255,255,0.96)", backdropFilter: "blur(20px)", borderTop: "1px solid #e2e8f0" }}>
-        <div style={{ maxWidth: "640px", margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-around", padding: "8px 8px 6px" }}>
-          {([
-            { icon: "🍽️", label: "Aliments",  tab: "programme"   },
-            { icon: "📓", label: "Journal",   tab: "journal"     },
-            { icon: "⚖️", label: "Poids",     tab: "progression" },
-            { icon: "💡", label: "Principes",  tab: "principes"   },
-            { icon: "🔑", label: "Compte",    tab: "compte"      },
-          ] as const).map(({ icon, label, tab }) => {
-            const isActive = activeTab === tab
-            return (
-              <button key={tab} onClick={() => setActiveTab(tab)}
-                style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "2px", padding: "6px 16px", background: "none", border: "none", cursor: "pointer", color: isActive ? "#16a34a" : "#94a3b8" }}>
-                <span style={{ fontSize: "22px", lineHeight: 1 }}>{icon}</span>
-                <span style={{ fontSize: "10px", fontWeight: 600 }}>{label}</span>
-                {isActive && <div style={{ width: "18px", height: "2px", background: "#16a34a", borderRadius: "1px", marginTop: "1px" }} />}
-              </button>
-            )
-          })}
         </div>
-      </nav>
+      )}
+    </div>
+  )
+}
 
-      {/* ── Footer questions + micro ── */}
-      <QuestionFooter currentDay={currentDay} prenom={prenom} />
+function calcDayFromDate(iso: string): number {
+  // Approximation côté client — pour affichage uniquement
+  const d = new Date(iso)
+  const now = new Date()
+  const diff = Math.floor((now.getTime() - d.getTime()) / (1000 * 60 * 60 * 24))
+  return Math.max(1, diff + 1)
+}
 
+// ─── Screen 5 : Principes ─────────────────────────────────────────────────────
+
+function PrinciplesScreen({ onAskCoach }: { onAskCoach: () => void }) {
+  return (
+    <div className="scroll" style={{ flex: 1, overflowY: "auto", padding: "26px 22px 28px" }}>
+      <Eyebrow>principes · les repères de la méthode</Eyebrow>
+      <h2 style={{
+        margin: "10px 0 0", fontFamily: "var(--serif)",
+        fontWeight: 400, fontSize: 32, lineHeight: 1.1,
+        letterSpacing: "-0.015em", color: "var(--text)",
+      }}>
+        Ce qui <em style={{ fontStyle: "italic", color: "var(--brand)" }}>guide</em> le programme.
+      </h2>
+      <p style={{ margin: "10px 0 0", fontSize: 13.5, color: "var(--text-dim)", lineHeight: 1.6, maxWidth: "34ch" }}>
+        Pas des règles, plutôt des points d'appui. Tu les suis dans le sens qui te va, Camille adapte avec toi.
+      </p>
+
+      {/* Carte Verissimo */}
+      <div style={{
+        marginTop: 28, padding: "22px 22px 24px",
+        background: "var(--bg-lift)", border: "1px solid var(--line)", borderRadius: 16,
+      }}>
+        <Eyebrow>la méthode</Eyebrow>
+        <div style={{
+          marginTop: 8, fontFamily: "var(--serif)",
+          fontStyle: "italic", fontSize: 24, color: "var(--text)", letterSpacing: "-0.005em",
+        }}>Verissimo</div>
+        <p style={{ margin: "10px 0 0", fontSize: 13.5, color: "var(--text-dim)", lineHeight: 1.65 }}>
+          Pensée par le naturopathe Jean-Pierre Verissimo, c'est une manière de manger qui respecte le rythme de la digestion — pas un régime, pas une cure. Les points qui suivent en sont les repères, vérifiés sur plusieurs décennies d'accompagnement.
+        </p>
+      </div>
+
+      {/* 3 groupes */}
+      <div style={{ marginTop: 28, display: "flex", flexDirection: "column", gap: 32 }}>
+        {PRINCIPLE_GROUPS.map((group, gi) => (
+          <section key={group.name} style={{
+            paddingTop: gi > 0 ? 28 : 0,
+            borderTop: gi > 0 ? "1px solid var(--line-soft)" : "none",
+          }}>
+            <div style={{ marginBottom: 18 }}>
+              <Eyebrow>{group.name}</Eyebrow>
+              <div style={{
+                fontFamily: "var(--serif)", fontStyle: "italic",
+                fontSize: 14.5, color: "var(--text-dim)", marginTop: 6,
+              }}>{group.hint}</div>
+            </div>
+            <div>
+              {group.principleIds.map((id, idx) => {
+                const p = PRINCIPLES_V2.find(x => x.n === id)
+                if (!p) return null
+                return (
+                  <div key={p.n} style={{
+                    display: "flex", gap: 18, alignItems: "flex-start",
+                    padding: "18px 0",
+                    borderBottom: idx < group.principleIds.length - 1 ? "1px solid var(--line-soft)" : "none",
+                  }}>
+                    <div style={{
+                      fontFamily: "var(--serif)", fontStyle: "italic",
+                      fontSize: 22, color: "var(--text-faint)",
+                      width: 28, flexShrink: 0, lineHeight: 1, paddingTop: 4,
+                    }}>{p.n}</div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{
+                        fontSize: 14.5, fontWeight: 500, marginBottom: 6,
+                        color: "rgb(210,236,212)",
+                      }}>{p.title}</div>
+                      <p style={{ margin: 0, fontSize: 13, color: "var(--text-dim)", lineHeight: 1.65 }}>{p.body}</p>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </section>
+        ))}
+      </div>
+
+      {/* Poser une question */}
+      <div style={{
+        marginTop: 28, padding: "22px 20px",
+        background: "var(--accent-soft)", border: "1px solid rgba(168,187,165,0.22)",
+        borderRadius: 16,
+      }}>
+        <p style={{
+          margin: 0, fontFamily: "var(--serif)", fontStyle: "italic",
+          fontSize: 16, lineHeight: 1.5, color: "var(--coach)",
+        }}>
+          « Une question là-dessus ? Écris-moi dans le journal, j'y réponds dans la journée. »
+        </p>
+        <p style={{ margin: "8px 0 16px", fontSize: 12, color: "var(--text-mute)" }}>— Camille</p>
+        <button onClick={onAskCoach} style={{
+          background: "transparent",
+          border: "1px solid rgba(92,181,81,0.35)",
+          borderRadius: 999, padding: "10px 18px",
+          color: "var(--brand)", fontSize: 13, fontFamily: "var(--sans)",
+          cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 8,
+        }}>
+          Poser une question <span style={{ fontSize: 14 }}>→</span>
+        </button>
+      </div>
+    </div>
+  )
+}
+
+// ─── Icon components ──────────────────────────────────────────────────────────
+
+function PenIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+      <path d="M3 21l4-1 11-11-3-3L4 17l-1 4z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round" />
+    </svg>
+  )
+}
+function PhotoIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+      <rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" strokeWidth="1.4" />
+      <circle cx="12" cy="12" r="3.2" stroke="currentColor" strokeWidth="1.4" />
+      <circle cx="17" cy="8.5" r="0.7" fill="currentColor" />
+    </svg>
+  )
+}
+function ArrowUpIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+      <path d="M12 19V5M5 12l7-7 7 7" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+function ChevronLeft() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+      <path d="M15 6l-6 6 6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+function ChevronRight() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+      <path d="M9 6l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function IconBtn({ children, accent, disabled, onClick, "aria-label": ariaLabel }: {
+  children: React.ReactNode; accent?: boolean; disabled?: boolean
+  onClick?: () => void; "aria-label"?: string
+}) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={ariaLabel}
+      style={{
+        width: 38, height: 38, borderRadius: 999,
+        background: accent ? "var(--accent-soft)" : "transparent",
+        border: `1px solid ${accent ? "rgba(168,187,165,0.3)" : "var(--line)"}`,
+        color: accent ? "var(--accent)" : "var(--text-dim)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        cursor: disabled ? "default" : "pointer",
+        opacity: disabled ? 0.4 : 1,
+        transition: "all .2s ease", flexShrink: 0,
+      }}
+    >{children}</button>
+  )
+}
+
+function NavBtn({ children, disabled, onClick, "aria-label": ariaLabel }: {
+  children: React.ReactNode; disabled?: boolean; onClick: () => void; "aria-label"?: string
+}) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={ariaLabel}
+      style={{
+        width: 32, height: 32, borderRadius: 999,
+        background: "transparent", border: "1px solid var(--line)",
+        color: disabled ? "var(--text-faint)" : "var(--text-dim)",
+        cursor: disabled ? "default" : "pointer",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        flexShrink: 0,
+      }}
+    >{children}</button>
+  )
+}
+
+function PillBtn({ children, onClick }: { children: React.ReactNode; onClick?: () => void }) {
+  return (
+    <button onClick={onClick} style={{
+      background: "transparent", border: "1px solid var(--line)",
+      borderRadius: 999, padding: "8px 14px",
+      color: "var(--text-dim)", fontSize: 12.5, fontFamily: "var(--sans)",
+      cursor: "pointer",
+    }}>{children}</button>
+  )
+}
+
+// ─── Main page ────────────────────────────────────────────────────────────────
+
+export default function DashboardPage() {
+  const { user } = useAuth()
+  const supabase = createClient()
+
+  const [tab, setTab]             = useState<Tab>("today")
+  const [profile, setProfile]     = useState<Profile | null>(null)
+  const [coachNote, setCoachNote] = useState<string | null>(null)
+  const [messages, setMessages]   = useState<JournalMessage[]>([])
+  const [weights, setWeights]     = useState<WeightLog[]>([])
+  const [journalPrefill, setJournalPrefill] = useState("")
+  const [loading, setLoading]     = useState(true)
+
+  const currentDay = profile?.program_start
+    ? calcCurrentDay(profile.program_start)
+    : 1
+
+  // ── Data fetching ─────────────────────────────────────────────────────────
+
+  const fetchAll = useCallback(async () => {
+    if (!user) return
+    setLoading(true)
+
+    const [profileRes, messagesRes, weightsRes] = await Promise.all([
+      supabase.from("profiles")
+        .select("id, prenom, program_start, poids, coach_id")
+        .eq("id", user.id)
+        .maybeSingle(),
+      supabase.from("journal_messages")
+        .select("*")
+        .eq("coachee_id", user.id)
+        .order("created_at", { ascending: true }),
+      supabase.from("weight_logs")
+        .select("*")
+        .eq("coachee_id", user.id)
+        .order("day_number", { ascending: true }),
+    ])
+
+    if (profileRes.data) {
+      setProfile(profileRes.data as Profile)
+      const day = calcCurrentDay(profileRes.data.program_start)
+
+      // Coach morning note for today
+      const noteRes = await supabase.from("program_overrides")
+        .select("coach_note")
+        .eq("collaborateur_id", user.id)
+        .eq("day", day)
+        .maybeSingle()
+      setCoachNote((noteRes.data as CoachNote | null)?.coach_note ?? null)
+    }
+
+    if (messagesRes.data) setMessages(messagesRes.data as JournalMessage[])
+    if (weightsRes.data)  setWeights(weightsRes.data as WeightLog[])
+
+    setLoading(false)
+  }, [user, supabase])
+
+  useEffect(() => { fetchAll() }, [fetchAll])
+
+  // ── Realtime journal ──────────────────────────────────────────────────────
+
+  useEffect(() => {
+    if (!user) return
+    const channel = supabase
+      .channel("journal_messages")
+      .on("postgres_changes", {
+        event: "INSERT",
+        schema: "public",
+        table: "journal_messages",
+        filter: `coachee_id=eq.${user.id}`,
+      }, payload => {
+        setMessages(prev => [...prev, payload.new as JournalMessage])
+      })
+      .subscribe()
+    return () => { supabase.removeChannel(channel) }
+  }, [user, supabase])
+
+  // ── Send journal message ──────────────────────────────────────────────────
+
+  const handleSend = async (body: string, isQuestion: boolean) => {
+    if (!user || !profile) return
+    await supabase.from("journal_messages").insert({
+      coachee_id: user.id,
+      author: "coachee",
+      body,
+      is_question: isQuestion,
+    })
+    // Realtime will add it; fallback: refetch
+  }
+
+  // ── Trigger chapter emails on first visit per day ─────────────────────────
+
+  useEffect(() => {
+    if (!user || !profile?.program_start) return
+    const day = calcCurrentDay(profile.program_start)
+    const key = `btenergy_chapter_email_${day}`
+    if (localStorage.getItem(key)) return
+    fetch("/api/send-step-email", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ day }),
+    })
+      .then(r => r.json())
+      .then(d => { if (d.ok) localStorage.setItem(key, "1") })
+      .catch(() => {})
+  }, [user, profile])
+
+  // ── Navigation helpers ────────────────────────────────────────────────────
+
+  const goToJournal = (prefill?: string) => {
+    if (prefill) setJournalPrefill(prefill)
+    setTab("journal")
+  }
+
+  const clearPrefill = () => setJournalPrefill("")
+
+  if (loading) {
+    return (
+      <div style={{
+        height: "100dvh", display: "flex", alignItems: "center", justifyContent: "center",
+        background: "var(--bg)", color: "var(--text-mute)", fontFamily: "var(--sans)", fontSize: 13,
+      }}>
+        Chargement…
+      </div>
+    )
+  }
+
+  const prenom = profile?.prenom ?? ""
+  const recentJourneyMessages = messages.slice(-5)
+
+  return (
+    <div className="app-root web">
+      <SideNav active={tab} onChange={setTab} currentDay={currentDay} />
+
+      <AppHeader currentDay={currentDay} />
+
+      <div className="app-main" style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+        {tab === "today" && (
+          <TodayScreen
+            prenom={prenom}
+            currentDay={currentDay}
+            coachNote={coachNote}
+            onOpenJournal={() => goToJournal()}
+          />
+        )}
+        {tab === "journal" && (
+          <JournalScreen
+            messages={messages}
+            prefill={journalPrefill}
+            onPrefillConsumed={clearPrefill}
+            onSend={handleSend}
+          />
+        )}
+        {tab === "meals" && (
+          <MealsScreen currentDay={currentDay} />
+        )}
+        {tab === "journey" && (
+          <JourneyScreen
+            currentDay={currentDay}
+            weights={weights}
+            recentMessages={recentJourneyMessages}
+            onLogWeight={() => {/* v2 */}}
+          />
+        )}
+        {tab === "principles" && (
+          <PrinciplesScreen
+            onAskCoach={() => goToJournal("J'ai une question à propos de… ")}
+          />
+        )}
+      </div>
+
+      <TabBar active={tab} onChange={setTab} />
     </div>
   )
 }

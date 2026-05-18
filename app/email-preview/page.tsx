@@ -1,103 +1,71 @@
+// Page de revue des 6 emails Back to Energy v2.
+// Accès réservé en dev — ajouter une protection auth en prod.
 import {
-  magicLinkEmail, welcomeEmail, resetPasswordEmail,
-  stepEmail, midpointEmail, postCureEmail, invitationEmail,
+  welcomeEmail,
+  magicLinkEmail,
+  resetPasswordEmail,
+  chapter1Email,
+  chapter2Email,
+  chapter3Email,
 } from "@/lib/email-templates"
-import {
-  viewLogin, viewOnboarding, viewWelcomeScreen, viewJ1Onboarding,
-  viewProfileSetup, viewDashboardProgramme, viewDashboardJournal,
-  viewDashboardProgression, viewDashboardProfil,
-} from "@/lib/app-views"
 
 const SITE = "https://backtoenergy.fr"
 
 const EMAILS = [
-  { label: "Invitation (nouveau)",      html: invitationEmail("Laurent", `${SITE}/auth/callback?token_hash=xxx&type=magiclink`) },
-  { label: "Lien de connexion",        html: magicLinkEmail("Laurent", `${SITE}/auth/callback?token_hash=xxx&type=magiclink`) },
-  { label: "Bienvenue",               html: welcomeEmail("Laurent", SITE) },
-  { label: "Email Jour 1",            html: stepEmail("Laurent", 1, SITE) },
-  { label: "Email Jour 8",            html: stepEmail("Laurent", 8, SITE) },
-  { label: "Email Jour 15",           html: stepEmail("Laurent", 15, SITE) },
-  { label: "Mi-parcours (Jour 10)",   html: midpointEmail("Laurent", SITE) },
-  { label: "Fin de cure (Jour 22)",   html: postCureEmail("Laurent", SITE) },
-  { label: "Reset Password (Coach)",  html: resetPasswordEmail("Laurent", `${SITE}/auth/reset-password?token=xxx`) },
+  { label: "Bienvenue (jour 0)",          html: welcomeEmail("Laurent", SITE) },
+  { label: "Magic link — connexion",       html: magicLinkEmail("Laurent", `${SITE}/auth/callback?token_hash=xxx&type=magiclink`) },
+  { label: "Reset password (coach)",       html: resetPasswordEmail("", `${SITE}/auth/reset-password?token=xxx`) },
+  { label: "Chapitre 1 — Détox (jour 1)", html: chapter1Email("Laurent", SITE) },
+  { label: "Chapitre 2 — Énergie (j 8)",  html: chapter2Email("Laurent", SITE) },
+  { label: "Chapitre 3 — Ancrage (j 15)", html: chapter3Email("Laurent", SITE) },
 ]
 
-const VIEWS = [
-  { label: "Connexion",               html: viewLogin() },
-  { label: "Onboarding (nouvel user)",html: viewOnboarding() },
-  { label: "Écran de bienvenue",      html: viewWelcomeScreen() },
-  { label: "Onboarding Jour 1",       html: viewJ1Onboarding() },
-  { label: "Config profil",           html: viewProfileSetup() },
-  { label: "Dashboard — Programme",   html: viewDashboardProgramme() },
-  { label: "Dashboard — Journal",     html: viewDashboardJournal() },
-  { label: "Dashboard — Progression", html: viewDashboardProgression() },
-  { label: "Dashboard — Profil",      html: viewDashboardProfil() },
-]
-
-function Section({ title, subtitle, items, height }: {
-  title: string
-  subtitle: string
-  items: { label: string; html: string }[]
-  height: number
-}) {
+export default function EmailPreviewPage() {
   return (
-    <div style={{ marginBottom: 72 }}>
-      <h2 style={{ color: "#ffffff", fontFamily: "sans-serif", fontSize: 20, fontWeight: 900, marginBottom: 4 }}>
-        {title}
-      </h2>
-      <p style={{ color: "#666", fontFamily: "sans-serif", fontSize: 13, marginBottom: 32 }}>{subtitle}</p>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(360px, 1fr))", gap: 32 }}>
-        {items.map(({ label, html }) => (
-          <div key={label}>
-            <p style={{ color: "#4cc9f0", fontFamily: "sans-serif", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", fontSize: 11, marginBottom: 10 }}>
-              {label}
-            </p>
-            <div style={{ border: "1px solid rgba(76,201,240,0.18)", borderRadius: 14, overflow: "hidden", boxShadow: "0 4px 24px rgba(0,0,0,0.5)" }}>
-              <iframe
-                srcDoc={html}
-                style={{ width: "100%", height, border: "none", display: "block" }}
-                title={label}
-              />
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
-
-export default function PreviewPage() {
-  return (
-    <div style={{ background: "#070d0f", minHeight: "100vh", padding: "48px 32px" }}>
+    <div style={{ background: "#EEE7D6", minHeight: "100vh", padding: "48px 32px" }}>
       <div style={{ maxWidth: 1400, margin: "0 auto" }}>
-
-        {/* Header */}
-        <div style={{ marginBottom: 56, borderBottom: "1px solid rgba(255,255,255,0.07)", paddingBottom: 32 }}>
-          <p style={{ color: "#2dd4a0", fontFamily: "sans-serif", fontSize: 11, fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: 8 }}>
-            Design Overview
-          </p>
-          <h1 style={{ color: "#ffffff", fontFamily: "sans-serif", fontSize: 28, fontWeight: 900, marginBottom: 8 }}>
-            Backtoenergy — Mails &amp; Vues
-          </h1>
-          <p style={{ color: "#555", fontFamily: "sans-serif", fontSize: 14 }}>
-            {EMAILS.length} emails · {VIEWS.length} vues coaché
+        <div style={{ marginBottom: 48, borderBottom: "1px solid #E2D9C0", paddingBottom: 28 }}>
+          <p style={{
+            fontFamily: "system-ui, sans-serif",
+            fontSize: 11, fontWeight: 700, letterSpacing: "0.15em",
+            textTransform: "uppercase", color: "#8A7E68", marginBottom: 8,
+          }}>Design Review</p>
+          <h1 style={{
+            fontFamily: "'Instrument Serif', Georgia, serif",
+            fontSize: 28, fontWeight: 400, color: "#2A2520", marginBottom: 8,
+          }}>Back to Energy — Emails</h1>
+          <p style={{ fontFamily: "system-ui, sans-serif", color: "#8A7E68", fontSize: 13 }}>
+            {EMAILS.length} emails · cream chaud · Instrument Serif · tutoiement
           </p>
         </div>
 
-        <Section
-          title="Emails"
-          subtitle="Tous les emails envoyés aux coachés via Resend"
-          items={EMAILS}
-          height={620}
-        />
-
-        <Section
-          title="Vues App"
-          subtitle="Toutes les pages et états vus par le coaché"
-          items={VIEWS}
-          height={680}
-        />
-
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fill, minmax(400px, 1fr))",
+          gap: 40,
+        }}>
+          {EMAILS.map(({ label, html }) => (
+            <div key={label}>
+              <p style={{
+                fontFamily: "system-ui, sans-serif",
+                fontWeight: 600, fontSize: 11, letterSpacing: "0.12em",
+                textTransform: "uppercase", color: "#8A7E68",
+                marginBottom: 10,
+              }}>{label}</p>
+              <div style={{
+                border: "1px solid #E2D9C0", borderRadius: 14,
+                overflow: "hidden",
+                boxShadow: "0 4px 24px rgba(42,37,32,0.08)",
+              }}>
+                <iframe
+                  srcDoc={html}
+                  style={{ width: "100%", height: 680, border: "none", display: "block" }}
+                  title={label}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   )

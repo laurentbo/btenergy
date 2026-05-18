@@ -2,15 +2,17 @@ import { NextRequest, NextResponse } from "next/server"
 import { createClient } from "@/lib/supabase/server"
 import { createClient as createAdmin } from "@supabase/supabase-js"
 import { resend, FROM } from "@/lib/resend"
-import { stepEmail, midpointEmail, postCureEmail } from "@/lib/email-templates"
+import { chapter1Email, chapter2Email, chapter3Email } from "@/lib/email-templates"
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? "https://backtoenergy.fr"
 
 export async function POST(request: NextRequest) {
   const { day } = await request.json()
 
-  if (!day || day < 1 || day > 22) {
-    return NextResponse.json({ error: "Jour invalide." }, { status: 400 })
+  // Seuls les jours d'ouverture de chapitre déclenchent un email automatique.
+  const CHAPTER_DAYS = [1, 8, 15]
+  if (!day || !CHAPTER_DAYS.includes(day)) {
+    return NextResponse.json({ ok: true, skipped: true })
   }
 
   // Auth : récupère l'utilisateur connecté
@@ -44,60 +46,24 @@ export async function POST(request: NextRequest) {
 
   const prenom = profile?.prenom ?? "vous"
 
-  // Day 22: Send post-cure email only
-  if (day === 22) {
-    const { error: sendError } = await resend.emails.send({
-      from: FROM,
-      to: user.email!,
-      subject: "Félicitations — Backtoenergy complété 🎉",
-      html: postCureEmail(prenom, SITE),
-    })
-
-    if (sendError) {
-      await db.from("email_logs").delete().eq("user_id", user.id).eq("type", type)
-      console.error("Resend post-cure error:", sendError)
-      return NextResponse.json({ error: "Erreur envoi email." }, { status: 500 })
-    }
-
-    return NextResponse.json({ ok: true })
+  // Choisit le template selon le chapitre
+  const SUBJECTS: Record<number, string> = {
+    1:  "Bienvenue — premier matin · Back to Energy",
+    8:  "Deuxième chapitre · Back to Energy",
+    15: "Dernier chapitre · Back to Energy",
+  }
+  const TEMPLATES: Record<number, (p: string, u: string) => string> = {
+    1:  chapter1Email,
+    8:  chapter2Email,
+    15: chapter3Email,
   }
 
-  // Day 10: Send step email + midpoint email
-  if (day === 10) {
-    const { error: stepErr } = await resend.emails.send({
-      from: FROM,
-      to: user.email!,
-      subject: `Jour ${day} · Programme Backtoenergy`,
-      html: stepEmail(prenom, day, SITE),
-    })
-
-    if (stepErr) {
-      await db.from("email_logs").delete().eq("user_id", user.id).eq("type", type)
-      console.error("Resend step error:", stepErr)
-      return NextResponse.json({ error: "Erreur envoi email." }, { status: 500 })
-    }
-
-    const { error: midErr } = await resend.emails.send({
-      from: FROM,
-      to: user.email!,
-      subject: "Jour 10 — Halfway There 🏔️",
-      html: midpointEmail(prenom, SITE),
-    })
-
-    if (midErr) {
-      console.error("Resend midpoint error:", midErr)
-      // Log the error but don't fail — step email was sent
-    }
-
-    return NextResponse.json({ ok: true })
-  }
-
-  // Default: Send regular step email
+  const html = TEMPLATES[day](prenom, SITE)
   const { error: sendError } = await resend.emails.send({
     from: FROM,
     to: user.email!,
-    subject: `Jour ${day} · Programme Backtoenergy`,
-    html: stepEmail(prenom, day, SITE),
+    subject: SUBJECTS[day],
+    html,
   })
 
   if (sendError) {

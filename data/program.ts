@@ -620,3 +620,229 @@ export const WEEK_THEMES: Record<1 | 2 | 3, { title: string; color: string; desc
 
 // calcIMC, calcBesoinsBase, portionMultiplier supprimés (voir ÉTAPE 7 évolutions)
 
+// ─── PROGRAMME V2 — structure handoff design (app.jsx) ───────────────────────
+// Utilisé par le nouveau dashboard et les emails de chapitre.
+
+export type MealV2 = {
+  time: string      // "7h" | "12h" | "19h"
+  label: string     // "Petit-déjeuner" | "Déjeuner" | "Dîner"
+  items: string
+  alts?: string[]
+  note?: string
+}
+
+export type DayProgramV2 = {
+  day: number
+  meals: MealV2[]
+}
+
+export type ChapterInfo = {
+  name: string
+  key: "detox" | "energie" | "ancrage"
+  sub: string
+}
+
+export function CHAPTER_FOR_DAY(d: number): ChapterInfo {
+  if (d <= 7)  return { name: "Détox",   key: "detox",   sub: "Détox & Purification" }
+  if (d <= 14) return { name: "Énergie", key: "energie", sub: "Énergie & Vitalité" }
+  return             { name: "Ancrage", key: "ancrage", sub: "Ancrage & Performance" }
+}
+
+export const PROGRAM_NEW: DayProgramV2[] = [
+  // ─── Semaine 1 — Détox & Purification ────────────────────────────────────
+  { day: 1, meals: [
+    { time: "7h",  label: "Petit-déjeuner", items: "Salade de fruits : banane, pomme, fraises, amandes, noisettes, citron, miel." },
+    { time: "12h", label: "Déjeuner",       items: "Salade de chou, sésame noir, graines, avocat, œuf mollet. Café ou thé.",
+      alts: ["Pas d'œuf ? Sardines à l'huile d'olive."] },
+    { time: "19h", label: "Dîner",          items: "Poêlée courgettes-poireaux au curry, riz thaï aux aromates. Crudités en entrée.",
+      alts: ["Pas de riz ? Quinoa."] },
+  ]},
+  { day: 2, meals: [
+    { time: "7h",  label: "Petit-déjeuner", items: "Jus pomme-poire-kiwi. Figues séchées, oléagineux." },
+    { time: "12h", label: "Déjeuner",       items: "Crudités (carotte râpée, chou, graines). Lentilles tièdes, avocat, vinaigrette tamari-citron.",
+      alts: ["Pas de lentilles ? Pois chiches."] },
+    { time: "19h", label: "Dîner",          items: "Légumes vapeur (courgette, brocoli, haricots verts), lentilles vertes, vinaigrette citron-huile d'olive.",
+      alts: ["Pas de brocoli ? Chou-fleur."] },
+  ]},
+  { day: 3, meals: [
+    { time: "7h",  label: "Petit-déjeuner", items: "Jus pomme-citron-mangue. Banane, amandes." },
+    { time: "12h", label: "Déjeuner",       items: "Crudités (concombre, avocat, basilic, vinaigrette).",
+      alts: ["Pas d'avocat ? Houmous."] },
+    { time: "19h", label: "Dîner",          items: "Crudités en entrée. Dal de lentilles corail au curry-gingembre, riz basmati.",
+      alts: ["Pas de lentilles corail ? Lentilles vertes.", "Pas de riz ? Quinoa."],
+      note: "Dal + riz : association tolérée, tout végétal." },
+  ]},
+  { day: 4, meals: [
+    { time: "7h",  label: "Petit-déjeuner", items: "Jus ananas-poire-fraises. Oléagineux." },
+    { time: "12h", label: "Déjeuner",       items: "Navet râpé, chou rouge, champignons, carottes, graines germées, vinaigrette.",
+      alts: ["Pas de navet ? Céleri râpé."] },
+    { time: "19h", label: "Dîner",          items: "Crudités en entrée. Pois chiches à l'indienne, riz au cumin, coriandre.",
+      alts: ["Pas de pois chiches ? Haricots rouges."] },
+  ]},
+  { day: 5, meals: [
+    { time: "7h",  label: "Petit-déjeuner", items: "Banane, fruits de saison, figues séchées, amandes-noisettes. Jus de pomme." },
+    { time: "12h", label: "Déjeuner",       items: "Concombre, tomates, roquette, avocat, graines de courge, vinaigrette citron vert.",
+      alts: ["Pas de roquette ? Mâche."] },
+    { time: "19h", label: "Dîner",          items: "Crudités en entrée. Légumes vapeur, poulet fermier grillé, herbes, citron.",
+      alts: ["Pas de poulet ? Dinde ou lapin."],
+      note: "Fruits 2h après." },
+  ]},
+  { day: 6, meals: [
+    { time: "7h",  label: "Petit-déjeuner", items: "Jus pomme-carotte-betterave-gingembre. Oléagineux." },
+    { time: "12h", label: "Déjeuner",       items: "Tomates, mâche, avocat, graines germées, vinaigrette. Tartare de bœuf bio.",
+      alts: ["Pas de bœuf ? Tartare de saumon."] },
+    { time: "19h", label: "Dîner",          items: "Crudités en entrée. Roquette, figues fraîches, avocat, noix. Jambon cru.",
+      alts: ["Pas de jambon cru ? Tranche de saumon fumé."],
+      note: "Fruits 2h après." },
+  ]},
+  { day: 7, meals: [
+    { time: "7h",  label: "Petit-déjeuner", items: "Jus pomme-citron-poire-kaki. Fruits frais." },
+    { time: "12h", label: "Déjeuner",       items: "Mesclun, tomates, olives, avocat. Thon mi-cuit, vinaigrette citron.",
+      alts: ["Pas de thon ? Maquereau."] },
+    { time: "19h", label: "Dîner",          items: "Crudités en entrée. Concombre, fenouil, betterave râpée. Saumon gravlax, aneth, citron vert.",
+      alts: ["Pas de saumon ? Truite fumée."],
+      note: "Fruits 2h après." },
+  ]},
+  // ─── Semaine 2 — Énergie & Vitalité ──────────────────────────────────────
+  { day: 8, meals: [
+    { time: "7h",  label: "Petit-déjeuner", items: "Jus pomme-poire-kiwi. Fruits frais, oléagineux." },
+    { time: "12h", label: "Déjeuner",       items: "Crudités (carotte, concombre, chou rouge, graines germées, vinaigrette)." },
+    { time: "19h", label: "Dîner",          items: "Crudités en entrée. Pommes de terre vapeur, lentilles bio au curry-cumin-tamari.",
+      alts: ["Pas de lentilles ? Pois chiches."] },
+  ]},
+  { day: 9, meals: [
+    { time: "7h",  label: "Petit-déjeuner", items: "Jus pomme-citron-mangue. Salade de fruits." },
+    { time: "12h", label: "Déjeuner",       items: "Asperges snackées à l'huile d'olive, curry, tamari. Mesclun, avocat.",
+      alts: ["Pas d'asperges ? Haricots verts."] },
+    { time: "19h", label: "Dîner",          items: "Crudités en entrée. Pâtes de riz, courgettes, tomates cerises, basilic, ail.",
+      alts: ["Pas de pâtes de riz ? Riz complet."] },
+  ]},
+  { day: 10, meals: [
+    { time: "7h",  label: "Petit-déjeuner", items: "Jus ananas-poire-fraises. Oléagineux." },
+    { time: "12h", label: "Déjeuner",       items: "Roquette, avocat, concombre, graines germées, vinaigrette." },
+    { time: "19h", label: "Dîner",          items: "Crudités en entrée. Haricots verts, courgettes, brocoli vapeur. Filet de truite au four, citron, aneth.",
+      alts: ["Pas de truite ? Saumon ou dorade."],
+      note: "Fruits 2h après." },
+  ]},
+  { day: 11, meals: [
+    { time: "7h",  label: "Petit-déjeuner", items: "Jus pomme-carotte-betterave-gingembre. Fruits secs." },
+    { time: "12h", label: "Déjeuner",       items: "Carottes, navets, champignons en lamelles, gomasio, graines de courge.",
+      alts: ["Pas de navets ? Céleri."] },
+    { time: "19h", label: "Dîner",          items: "Crudités en entrée. Cœurs d'artichaut poêlés au tamari. Poulet bio grillé, herbes.",
+      alts: ["Pas d'artichaut ? Champignons poêlés."],
+      note: "Fruits 2h après." },
+  ]},
+  { day: 12, meals: [
+    { time: "7h",  label: "Petit-déjeuner", items: "Jus pomme-citron-poire-kaki. Banane, oléagineux." },
+    { time: "12h", label: "Déjeuner",       items: "Betteraves, champignons, avocat, ciboulette, gomasio, vinaigrette.",
+      alts: ["Pas de betterave ? Carotte râpée."] },
+    { time: "19h", label: "Dîner",          items: "Crudités en entrée. Poireaux vapeur à la vinaigrette moutarde-citron. Pavé de saumon vapeur.",
+      alts: ["Pas de saumon ? Cabillaud."],
+      note: "Fruits 2h après." },
+  ]},
+  { day: 13, meals: [
+    { time: "7h",  label: "Petit-déjeuner", items: "Jus pomme-carotte-citron. Banane, oléagineux." },
+    { time: "12h", label: "Déjeuner",       items: "Mesclun, tomates, concombre, avocat, graines de chanvre, vinaigrette." },
+    { time: "19h", label: "Dîner",          items: "Crudités en entrée. Purée de patate douce, châtaignes, huile de coco.",
+      alts: ["Pas de châtaignes ? Pois chiches."] },
+  ]},
+  { day: 14, meals: [
+    { time: "7h",  label: "Petit-déjeuner", items: "Mangue, papaye, fruits rouges. Noix, amandes." },
+    { time: "12h", label: "Déjeuner",       items: "Mâche, radis, concombre, graines germées, vinaigrette." },
+    { time: "19h", label: "Dîner",          items: "Crudités en entrée. Aubergine, poivron, courgette rôtis. Maquereau au four, citron, herbes.",
+      alts: ["Pas de maquereau ? Sardines fraîches."],
+      note: "Fruits 2h après." },
+  ]},
+  // ─── Semaine 3 — Ancrage & Performance ───────────────────────────────────
+  { day: 15, meals: [
+    { time: "7h",  label: "Petit-déjeuner", items: "Jus pomme-ananas-épinards-gingembre. Fruits frais." },
+    { time: "12h", label: "Déjeuner",       items: "Mesclun, tomates, olives, avocat, vinaigrette citron.",
+      alts: ["Pas d'olives ? Câpres."] },
+    { time: "19h", label: "Dîner",          items: "Crudités en entrée. Ratatouille (courgette, aubergine, tomate). Émincé de dinde bio grillé.",
+      alts: ["Pas de dinde ? Poulet."],
+      note: "Fruits 2h après." },
+  ]},
+  { day: 16, meals: [
+    { time: "7h",  label: "Petit-déjeuner", items: "Mangue, ananas, kiwi, amandes." },
+    { time: "12h", label: "Déjeuner",       items: "Concombre, fenouil, betterave crue, graines germées, vinaigrette." },
+    { time: "19h", label: "Dîner",          items: "Crudités en entrée. Mesclun, avocat, herbes fraîches. Tartare de daurade citron vert-aneth.",
+      alts: ["Pas de daurade ? Tartare de saumon."],
+      note: "Fruits 2h après." },
+  ]},
+  { day: 17, meals: [
+    { time: "7h",  label: "Petit-déjeuner", items: "Jus pomme-épinard-concombre-citron. Banane, oléagineux." },
+    { time: "12h", label: "Déjeuner",       items: "Betterave, mâche, noix, gomasio, vinaigrette.",
+      alts: ["Pas de betterave ? Carotte râpée."] },
+    { time: "19h", label: "Dîner",          items: "Crudités en entrée. Brocoli, haricots verts vapeur. Crevettes sautées ail-citron-persil.",
+      alts: ["Pas de crevettes ? Noix de Saint-Jacques."],
+      note: "Fruits 2h après." },
+  ]},
+  { day: 18, meals: [
+    { time: "7h",  label: "Petit-déjeuner", items: "Fruits de saison, figues fraîches, noix, amandes. Jus d'orange pressé." },
+    { time: "12h", label: "Déjeuner",       items: "Poivron rouge, chou rouge, carotte, persil, graines de courge, vinaigrette.",
+      alts: ["Pas de poivron ? Tomates cerises."] },
+    { time: "19h", label: "Dîner",          items: "Crudités en entrée. Épinards sautés à l'ail. Filet de sole vapeur, citron.",
+      alts: ["Pas de sole ? Cabillaud ou limande."],
+      note: "Fruits 2h après." },
+  ]},
+  { day: 19, meals: [
+    { time: "7h",  label: "Petit-déjeuner", items: "Jus pomme-carotte-betterave-gingembre. Banane, oléagineux." },
+    { time: "12h", label: "Déjeuner",       items: "Fenouil, chou-fleur, carottes, roquette, avocat, vinaigrette.",
+      alts: ["Pas de fenouil ? Céleri."] },
+    { time: "19h", label: "Dîner",          items: "Crudités en entrée. Roquette, câpres, huile d'olive. Carpaccio de bœuf bio, poivre.",
+      alts: ["Pas de bœuf ? Carpaccio de saumon."],
+      note: "Fruits 2h après." },
+  ]},
+  { day: 20, meals: [
+    { time: "7h",  label: "Petit-déjeuner", items: "Papaye, mangue, ananas, citron vert, noix de cajou." },
+    { time: "12h", label: "Déjeuner",       items: "Mesclun, concombre, tomates, avocat, graines germées, vinaigrette." },
+    { time: "19h", label: "Dîner",          items: "Crudités en entrée. Poivrons, courgettes, aubergines rôtis au thym. Côtelettes d'agneau bio grillées.",
+      alts: ["Pas d'agneau ? Veau ou poulet."],
+      note: "Fruits 2h après." },
+  ]},
+  { day: 21, meals: [
+    { time: "7h",  label: "Petit-déjeuner", items: "Jus pomme-ananas-Green Magma. Fruits frais, oléagineux." },
+    { time: "12h", label: "Déjeuner",       items: "Mesclun, avocat, betterave, graines de chanvre, vinaigrette citron-aneth." },
+    { time: "19h", label: "Dîner",          items: "Crudités en entrée. Asperges vertes, brocoli vapeur. Coquilles Saint-Jacques poêlées à l'huile de coco.",
+      alts: ["Pas de Saint-Jacques ? Crevettes ou gambas."],
+      note: "Fruits 2h après." },
+  ]},
+]
+
+// ─── Principes Verissimo (nouveau design) ─────────────────────────────────────
+
+export type PrincipleV2 = {
+  n: number
+  title: string
+  body: string
+}
+
+export const PRINCIPLES_V2: PrincipleV2[] = [
+  { n: 1, title: "Associer les aliments",
+    body: "Le repère qui change le plus la digestion. Les protéines vont bien avec les légumes, les céréales aussi — mais pas les trois ensemble. Le corps fatigue moins, l'énergie reste haute après les repas." },
+  { n: 2, title: "La mastication",
+    body: "Mâcher prend du temps, et c'est ce qu'on cherche. Le corps a besoin de cette lenteur pour reconnaître ce qu'il reçoit, doser ce qu'il digère, et sentir quand c'est suffisant." },
+  { n: 3, title: "Le temps entre les choses",
+    body: "Les fruits se digèrent à part — plutôt 30 minutes avant un repas, ou 2 heures après. Entre le dîner et le petit-déjeuner du lendemain, on laisse douze heures. C'est un petit jeûne de nuit, le corps s'en sert pour faire le ménage." },
+  { n: 4, title: "Manger vivant",
+    body: "Quelque chose de cru à chaque repas — crudités, fruits frais, jeunes pousses, graines germées. La cuisson tue une partie des enzymes, le cru les apporte. C'est là qu'est la vitalité du végétal." },
+  { n: 5, title: "Ce qu'on met de côté",
+    body: "Pendant les trois semaines : pas de sucre raffiné, pas de lait de vache, pas de blé. Pas pour toujours, juste le temps de laisser le corps respirer sans eux. Beaucoup de choses bougent à ce moment-là." },
+  { n: 6, title: "L'eau",
+    body: "Un grand verre au réveil. 1,5 à 2 litres répartis dans la journée. Pas pendant les repas si tu peux — ça dilue ce qui doit digérer." },
+  { n: 7, title: "Bouger, trente minutes",
+    body: "Pas du sport, juste du mouvement quotidien : marche rapide, vélo doux, escaliers. Le corps a autant besoin de bouger que de manger juste. C'est là que l'énergie circule." },
+]
+
+export type PrincipleGroup = {
+  name: string
+  hint: string
+  principleIds: number[]
+}
+
+export const PRINCIPLE_GROUPS: PrincipleGroup[] = [
+  { name: "Comment manger",    hint: "Le geste, le rythme, le temps.",           principleIds: [1, 2, 3] },
+  { name: "Ce qu'on mange",    hint: "Le vivant d'abord, et ce qu'on retire.",   principleIds: [4, 5] },
+  { name: "Ce qui accompagne", hint: "L'eau et le mouvement, autour des repas.", principleIds: [6, 7] },
+]
+
