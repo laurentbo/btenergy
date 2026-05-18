@@ -1,183 +1,223 @@
 import Link from "next/link"
 
 export default function AccueilPublic() {
+  const logoUrl = process.env.NEXT_PUBLIC_LOGO_URL ?? ""
+
   return (
-    <div style={{ background: "#F8F7F4", color: "#2B2D2E", fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif", minHeight: "100vh" }}>
+    <div style={{
+      background: "var(--bg)", color: "var(--text)",
+      fontFamily: "var(--sans)", minHeight: "100vh",
+    }}>
 
       {/* Header */}
-      <header style={{ background: "#fff", borderBottom: "1px solid #e8e5e0", padding: "0 24px" }}>
-        <div style={{ maxWidth: 900, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", height: 60 }}>
-          <span style={{ fontWeight: 900, fontSize: 18, color: "#2A9D8F" }}>Back to Energy</span>
-          <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
-            <Link href="/login" style={{ fontSize: 13, color: "#2A9D8F", fontWeight: 600, textDecoration: "none" }}>
-              Connexion →
-            </Link>
-          </div>
+      <header style={{
+        padding: "0 28px",
+        borderBottom: "1px solid var(--line-soft)",
+      }}>
+        <div style={{
+          maxWidth: 760, margin: "0 auto",
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          height: 60,
+        }}>
+          {logoUrl
+            ? <img src={logoUrl} alt="Back to Energy" style={{ height: 28, width: "auto" }} />
+            : <span style={{ fontFamily: "var(--serif)", fontStyle: "italic", fontSize: 17, color: "var(--text)" }}>Back to Energy</span>
+          }
+          <Link href="/login" style={{
+            fontSize: 13, color: "var(--text-dim)", textDecoration: "none",
+            display: "flex", alignItems: "center", gap: 6,
+          }}>
+            Connexion <span style={{ color: "var(--text-faint)" }}>→</span>
+          </Link>
         </div>
       </header>
 
-      <main style={{ maxWidth: 900, margin: "0 auto", padding: "0 20px 80px" }}>
+      <main style={{ maxWidth: 760, margin: "0 auto", padding: "0 28px 100px" }}>
 
         {/* Héro */}
-        <section style={{ textAlign: "center", padding: "72px 0 56px" }}>
-          <h1 style={{ fontSize: "clamp(32px,6vw,52px)", fontWeight: 900, lineHeight: 1.15, color: "#2B2D2E", margin: "0 0 16px" }}>
-            Ballonnements, fatigue,<br />prise de poids ?
+        <section style={{ padding: "80px 0 64px" }}>
+          <div style={{
+            fontSize: 10.5, fontWeight: 500, letterSpacing: "0.16em",
+            textTransform: "uppercase", color: "var(--text-mute)", marginBottom: 20,
+          }}>Programme 21 jours · méthode Verissimo</div>
+          <h1 style={{
+            fontFamily: "var(--serif)", fontWeight: 400,
+            fontSize: "clamp(38px, 7vw, 60px)", lineHeight: 1.05,
+            letterSpacing: "-0.02em", color: "var(--text)",
+            margin: "0 0 24px",
+          }}>
+            Retrouver ton<br />
+            <em style={{ fontStyle: "italic", color: "var(--brand)" }}>énergie naturelle.</em>
           </h1>
-          <p style={{ fontSize: 20, fontWeight: 700, color: "#2A9D8F", margin: "0 0 12px" }}>
-            Ton corps sature. On le nettoie naturellement.
+          <p style={{
+            fontSize: 16, color: "var(--text-dim)", lineHeight: 1.7,
+            maxWidth: "46ch", margin: "0 0 40px",
+          }}>
+            Pas un régime. Une manière de manger qui respecte ton corps — associations simples, aliments bruts, accompagnement personnalisé.
           </p>
-          <p style={{ fontSize: 15, color: "#6b6b6b", margin: "0 0 40px", letterSpacing: "0.02em" }}>
-            Alimentation non transformée · Associations simples · 21 jours
-          </p>
-          <div style={{ display: "flex", gap: 16, justifyContent: "center", flexWrap: "wrap" }}>
-            <Link href="/login"
-              style={{
-                display: "inline-block",
-                background: "#2A9D8F",
-                color: "#fff",
-                fontWeight: 700,
-                fontSize: 16,
-                padding: "14px 32px",
-                borderRadius: 12,
-                textDecoration: "none",
-                boxShadow: "0 4px 24px rgba(42,157,143,0.25)",
-              }}>
-              Connexion →
+          <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+            <Link href="/login" style={{
+              display: "inline-flex", alignItems: "center", gap: 8,
+              background: "var(--brand)", color: "#fff",
+              fontFamily: "var(--sans)", fontWeight: 500, fontSize: 14,
+              padding: "13px 24px", borderRadius: 999,
+              textDecoration: "none",
+              boxShadow: "0 4px 20px rgba(92,181,81,0.25)",
+            }}>
+              Accéder à mon programme →
             </Link>
-            <Link href="/login/coach"
-              style={{
-                display: "inline-block",
-                background: "#fff",
-                color: "#2B2D2E",
-                fontWeight: 600,
-                fontSize: 15,
-                padding: "14px 28px",
-                borderRadius: 12,
-                textDecoration: "none",
-                border: "1.5px solid #e8e5e0",
-              }}>
+            <Link href="/login/coach" style={{
+              display: "inline-flex", alignItems: "center",
+              background: "transparent", color: "var(--text-mute)",
+              fontFamily: "var(--sans)", fontSize: 13,
+              padding: "13px 20px", borderRadius: 999,
+              border: "1px solid var(--line)",
+              textDecoration: "none",
+            }}>
               Espace coach
             </Link>
           </div>
         </section>
 
-        {/* Signaux */}
-        <section style={{ marginBottom: 72 }}>
-          <h2 style={{ textAlign: "center", fontSize: 22, fontWeight: 800, color: "#2B2D2E", marginBottom: 32 }}>
-            Tu reconnais ces signaux ?
+        {/* Séparateur */}
+        <hr style={{ border: 0, borderTop: "1px solid var(--line-soft)", margin: 0 }} />
+
+        {/* Méthode */}
+        <section style={{ padding: "64px 0 56px" }}>
+          <div style={{
+            fontSize: 10.5, fontWeight: 500, letterSpacing: "0.16em",
+            textTransform: "uppercase", color: "var(--text-mute)", marginBottom: 14,
+          }}>La méthode</div>
+          <h2 style={{
+            fontFamily: "var(--serif)", fontWeight: 400, fontSize: 30,
+            lineHeight: 1.15, letterSpacing: "-0.015em",
+            color: "var(--text)", margin: "0 0 40px",
+          }}>
+            Ce que tu vas vivre <em style={{ fontStyle: "italic", color: "var(--accent)" }}>en 21 jours</em>
           </h2>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))", gap: 16 }}>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
             {[
-              { icon: "🫃", text: "Ventre gonflé après les repas" },
-              { icon: "⚖️", text: "Prise de poids sans explication" },
-              { icon: "😴", text: "Fatigue chronique, brouillard mental" },
-              { icon: "🌙", text: "Sommeil non réparateur" },
-            ].map(({ icon, text }) => (
-              <div key={text} style={{
-                background: "#fff",
-                borderRadius: 16,
-                padding: "24px 20px",
-                textAlign: "center",
-                boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
-                border: "1px solid #e8e5e0",
+              {
+                days: "Jours 1 – 7",
+                name: "Détox",
+                body: "Le corps ralentit, évacue. Tu manges simple, tu bois beaucoup. La fatigue peut monter avant de passer.",
+              },
+              {
+                days: "Jours 8 – 14",
+                name: "Énergie",
+                body: "Le brouillard se lève. L'énergie remonte. Les associations alimentaires prennent sens dans ton quotidien.",
+              },
+              {
+                days: "Jours 15 – 21",
+                name: "Ancrage",
+                body: "Les habitudes s'installent d'elles-mêmes. Tu n'as plus besoin d'y penser — c'est ta façon de manger.",
+              },
+            ].map((ch, i) => (
+              <div key={ch.name} style={{
+                display: "flex", gap: 28, alignItems: "flex-start",
+                padding: "28px 0",
+                borderTop: i > 0 ? "1px solid var(--line-soft)" : "none",
               }}>
-                <div style={{ fontSize: 32, marginBottom: 12 }}>{icon}</div>
-                <p style={{ fontSize: 14, fontWeight: 600, color: "#2B2D2E", lineHeight: 1.5, margin: 0 }}>{text}</p>
+                <div style={{ width: 76, flexShrink: 0 }}>
+                  <div style={{
+                    fontFamily: "var(--serif)", fontStyle: "italic",
+                    fontSize: 22, color: "var(--brand)", lineHeight: 1,
+                  }}>{ch.name}</div>
+                  <div style={{ fontSize: 11, color: "var(--text-faint)", marginTop: 5 }}>{ch.days}</div>
+                </div>
+                <p style={{
+                  margin: 0, fontSize: 14, color: "var(--text-dim)",
+                  lineHeight: 1.7, flex: 1,
+                }}>{ch.body}</p>
               </div>
             ))}
           </div>
         </section>
 
-        {/* Solution */}
-        <section style={{ marginBottom: 72 }}>
-          <h2 style={{ textAlign: "center", fontSize: 22, fontWeight: 800, color: "#2B2D2E", marginBottom: 32 }}>
-            Une remise à zéro en 21 jours
-          </h2>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
-            <div style={{ background: "#fff", borderRadius: 16, padding: "28px 24px", border: "2px solid #2A9D8F" }}>
-              <p style={{ fontSize: 13, fontWeight: 800, color: "#2A9D8F", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 16 }}>On mise sur</p>
-              {[
-                "Aliments bruts non transformés",
-                "Associations alimentaires simples",
-                "30 min d'activité physique / jour",
-              ].map(item => (
-                <div key={item} style={{ display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 12 }}>
-                  <span style={{ color: "#2A9D8F", fontWeight: 900, fontSize: 16, flexShrink: 0 }}>✅</span>
-                  <span style={{ fontSize: 14, color: "#2B2D2E", lineHeight: 1.5 }}>{item}</span>
-                </div>
-              ))}
-            </div>
-            <div style={{ background: "#fff", borderRadius: 16, padding: "28px 24px", border: "1px solid #e8e5e0" }}>
-              <p style={{ fontSize: 13, fontWeight: 800, color: "#E76F51", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 16 }}>On retire temporairement</p>
-              {[
-                "Blé (temporaire)",
-                "Lait de vache (temporaire)",
-                "Sucre raffiné (temporaire)",
-              ].map(item => (
-                <div key={item} style={{ display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 12 }}>
-                  <span style={{ color: "#E76F51", fontWeight: 900, fontSize: 16, flexShrink: 0 }}>❌</span>
-                  <span style={{ fontSize: 14, color: "#2B2D2E", lineHeight: 1.5 }}>{item}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
+        <hr style={{ border: 0, borderTop: "1px solid var(--line-soft)", margin: 0 }} />
 
-        {/* Programme 3 semaines */}
-        <section style={{ marginBottom: 72 }}>
-          <h2 style={{ textAlign: "center", fontSize: 22, fontWeight: 800, color: "#2B2D2E", marginBottom: 32 }}>
-            3 semaines, 3 étapes
+        {/* Principes clés */}
+        <section style={{ padding: "64px 0 56px" }}>
+          <div style={{
+            fontSize: 10.5, fontWeight: 500, letterSpacing: "0.16em",
+            textTransform: "uppercase", color: "var(--text-mute)", marginBottom: 14,
+          }}>Les repères</div>
+          <h2 style={{
+            fontFamily: "var(--serif)", fontWeight: 400, fontSize: 30,
+            lineHeight: 1.15, letterSpacing: "-0.015em",
+            color: "var(--text)", margin: "0 0 36px",
+          }}>
+            Pas de règles — des <em style={{ fontStyle: "italic", color: "var(--accent)" }}>points d'appui</em>
           </h2>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 16, marginBottom: 20 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 16 }}>
             {[
-              { label: "S1 DÉTOX",     days: "J1-7",   desc: "Le corps évacue",   bg: "#E76F51" },
-              { label: "S2 VITALITÉ",  days: "J8-14",  desc: "L'énergie remonte", bg: "#E9C46A" },
-              { label: "S3 ANCRAGE",   days: "J15-21", desc: "Habitudes ancrées", bg: "#2A9D8F" },
-            ].map(({ label, days, desc, bg }) => (
-              <div key={label} style={{
-                background: "#fff",
-                borderRadius: 16,
-                padding: "24px 16px",
-                textAlign: "center",
-                border: "1px solid #e8e5e0",
-                borderTop: `4px solid ${bg}`,
+              { title: "Associations simples", body: "Protéines et légumes, ou féculents et légumes — jamais les deux ensemble." },
+              { title: "Aliments bruts", body: "Ce qui sort du sol ou de l'animal, sans transformation industrielle." },
+              { title: "Manger sans stress", body: "L'état dans lequel tu manges compte autant que ce que tu manges." },
+              { title: "Bouger chaque jour", body: "30 minutes d'activité physique — pas négociable, ça fait partie du programme." },
+            ].map(p => (
+              <div key={p.title} style={{
+                padding: "22px 20px",
+                background: "var(--bg-lift)",
+                border: "1px solid var(--line)",
+                borderRadius: 14,
               }}>
-                <p style={{ fontSize: 12, fontWeight: 900, color: bg, textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 4px" }}>{label}</p>
-                <p style={{ fontSize: 13, fontWeight: 700, color: "#2B2D2E", margin: "0 0 8px" }}>{days}</p>
-                <p style={{ fontSize: 13, color: "#6b6b6b", margin: 0, lineHeight: 1.4 }}>&ldquo;{desc}&rdquo;</p>
+                <div style={{
+                  fontSize: 14, fontWeight: 500, color: "var(--text)",
+                  marginBottom: 8,
+                }}>{p.title}</div>
+                <p style={{
+                  margin: 0, fontSize: 13, color: "var(--text-dim)", lineHeight: 1.65,
+                }}>{p.body}</p>
               </div>
             ))}
           </div>
-          <p style={{ textAlign: "center", fontSize: 14, fontWeight: 600, color: "#2B2D2E", padding: "16px 0", borderTop: "1px solid #e8e5e0", borderBottom: "1px solid #e8e5e0" }}>
-            Rituel quotidien non négociable : <span style={{ color: "#2A9D8F" }}>30 minutes d&apos;activité physique.</span>
-          </p>
         </section>
 
-        {/* CTA final */}
-        <section style={{ textAlign: "center", paddingTop: 16 }}>
-          <p style={{ fontSize: 15, color: "#6b6b6b", marginBottom: 24 }}>
-            Tu as reçu une invitation ? Connecte-toi pour démarrer ton programme.
-          </p>
-          <Link href="/login"
-            style={{
-              display: "inline-block",
-              background: "#2A9D8F",
-              color: "#fff",
-              fontWeight: 700,
-              fontSize: 16,
-              padding: "14px 36px",
-              borderRadius: 12,
-              textDecoration: "none",
-              boxShadow: "0 4px 24px rgba(42,157,143,0.25)",
+        <hr style={{ border: 0, borderTop: "1px solid var(--line-soft)", margin: 0 }} />
+
+        {/* Coach */}
+        <section style={{ padding: "64px 0" }}>
+          <div style={{
+            padding: "32px 28px",
+            background: "var(--bg-lift)",
+            border: "1px solid var(--line)",
+            borderRadius: 18,
+          }}>
+            <div style={{
+              fontSize: 10.5, fontWeight: 500, letterSpacing: "0.16em",
+              textTransform: "uppercase", color: "var(--text-mute)", marginBottom: 16,
+            }}>Ton accompagnement</div>
+            <p style={{
+              fontFamily: "var(--serif)", fontStyle: "italic",
+              fontSize: 20, lineHeight: 1.55, color: "var(--coach)",
+              margin: "0 0 16px",
             }}>
-            Connexion →
-          </Link>
+              « Je réponds dans le journal tous les jours. Tu n'es jamais seul·e face à une question. »
+            </p>
+            <p style={{ fontSize: 13, color: "var(--text-mute)", margin: "0 0 24px" }}>— Camille, coach Back to Energy</p>
+            <Link href="/login" style={{
+              display: "inline-flex", alignItems: "center", gap: 6,
+              background: "transparent", color: "var(--brand)",
+              fontFamily: "var(--sans)", fontSize: 13,
+              padding: "10px 18px", borderRadius: 999,
+              border: "1px solid rgba(92,181,81,0.35)",
+              textDecoration: "none",
+            }}>
+              Démarrer mon programme →
+            </Link>
+          </div>
         </section>
 
       </main>
 
-      <footer style={{ borderTop: "1px solid #e8e5e0", padding: "24px", textAlign: "center" }}>
-        <p style={{ fontSize: 12, color: "#9b9590", margin: 0 }}>
+      <footer style={{
+        borderTop: "1px solid var(--line-soft)",
+        padding: "24px 28px",
+        textAlign: "center",
+      }}>
+        <p style={{ fontSize: 12, color: "var(--text-faint)", margin: 0 }}>
           Back to Energy · Programme 21 jours · backtoenergy.fr
         </p>
       </footer>

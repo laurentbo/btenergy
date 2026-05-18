@@ -44,6 +44,16 @@ type CoachNote = {
 
 type Tab = "today" | "journal" | "meals" | "journey" | "principles"
 
+type DailyCheckin = {
+  id?: string
+  user_id?: string
+  day: number
+  energie: number | null
+  humeur: number | null
+  sommeil: number | null
+  created_at?: string
+}
+
 const TABS: { id: Tab; label: string }[] = [
   { id: "today",      label: "Aujourd'hui" },
   { id: "journal",    label: "Journal" },
@@ -225,12 +235,16 @@ function TodayScreen({
   prenom,
   currentDay,
   coachNote,
+  checkin,
   onOpenJournal,
+  onOpenCheckin,
 }: {
   prenom: string
   currentDay: number
   coachNote: string | null
+  checkin: DailyCheckin | null
   onOpenJournal: () => void
+  onOpenCheckin: () => void
 }) {
   const prog = PROGRAM_NEW[currentDay - 1] ?? PROGRAM_NEW[0]
 
@@ -292,8 +306,10 @@ function TodayScreen({
         </div>
       </div>
 
+      <CheckInCard checkin={checkin} onOpen={onOpenCheckin} />
+
       <button onClick={onOpenJournal} style={{
-        marginTop: 28, width: "100%",
+        marginTop: 14, width: "100%",
         background: "transparent",
         border: "1px solid var(--line)",
         borderRadius: 999,
@@ -640,13 +656,22 @@ const JOURNEY_CHAPTERS = [
   { name: "Ancrage", span: 7, hint: "On installe ce qui restera après.",              start: 15 },
 ]
 
+function dayDate(programStart: string | null, dayNumber: number): string {
+  if (!programStart) return `j${dayNumber}`
+  const d = new Date(programStart)
+  d.setDate(d.getDate() + dayNumber - 1)
+  return d.toLocaleDateString("fr-FR", { day: "numeric", month: "short" })
+}
+
 function JourneyScreen({
   currentDay,
+  programStart,
   weights,
   recentMessages,
   onLogWeight,
 }: {
   currentDay: number
+  programStart: string | null
   weights: WeightLog[]
   recentMessages: JournalMessage[]
   onLogWeight: () => void
@@ -710,9 +735,10 @@ function JourneyScreen({
                       transition: "all .3s ease",
                     }} />
                     <div style={{
-                      fontSize: 9.5,
+                      fontSize: 8.5,
                       color: current ? "var(--brand)" : "var(--text-faint)",
-                    }}>{day}</div>
+                      whiteSpace: "nowrap" as const,
+                    }}>{dayDate(programStart, day)}</div>
                   </div>
                 )
               })}
@@ -753,8 +779,8 @@ function JourneyScreen({
                       background: isLast ? "var(--brand)" : "rgba(168,187,165,0.28)",
                       borderRadius: 2,
                     }} />
-                    <div style={{ fontSize: 9.5, color: isLast ? "var(--brand)" : "var(--text-faint)" }}>
-                      j{w.day_number}
+                    <div style={{ fontSize: 8.5, color: isLast ? "var(--brand)" : "var(--text-faint)" }}>
+                      {dayDate(programStart, w.day_number)}
                     </div>
                   </div>
                 )
@@ -921,6 +947,217 @@ function PrinciplesScreen({ onAskCoach }: { onAskCoach: () => void }) {
   )
 }
 
+// ─── Check-in modal ───────────────────────────────────────────────────────────
+
+// 3 états par dimension — stockés comme 1 / 3 / 5 dans journal_entries
+const CHECKIN_OPTIONS: Record<string, { val: number; label: string }[]> = {
+  energie: [
+    { val: 1, label: "À plat"   },
+    { val: 3, label: "Correct"  },
+    { val: 5, label: "Au top"   },
+  ],
+  humeur: [
+    { val: 1, label: "Difficile" },
+    { val: 3, label: "Ça va"     },
+    { val: 5, label: "Légère"    },
+  ],
+  sommeil: [
+    { val: 1, label: "Agité"   },
+    { val: 3, label: "Correct" },
+    { val: 5, label: "Profond" },
+  ],
+}
+
+function checkinLabel(key: string, val: number | null): string {
+  if (!val) return "—"
+  return CHECKIN_OPTIONS[key]?.find(o => o.val === val)?.label ?? "—"
+}
+
+function TriRow({
+  label, value, onChange,
+}: { label: string; value: number | null; onChange: (v: number) => void }) {
+  const opts = CHECKIN_OPTIONS[label] ?? []
+  return (
+    <div style={{ marginBottom: 18 }}>
+      <div style={{
+        fontSize: 10.5, fontWeight: 500, letterSpacing: "0.14em",
+        textTransform: "uppercase" as const, color: "var(--text-mute)", marginBottom: 8,
+      }}>{label}</div>
+      <div style={{ display: "flex", gap: 8 }}>
+        {opts.map(o => {
+          const active = value === o.val
+          return (
+            <button key={o.val} onClick={() => onChange(o.val)} style={{
+              flex: 1, height: 44, borderRadius: 12, cursor: "pointer",
+              background: active ? "var(--brand-soft)" : "var(--bg-lift)",
+              border: `1px solid ${active ? "rgba(92,181,81,0.45)" : "var(--line)"}`,
+              color: active ? "var(--brand)" : "var(--text-dim)",
+              fontFamily: "var(--sans)", fontSize: 13, fontWeight: active ? 500 : 400,
+              transition: "all .15s ease",
+            }}>{o.label}</button>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+function CheckInModal({
+  currentDay,
+  lastWeight,
+  existing,
+  onSave,
+  onClose,
+}: {
+  currentDay: number
+  lastWeight: number | null
+  existing: DailyCheckin | null
+  onSave: (w: number | null, c: Omit<DailyCheckin, "day">) => Promise<void>
+  onClose: () => void
+}) {
+  const [kg, setKg]         = useState(lastWeight?.toFixed(1) ?? "")
+  const [energie, setEnergie] = useState<number | null>(existing?.energie ?? null)
+  const [humeur, setHumeur]   = useState<number | null>(existing?.humeur ?? null)
+  const [sommeil, setSommeil] = useState<number | null>(existing?.sommeil ?? null)
+  const [saving, setSaving]   = useState(false)
+
+  const handleSave = async () => {
+    setSaving(true)
+    const w = kg.trim() ? parseFloat(kg.replace(",", ".")) : null
+    await onSave(w && !isNaN(w) ? w : null, { energie, humeur, sommeil })
+    setSaving(false)
+    onClose()
+  }
+
+  const anyFilled = kg.trim() || energie || humeur || sommeil
+
+  return (
+    <div style={{
+      position: "fixed", inset: 0, zIndex: 50,
+      background: "rgba(21,19,14,0.7)", backdropFilter: "blur(6px)",
+      WebkitBackdropFilter: "blur(6px)",
+      display: "flex", alignItems: "flex-end", justifyContent: "center",
+    }} onClick={onClose}>
+      <div onClick={e => e.stopPropagation()} style={{
+        width: "100%", maxWidth: 480,
+        background: "var(--bg-surface)",
+        border: "1px solid var(--line)",
+        borderBottom: "none",
+        borderRadius: "20px 20px 0 0",
+        padding: "28px 24px max(env(safe-area-inset-bottom, 16px), 24px)",
+      }}>
+        {/* Handle */}
+        <div style={{ width: 36, height: 3, borderRadius: 2, background: "var(--line)", margin: "0 auto 24px" }} />
+
+        <Eyebrow>{todayLong()}</Eyebrow>
+        <h3 style={{
+          margin: "8px 0 24px", fontFamily: "var(--serif)",
+          fontWeight: 400, fontSize: 26, lineHeight: 1.1,
+          letterSpacing: "-0.015em", color: "var(--text)",
+        }}>
+          Comment tu te <em style={{ fontStyle: "italic", color: "var(--brand)" }}>ressens</em> ?
+        </h3>
+
+        {/* Poids */}
+        <div style={{ marginBottom: 26 }}>
+          <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: "0.14em", textTransform: "uppercase" as const, color: "var(--text-mute)", marginBottom: 10 }}>
+            poids
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <input
+              type="number"
+              inputMode="decimal"
+              placeholder="—"
+              value={kg}
+              onChange={e => setKg(e.target.value)}
+              style={{
+                width: 100, height: 44, borderRadius: 10,
+                background: "var(--bg-lift)", border: "1px solid var(--line)",
+                color: "var(--text)", fontFamily: "var(--sans)", fontSize: 20,
+                textAlign: "center", outline: "none",
+                appearance: "textfield",
+              }}
+            />
+            <span style={{ fontSize: 13, color: "var(--text-mute)" }}>kg</span>
+            {lastWeight && (
+              <span style={{ fontSize: 12, color: "var(--text-faint)", marginLeft: 4 }}>
+                hier · {lastWeight.toFixed(1).replace(".", ",")} kg
+              </span>
+            )}
+          </div>
+        </div>
+
+        <TriRow label="energie" value={energie} onChange={setEnergie} />
+        <TriRow label="humeur"  value={humeur}  onChange={setHumeur}  />
+        <TriRow label="sommeil" value={sommeil} onChange={setSommeil} />
+
+        <div style={{ display: "flex", gap: 10, marginTop: 8 }}>
+          <button onClick={onClose} style={{
+            flex: 1, height: 46, borderRadius: 999,
+            background: "transparent", border: "1px solid var(--line)",
+            color: "var(--text-dim)", fontSize: 14, fontFamily: "var(--sans)",
+            cursor: "pointer",
+          }}>Annuler</button>
+          <button onClick={handleSave} disabled={!anyFilled || saving} style={{
+            flex: 2, height: 46, borderRadius: 999,
+            background: anyFilled ? "var(--brand)" : "var(--bg-lift)",
+            border: "none",
+            color: anyFilled ? "#fff" : "var(--text-faint)",
+            fontSize: 14, fontFamily: "var(--sans)", fontWeight: 500,
+            cursor: anyFilled ? "pointer" : "default",
+            transition: "background .2s ease",
+          }}>{saving ? "Enregistrement…" : "Enregistrer"}</button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ─── CheckIn summary card (Today screen) ─────────────────────────────────────
+
+function CheckInCard({
+  checkin,
+  onOpen,
+}: { checkin: DailyCheckin | null; onOpen: () => void }) {
+  const done = checkin && (checkin.energie || checkin.humeur || checkin.sommeil)
+  return (
+    <div
+      onClick={onOpen}
+      style={{
+        marginTop: 20, padding: "16px 18px",
+        background: "var(--bg-lift)", border: "1px solid var(--line)", borderRadius: 14,
+        cursor: "pointer", transition: "border-color .2s ease",
+        display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12,
+      }}
+    >
+      <div>
+        <Eyebrow>{done ? "check-in enregistré" : "check-in du matin"}</Eyebrow>
+        {done ? (
+          <div style={{ marginTop: 8, display: "flex", gap: 16, flexWrap: "wrap" as const }}>
+            {[
+              { k: "Énergie", key: "energie", v: checkin.energie },
+              { k: "Humeur",  key: "humeur",  v: checkin.humeur  },
+              { k: "Sommeil", key: "sommeil", v: checkin.sommeil  },
+            ].filter(x => x.v).map(x => (
+              <div key={x.k}>
+                <div style={{ fontSize: 9.5, color: "var(--text-faint)", letterSpacing: "0.12em", textTransform: "uppercase" as const }}>{x.k}</div>
+                <div style={{ fontSize: 14, fontFamily: "var(--serif)", fontStyle: "italic", color: "var(--text)", marginTop: 3 }}>
+                  {checkinLabel(x.key, x.v)}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p style={{ margin: "6px 0 0", fontSize: 13, color: "var(--text-mute)" }}>
+            Poids · énergie · humeur · sommeil
+          </p>
+        )}
+      </div>
+      <span style={{ color: "var(--text-faint)", fontSize: 16, flexShrink: 0 }}>→</span>
+    </div>
+  )
+}
+
 // ─── Icon components ──────────────────────────────────────────────────────────
 
 function PenIcon() {
@@ -1028,6 +1265,8 @@ export default function DashboardPage() {
   const [weights, setWeights]     = useState<WeightLog[]>([])
   const [journalPrefill, setJournalPrefill] = useState("")
   const [loading, setLoading]     = useState(true)
+  const [showCheckin, setShowCheckin] = useState(false)
+  const [todayCheckin, setTodayCheckin] = useState<DailyCheckin | null>(null)
 
   const currentDay = profile?.program_start
     ? calcCurrentDay(profile.program_start)
@@ -1053,6 +1292,17 @@ export default function DashboardPage() {
         .eq("coachee_id", user.id)
         .order("day_number", { ascending: true }),
     ])
+
+    // Today's check-in (journal_entries for current day)
+    if (profileRes.data?.program_start) {
+      const day = calcCurrentDay(profileRes.data.program_start)
+      const checkinRes = await supabase.from("journal_entries")
+        .select("id, user_id, day, energie, humeur, sommeil, created_at")
+        .eq("user_id", user.id)
+        .eq("day", day)
+        .maybeSingle()
+      setTodayCheckin(checkinRes.data as DailyCheckin | null)
+    }
 
     if (profileRes.data) {
       setProfile(profileRes.data as Profile)
@@ -1125,6 +1375,36 @@ export default function DashboardPage() {
 
   // ── Navigation helpers ────────────────────────────────────────────────────
 
+  // ── Save daily check-in ───────────────────────────────────────────────────
+
+  const handleSaveCheckin = async (
+    w: number | null,
+    checkin: Omit<DailyCheckin, "day">,
+  ) => {
+    if (!user) return
+    const day = currentDay
+
+    if (w !== null) {
+      await supabase.from("weight_logs").upsert(
+        { coachee_id: user.id, day_number: day, kg: w },
+        { onConflict: "coachee_id,day_number" },
+      )
+      setWeights(prev => {
+        const next = prev.filter(x => x.day_number !== day)
+        return [...next, { id: "", coachee_id: user.id, day_number: day, kg: w, created_at: new Date().toISOString() }]
+          .sort((a, b) => a.day_number - b.day_number)
+      })
+    }
+
+    if (checkin.energie || checkin.humeur || checkin.sommeil) {
+      const { data } = await supabase.from("journal_entries").upsert(
+        { user_id: user.id, day, energie: checkin.energie, humeur: checkin.humeur, sommeil: checkin.sommeil },
+        { onConflict: "user_id,day" },
+      ).select().maybeSingle()
+      if (data) setTodayCheckin(data as DailyCheckin)
+    }
+  }
+
   const goToJournal = (prefill?: string) => {
     if (prefill) setJournalPrefill(prefill)
     setTab("journal")
@@ -1158,7 +1438,9 @@ export default function DashboardPage() {
             prenom={prenom}
             currentDay={currentDay}
             coachNote={coachNote}
+            checkin={todayCheckin}
             onOpenJournal={() => goToJournal()}
+            onOpenCheckin={() => setShowCheckin(true)}
           />
         )}
         {tab === "journal" && (
@@ -1175,9 +1457,10 @@ export default function DashboardPage() {
         {tab === "journey" && (
           <JourneyScreen
             currentDay={currentDay}
+            programStart={profile?.program_start ?? null}
             weights={weights}
             recentMessages={recentJourneyMessages}
-            onLogWeight={() => {/* v2 */}}
+            onLogWeight={() => setShowCheckin(true)}
           />
         )}
         {tab === "principles" && (
@@ -1188,6 +1471,16 @@ export default function DashboardPage() {
       </div>
 
       <TabBar active={tab} onChange={setTab} />
+
+      {showCheckin && (
+        <CheckInModal
+          currentDay={currentDay}
+          lastWeight={weights.length ? weights[weights.length - 1].kg : (profile?.poids ?? null)}
+          existing={todayCheckin}
+          onSave={handleSaveCheckin}
+          onClose={() => setShowCheckin(false)}
+        />
+      )}
     </div>
   )
 }
