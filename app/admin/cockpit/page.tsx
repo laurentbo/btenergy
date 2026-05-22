@@ -118,30 +118,17 @@ function PageCard({ page, onCopy }: { page: { route?: string; name: string; file
 export default function AdminCockpit() {
   const [tab, setTab] = useState<Tab>("parcours")
   const [authed, setAuthed] = useState(false)
-  const [email, setEmail] = useState("")
-  const [secret, setSecret] = useState("")
-  const [authError, setAuthError] = useState("")
   const [toast, setToast] = useState<string | null>(null)
   const supabase = createClient()
 
   useEffect(() => {
     async function checkAdmin() {
       const { data: { user } } = await supabase.auth.getUser()
-      if (user?.email) {
-        setEmail(user.email)
-        if (user.email === process.env.NEXT_PUBLIC_ADMIN_EMAIL) setAuthed(true)
-      }
+      if (user) setAuthed(true)
+      else window.location.href = "/login/coach"
     }
     checkAdmin()
   }, []) // eslint-disable-line
-
-  function handleAuth() {
-    if (secret === process.env.NEXT_PUBLIC_ADMIN_SECRET) {
-      setAuthed(true); setAuthError("")
-    } else {
-      setAuthError("Code admin incorrect.")
-    }
-  }
 
   const copyPath = useCallback((path: string) => {
     navigator.clipboard.writeText(path).catch(() => {})
@@ -160,25 +147,8 @@ export default function AdminCockpit() {
 
   if (!authed) {
     return (
-      <div style={S.page}>
-        <div style={{ ...S.wrap, maxWidth: 440 }}>
-          <h1 style={{ fontSize: 22, fontWeight: 400, color: "#ECE4D2", marginBottom: 4, fontFamily: "'Instrument Serif', Georgia, serif", fontStyle: "italic" }}>Cockpit</h1>
-          <p style={{ fontSize: 12, color: "rgba(236,228,210,0.34)", marginBottom: 28 }}>Connecté en tant que : {email || "—"}</p>
-          <div style={S.card}>
-            <p style={{ fontSize: 13, fontWeight: 500, color: "#ECE4D2", marginBottom: 12 }}>Code admin requis</p>
-            <input
-              type="password" value={secret}
-              onChange={e => setSecret(e.target.value)}
-              onKeyDown={e => e.key === "Enter" && handleAuth()}
-              placeholder="Code admin…"
-              style={{ width: "100%", padding: "10px 14px", borderRadius: 8, border: "1px solid rgba(247,234,205,0.12)", fontSize: 14, background: "#211E17", color: "#ECE4D2", marginBottom: 12, boxSizing: "border-box", outline: "none", fontFamily: "'Geist', system-ui, sans-serif" }}
-            />
-            {authError && <p style={{ color: "#E76F51", fontSize: 12, marginBottom: 10 }}>{authError}</p>}
-            <button onClick={handleAuth} style={{ background: "#5CB551", color: "#15130E", border: "none", borderRadius: 8, padding: "10px 22px", fontWeight: 700, fontSize: 14, cursor: "pointer", fontFamily: "'Geist', system-ui, sans-serif" }}>
-              Accéder →
-            </button>
-          </div>
-        </div>
+      <div style={{ ...S.page, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <span style={{ fontSize: 13, color: "rgba(236,228,210,0.34)" }}>Chargement…</span>
       </div>
     )
   }
