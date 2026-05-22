@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BTENERGY — Preview Hub</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ── Design tokens — production (globals.css) ── */
+:root {
+  --bg:         #15130E;
+  --bg-lift:    #1C1A14;
+  --bg-surface: #211E17;
+  --bg-elev:    #27241C;
+  --line:       rgba(247,234,205,0.07);
+  --line-soft:  rgba(247,234,205,0.04);
+  --text:       #ECE4D2;
+  --text-dim:   rgba(236,228,210,0.62);
+  --text-mute:  rgba(236,228,210,0.34);
+  --text-faint: rgba(236,228,210,0.18);
+  --coach:      #A8BBA5;
+  --brand:      #5CB551;
+  --brand-soft: rgba(92,181,81,0.14);
+  --sans: 'Geist', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --serif: 'Instrument Serif','Iowan Old Style',Georgia,serif;
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;line-height:1.6;min-height:100vh;-webkit-font-smoothing:antialiased}
+
+/* ── HEADER ── */
+.site-header{background:var(--bg-lift);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:100;padding:0 24px}
+.header-inner{max-width:1100px;margin:0 auto;display:flex;align-items:center;gap:32px;height:52px}
+.logo{font-family:var(--serif);font-style:italic;font-size:18px;color:var(--text);white-space:nowrap}
+.logo span{color:var(--text-mute)}
+.tabs{display:flex;gap:2px;flex:1}
+.tab{padding:6px 14px;border-radius:8px;border:none;background:none;font-family:var(--sans);font-size:12.5px;color:var(--text-mute);cursor:pointer;transition:all .15s}
+.tab:hover{background:var(--bg-surface);color:var(--text-dim)}
+.tab.active{background:var(--bg-surface);color:var(--text)}
+
+/* ── LAYOUT ── */
+.main{max-width:1100px;margin:0 auto;padding:32px 24px}
+.section{display:none}
+.section.active{display:block}
+
+/* ── WEEK HEADER ── */
+.week-header{display:flex;align-items:center;gap:14px;margin-bottom:16px;margin-top:40px}
+.week-header:first-child{margin-top:0}
+.week-badge{padding:3px 12px;border-radius:999px;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#fff;font-weight:600}
+.week-title{font-family:var(--serif);font-style:italic;font-size:20px;color:var(--text)}
+.week-desc{font-size:12.5px;color:var(--text-mute);margin-top:2px}
+
+/* ── DAY GRID ── */
+.days-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px;margin-bottom:8px}
+
+/* ── DAY CARD ── */
+.day-card{background:var(--bg-lift);border:1px solid var(--line);border-radius:12px;overflow:hidden;cursor:pointer;transition:border-color .15s}
+.day-card:hover{border-color:rgba(247,234,205,0.14)}
+.day-card.expanded{border-color:rgba(92,181,81,0.2)}
+.day-head{padding:14px 16px;display:flex;align-items:center;gap:12px}
+.day-num{font-family:var(--serif);font-style:italic;font-size:26px;color:var(--text-mute);width:38px;flex-shrink:0;line-height:1}
+.day-theme{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-faint);margin-bottom:3px}
+.day-intention{font-size:12.5px;color:var(--text-dim);line-height:1.45}
+.day-body{display:none;padding:0 16px 16px;border-top:1px solid var(--line)}
+.day-card.expanded .day-body{display:block}
+
+.coach-word{border-left:2px solid rgba(168,187,165,0.3);padding:8px 12px;margin:12px 0;font-family:var(--serif);font-style:italic;font-size:14px;color:var(--coach);line-height:1.55}
+
+.meal-list{margin:12px 0}
+.meal-row{display:flex;gap:12px;padding:9px 0;border-bottom:1px solid var(--line-soft)}
+.meal-row:last-child{border-bottom:none}
+.meal-moment{font-family:var(--serif);font-style:italic;font-size:13px;color:var(--text-mute);min-width:72px;flex-shrink:0;padding-top:1px}
+.meal-items{font-size:12.5px;color:var(--text-dim);line-height:1.55}
+.meal-conseil{font-size:11.5px;color:var(--text-faint);margin-top:3px}
+
+.day-footer{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.foot-block{background:var(--bg-surface);border-radius:8px;padding:10px 12px}
+.foot-label{font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-faint);margin-bottom:4px}
+.foot-val{font-size:12px;color:var(--text-dim);line-height:1.5}
+
+/* ── PROGRAM NEW ── */
+.pnew-title{font-family:var(--serif);font-style:italic;font-size:20px;color:var(--text);margin-bottom:6px}
+.pnew-sub{font-size:13px;color:var(--text-mute);margin-bottom:20px}
+.pnew-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px}
+.pnew-card{background:var(--bg-lift);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.pnew-head{padding:12px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}
+.pnew-day{font-family:var(--serif);font-style:italic;font-size:22px;color:var(--text-mute);width:36px;flex-shrink:0}
+.pnew-chapter{font-size:10px;letter-spacing:.14em;text-transform:uppercase;font-weight:500}
+.pnew-meals{padding:10px 16px}
+.pnew-meal{display:flex;gap:10px;padding:7px 0;border-bottom:1px solid var(--line-soft)}
+.pnew-meal:last-child{border-bottom:none}
+.pnew-time{font-family:var(--serif);font-style:italic;font-size:13px;color:var(--text-mute);min-width:36px;flex-shrink:0}
+.pnew-label{font-size:11px;color:var(--text-faint);margin-bottom:2px}
+.pnew-items{font-size:12px;color:var(--text-dim);line-height:1.5}
+.pnew-alts{font-family:var(--serif);font-style:italic;font-size:11.5px;color:var(--coach);margin-top:3px}
+.pnew-note{font-size:11px;color:rgba(92,181,81,.7);margin-top:3px}
+
+/* ── PRINCIPES ── */
+.principles-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px;margin-top:20px}
+.principle-card{background:var(--bg-lift);border:1px solid var(--line);border-radius:10px;padding:18px 20px}
+.principle-n{font-family:var(--serif);font-style:italic;font-size:28px;color:var(--line);line-height:1;margin-bottom:8px}
+.principle-title{font-size:14px;font-weight:500;color:rgb(210,236,212);margin-bottom:6px}
+.principle-body{font-size:12.5px;color:var(--text-dim);line-height:1.65}
+
+/* ── EMAILS ── */
+.email-picker{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+.epick{padding:6px 14px;border-radius:999px;border:1px solid var(--line);background:var(--bg-lift);font-family:var(--sans);font-size:12.5px;color:var(--text-mute);cursor:pointer;transition:all .15s}
+.epick:hover{border-color:rgba(247,234,205,0.14);color:var(--text-dim)}
+.epick.active{background:var(--bg-surface);color:var(--text);border-color:rgba(247,234,205,0.14)}
+
+.email-frame{background:#EEE7D6;border-radius:12px;padding:40px 20px;overflow:auto}
+.email-wrap{max-width:520px;margin:0 auto}
+
+/* email inner (crème — intentionnel, c'est le vrai rendu email) */
+.em-card{background:#FBF6E8;border:1px solid #E2D9C0;border-radius:14px;padding:44px 40px}
+.em-eyebrow{font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;color:#A89E88;margin-bottom:6px}
+.em-h1{font-family:var(--serif);font-size:28px;line-height:1.2;color:#2A2520;letter-spacing:-.015em;margin-bottom:26px}
+.em-h1 em{font-style:italic;color:#7B8A78}
+.em-p{font-size:15.5px;line-height:1.75;color:#3D362D;margin-bottom:16px}
+.em-p-sm{font-size:14px;line-height:1.7;color:#6A6157;margin-bottom:32px}
+.em-section-label{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#A89E88;font-weight:500;margin-bottom:12px}
+.em-table{width:100%;border-collapse:collapse;margin-bottom:28px}
+.em-row td{padding:9px 0;border-top:1px solid #EAE2CB;font-size:14px;color:#3D362D}
+.em-italic{font-family:var(--serif);font-style:italic;font-size:14px;color:#A89E88;display:inline-block;width:80px}
+.em-chapter-block{padding:9px 0;border-top:1px solid #EAE2CB}
+.em-chapter-name{font-family:var(--serif);font-style:italic;font-size:16px;color:#7B8A78}
+.em-chapter-days{font-size:12.5px;color:#8A7E68;margin-left:4px}
+.em-chapter-desc{font-size:13.5px;color:#4A4138;line-height:1.6;margin-top:3px}
+.em-cta{display:inline-block;padding:13px 26px;background:#2A2520;border-radius:999px;color:#F5EFE2;text-decoration:none;font-size:14px;letter-spacing:.01em;margin-bottom:32px}
+.em-sig{font-family:var(--serif);font-style:italic;font-size:17px;color:#7B8A78;margin-bottom:6px}
+.em-sig-sub{font-size:12.5px;color:#8A7E68}
+.em-footer{padding:20px 0 0;font-size:11px;color:#A89E88;line-height:1.7}
+.em-meal-table{width:100%;border-collapse:collapse;margin-bottom:30px}
+.em-meal-time{padding:11px 0;border-bottom:1px solid #EAE2CB;width:50px;vertical-align:top;font-family:var(--serif);font-style:italic;font-size:14px;color:#A89E88}
+.em-meal-content{padding:11px 0;border-bottom:1px solid #EAE2CB}
+.em-meal-name{font-size:14.5px;color:#2A2520;margin-bottom:3px}
+.em-meal-detail{font-size:13px;color:#6A6157;line-height:1.55}
+
+/* ── PARCOURS ── */
+.journey-section-head{display:flex;align-items:center;gap:12px;margin:36px 0 14px}
+.journey-section-head:first-child{margin-top:0}
+.journey-phase-badge{padding:3px 12px;border-radius:999px;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#fff;font-weight:600}
+.journey-phase-title{font-family:var(--serif);font-style:italic;font-size:18px;color:var(--text)}
+
+.journey-timeline{padding-left:28px;position:relative;margin-bottom:4px}
+.journey-timeline::before{content:'';position:absolute;left:8px;top:0;bottom:0;width:1px;background:var(--line)}
+
+.journey-step{position:relative;margin-bottom:12px}
+.journey-step::before{content:'';position:absolute;left:-24px;top:14px;width:8px;height:8px;border-radius:50%;background:var(--bg-surface);border:1px solid var(--line)}
+.journey-step.detox::before{border-color:#5CB551}
+.journey-step.energie::before{border-color:#A8BBA5}
+.journey-step.ancrage::before{border-color:#BF7D2C}
+.journey-step.prep::before{border-color:#f59e0b}
+.journey-step.post::before{border-color:rgba(168,187,165,.4)}
+
+.step-card{background:var(--bg-lift);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.step-tag{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-faint);margin-bottom:4px}
+.step-title{font-family:var(--serif);font-style:italic;font-size:17px;color:var(--text);margin-bottom:5px}
+.step-body{font-size:12.5px;color:var(--text-dim);line-height:1.6}
+.step-actions{margin-top:10px;display:flex;flex-wrap:wrap;gap:6px}
+.step-action{background:var(--bg-surface);border-radius:6px;padding:4px 10px;font-size:11.5px;color:var(--text-mute)}
+.step-warn{margin-top:10px;padding:10px 12px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:8px;font-size:12px;color:rgba(245,200,90,.8);line-height:1.6}
+.step-coach{margin-top:10px;border-left:2px solid rgba(168,187,165,0.25);padding:6px 12px;font-family:var(--serif);font-style:italic;font-size:13px;color:var(--coach);line-height:1.55}
+
+/* ── EYEBROW ── */
+.eyebrow{font-size:10px;font-weight:500;letter-spacing:.16em;text-transform:uppercase;color:var(--text-mute)}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <div class="logo">Back to Energy <span>/ preview hub</span></div>
+    <nav class="tabs">
+      <button class="tab active" onclick="showTab('programme',this)">Programme 21j (v1)</button>
+      <button class="tab" onclick="showTab('programme-new',this)">Programme V2</button>
+      <button class="tab" onclick="showTab('emails',this)">Emails</button>
+      <button class="tab" onclick="showTab('parcours',this)">Parcours utilisateur</button>
+    </nav>
+  </div>
+</header>
+
+<main class="main">
+  <section id="section-programme"     class="section active"><div id="programme-root"></div></section>
+  <section id="section-programme-new" class="section"><div id="programme-new-root"></div></section>
+  <section id="section-emails"        class="section">
+    <div class="email-picker" id="email-picker"></div>
+    <div class="email-frame"><div class="email-wrap" id="email-content"></div></div>
+  </section>
+  <section id="section-parcours"      class="section"><div id="parcours-root"></div></section>
+</main>
+
+<script>
+// ─────────────────────────────────────────────────────────────────────────────
+// DATA — data/program.ts
+// ─────────────────────────────────────────────────────────────────────────────
+
+const WEEK_THEMES = {
+  1: { title:"Fondations", color:"#5CB551", desc:"Poser les bases, adopter le nouveau rythme alimentaire, sans gluten, sans lactose, sans sucre raffiné." },
+  2: { title:"Équilibre",  color:"#A8BBA5", desc:"Approfondir la détox, explorer les saveurs umami, renforcer le microbiote." },
+  3: { title:"Ancrage",    color:"#BF7D2C", desc:"Consolider les acquis, réintroduire la volaille bio, ancrer les nouvelles habitudes." },
+}
+
+const PROGRAM = [
+  { day:1,week:1,theme:"Fondations",intention:"Poser les bases alimentaires, ressentir l'effet des premières heures sans excitants",coachWord:"Commence la journée avec un grand verre d'eau tiède et le jus d'½ citron — c'est ton rituel quotidien pendant 21 jours. La première journée est souvent la plus mentale.",meals:[{moment:"matin",items:["2 kiwis","1 orange","Poignée de noix","1 c.c. miel brut","1 pruneau","Pincée de cannelle"],conseil:"Collation si faim vers 10h : 1 pomme"},{moment:"midi",items:["Quinoa cuit","Concombre, avocat, jeunes pousses d'épinard","Graines de sésame + sel fumé + huile d'olive"]},{moment:"après-midi",items:["1 banane + 3 amandes (si faim)"]},{moment:"soir",items:["Poêlée courgettes, poireaux, champignons de Paris","Riz basmati + tamari","Crudités : carotte râpée"],conseil:"Commencer par les crudités — les enzymes vivantes préparent la digestion"}],hydration:"Eau à volonté (1,5 L min.), eau citronnée, tisanes sans théine",tip:"Tamari (sauce soja sans gluten) apporte un umami profond"},
+  { day:2,week:1,theme:"Fondations",intention:"Stabiliser le rythme alimentaire, espacer naturellement les repas de 4-5h",coachWord:"Si la faim se fait sentir entre les repas, bois d'abord un grand verre d'eau. Souvent, c'est de la soif que ton corps interprète comme de la faim.",meals:[{moment:"matin",items:["1 mangue","1 poire","Noisettes concassées","1 c.c. miel brut","Filet de citron"],conseil:"Collation si faim : 1 clémentine"},{moment:"midi",items:["Velouté froid concombre-avocat","Menthe + graines de courges","Levure maltée"]},{moment:"après-midi",items:["1 poignée de raisins (si faim)"]},{moment:"soir",items:["Purée patate douce","Chou-fleur rôti au curcuma + gomasio","Huile sésame grillé","Crudités : fenouil râpé"]}],hydration:"Eau à volonté (1,5 L min.), eau citronnée, tisanes sans théine",tip:"Levure maltée = goût fromagé sans lactose"},
+  { day:3,week:1,theme:"Fondations",intention:"Découvrir les saveurs umami naturelles, s'approprier les nouvelles combinaisons",coachWord:"Le miso et la levure maltée sont tes nouveaux alliés saveur. Utilise-les sans hésiter — ils remplacent avantageusement sel et fromage.",meals:[{moment:"matin",items:["Bol fruits rouges","1 figue sèche","Noix de pécan","1 c.c. miel brut","2 dattes"],conseil:"Collation si faim : 1 orange"},{moment:"midi",items:["Salade tiède lentilles corail","Fenouil cru râpé, dés d'avocat, persil","Vinaigrette huile d'olive, vinaigre cidre, miso"]},{moment:"après-midi",items:["1 kiwi (si faim)"]},{moment:"soir",items:["Poireaux vapeur","Purée céleri-rave lait de coco + poudre shiitake + ciboulette","Crudités : roquette"]}],hydration:"Eau à volonté (1,5 L min.), eau citronnée, tisanes sans théine",tip:"Poudre de shiitake = umami intense"},
+  { day:4,week:1,theme:"Fondations",intention:"Renforcer l'alcalinité, nourrir les cellules en profondeur",coachWord:"Le gaspacho vert se prépare à l'avance et se conserve 24h. Anticiper tes repas facilite l'engagement.",meals:[{moment:"matin",items:["Oranges, pamplemousse, grenade","Amandes","1 c.c. miel brut","Pincée de cannelle"],conseil:"Collation si faim : 1 poire"},{moment:"midi",items:["Gaspacho vert : concombre, poivron, coriandre, avocat, citron, huile d'olive","Olives noires"]},{moment:"après-midi",items:["1 banane + noix de cajou (si faim)"]},{moment:"soir",items:["Poêlée tempeh ou pois chiches (curcuma, paprika fumé)","Courgettes et shiitake","Riz complet","Crudités : chou rouge râpé"]}],hydration:"Eau à volonté (1,5 L min.), eau citronnée, tisanes sans théine",tip:"Olives noires = umami salé naturel"},
+  { day:5,week:1,theme:"Fondations",intention:"Maintenir le cap à mi-semaine, ancrer le rythme des 5 repas",coachWord:"Tu es à mi-semaine 1 — le plus dur est souvent là. Chaque repas que tu prépares est un acte de confiance envers toi-même.",meals:[{moment:"matin",items:["2 clémentines","1 pomme","Noisettes","1 c.c. miel brut","1 pruneau","1 abricot sec"],conseil:"Collation si faim : 1 orange"},{moment:"midi",items:["Wrap galette de riz","Houmous, carotte râpée, betterave râpée","Jeunes pousses, graines de sésame"]},{moment:"après-midi",items:["1 poignée cerises (si faim)"]},{moment:"soir",items:["Sauté brocoli, chou-fleur, carottes au tamari + gingembre","Sarrasin cuit","Crudités : mâche"]}],hydration:"Eau à volonté (1,5 L min.), eau citronnée, tisanes sans théine",tip:"Tamari + gingembre frais réveille les légumes"},
+  { day:6,week:1,theme:"Fondations",intention:"Consolider les acquis, observer les premiers changements dans le corps",coachWord:"Prends 5 minutes ce soir pour noter ce que tu ressens dans ton corps. Ton journal d'observation est un outil puissant.",meals:[{moment:"matin",items:["Compote pomme-canneberge sans sucre","Cerneaux de noix","1 c.c. miel brut"],conseil:"Collation si faim : 1 kiwi"},{moment:"midi",items:["Salade épinard frais, avocat, pamplemousse","Graines de tournesol","Vinaigrette miso"]},{moment:"après-midi",items:["1 poignée myrtilles (si faim)"]},{moment:"soir",items:["Purée de panais et carottes","Champignons portobello grillés (tamari-thym)","Crudités : fenouil en lamelles"]}],hydration:"Eau à volonté (1,5 L min.), eau citronnée, tisanes sans théine",tip:"Le miso transforme la vinaigrette en condiment presque magique"},
+  { day:7,week:1,theme:"Fondations",intention:"Clôturer la première semaine, préparer mentalement la deuxième",coachWord:"7 jours sans gluten, sans lactose, sans sucre raffiné. Ton système digestif a bénéficié d'un vrai repos. La semaine 2 va approfondir ce travail.",meals:[{moment:"matin",items:["1 mangue en cubes","Noix de pécan","1 c.c. miel brut","Filet de citron","Pincée de cannelle"],conseil:"Collation si faim : 1 pomme"},{moment:"midi",items:["Curry végétal : lait coco, patate douce, pois chiches, épinards, curry doux","Quinoa"]},{moment:"après-midi",items:["1 orange (si faim)"]},{moment:"soir",items:["Zoodles courgettes spiralées poêlées","Sauce tomates séchées + noix de cajou + levure maltée","Crudités : radis noir râpé"]}],hydration:"Eau à volonté (1,5 L min.), eau citronnée, tisanes sans théine",tip:"Tomates séchées mixées = sauce umami crémeuse sans lactose"},
+  { day:8,week:2,theme:"Équilibre",intention:"Approfondir la détox, intégrer davantage de cru dans les repas",coachWord:"Commence chaque repas par le cru — les enzymes vivantes des crudités préparent la digestion et maximisent l'absorption des nutriments.",meals:[{moment:"matin",items:["Fruits rouges (surgelés)","1 figue fraîche","Amandes","1 c.c. miel brut"],conseil:"Collation si faim : 1 poire"},{moment:"midi",items:["Tabboulé de sarrasin : sarrasin cuit, persil, menthe","Oignon rouge, citron, huile d'olive, sel fumé","Variante sans tomate : ajouter concombre"]},{moment:"après-midi",items:["1 banane + noisettes (si faim)"]},{moment:"soir",items:["Poêlée aubergines, poivrons, oignons rouges au tamari + vinaigre balsamique","Riz sauvage","Crudités : carotte râpée"]}],hydration:"Eau à volonté (1,5 L min.), eau citronnée, tisanes sans théine",tip:"Sel fumé donne de la profondeur aux légumes"},
+  { day:9,week:2,theme:"Équilibre",intention:"Renforcer les éliminations, soutenir le foie et les reins",coachWord:"La betterave crue est l'un des aliments les plus détoxifiants de la cure. Râpée en crudité ou mixée en soupe — profites-en.",meals:[{moment:"matin",items:["2 clémentines","Grenade (graines)","Noix de Grenoble","1 c.c. miel brut"],conseil:"Collation si faim : 1 kiwi"},{moment:"midi",items:["Soupe froide betterave-noix de cajou","Betterave crue, noix de cajou trempées, citron, sel"]},{moment:"après-midi",items:["1 pomme (si faim)"]},{moment:"soir",items:["Rösti patate douce-carotte (huile coco)","Compotée oignons-champignons au tamari","Crudités : brocoli cru en fleurettes"]}],hydration:"Eau à volonté (1,5 L min.), eau citronnée, tisanes sans théine",tip:"Quelques gouttes d'huile de sésame grillé sur le rösti"},
+  { day:10,week:2,theme:"Équilibre",intention:"Célébrer les 10 premiers jours, consolider les nouvelles habitudes",coachWord:"10 jours sans les anciens schémas alimentaires. Ton corps a commencé à puiser dans ses réserves et à reconstruire. C'est profond.",meals:[{moment:"matin",items:["1 mangue","1 banane","Noix de macadamia","1 c.c. miel brut","Filet de citron","Pincée de cannelle"],conseil:"Collation si faim : 1 orange"},{moment:"midi",items:["Salade kale massé (huile d'olive, citron)","Avocat, graines de chanvre, radis noir","Vinaigrette tahini-citron"]},{moment:"après-midi",items:["1 poignée raisins secs (si faim)"]},{moment:"soir",items:["Crumble légumes (courgettes, poireaux) — flocons sarrasin, poudre amande, levure maltée","Crudités : fenouil râpé"]}],hydration:"Eau à volonté (1,5 L min.), eau citronnée, tisanes sans théine",tip:"Levure maltée dans le crumble donne un goût toasté irrésistible"},
+  { day:11,week:2,theme:"Équilibre",intention:"Nourrir les cellules en profondeur, soutenir le microbiote",coachWord:"Le velouté de potimarron au lait de coco est ultra-nourrissant. Il apporte des fibres, des antioxydants et de bons acides gras.",meals:[{moment:"matin",items:["Myrtilles","1 figue séchée","Noisettes","1 c.c. miel brut"],conseil:"Collation si faim : 1 clémentine"},{moment:"midi",items:["Velouté potimarron lait coco-gingembre","Dés d'avocat en garniture"]},{moment:"après-midi",items:["1 banane (si faim)"]},{moment:"soir",items:["Poivrons farcis : riz basmati, lentilles vertes, oignons, cumin, paprika","Sauce tamari légère","Crudités : mâche"]}],hydration:"Eau à volonté (1,5 L min.), eau citronnée, tisanes sans théine",tip:"Ajouter shiitake haché dans la farce pour intensifier la saveur"},
+  { day:12,week:2,theme:"Équilibre",intention:"Consolider les résultats, maintenir la vigilance alimentaire",coachWord:"Le caviar d'aubergine avec les crudités, c'est un dîner complet et savoureux. Fais-en plus pour le lendemain.",meals:[{moment:"matin",items:["2 kiwis","1 poire","Amandes","1 c.c. miel brut","1 pruneau"],conseil:"Collation si faim : 1 pomme"},{moment:"midi",items:["Salade riz noir : riz cuit, concombre, avocat, grenade, coriandre","Vinaigrette huile sésame grillé + citron + gingembre"]},{moment:"après-midi",items:["1 orange (si faim)"]},{moment:"soir",items:["Caviar d'aubergine : aubergine rôtie, tahini, citron, tamari","Bâtonnets de légumes crus (carotte, concombre, fenouil)"]}],hydration:"Eau à volonté (1,5 L min.), eau citronnée, tisanes sans théine",tip:"Tamari dans le caviar d'aubergine — un trait suffit"},
+  { day:13,week:2,theme:"Équilibre",intention:"Approfondir le confort digestif, préparer la transition vers la semaine 3",coachWord:"La purée céleri-rave à la levure maltée est fondante et savoureuse. Une belle façon d'aborder la dernière ligne droite.",meals:[{moment:"matin",items:["1 mangue","1 banane","Noix de cajou","1 c.c. miel brut","Pincée de cannelle"],conseil:"Collation si faim : 1 kiwi"},{moment:"midi",items:["Wok légumes verts (brocoli, haricots plats, petits pois) au tamari, gingembre","Pois chiches ou tofu émietté","Riz complet"]},{moment:"après-midi",items:["1 poignée cerises (si faim)"]},{moment:"soir",items:["Purée céleri-rave + patate douce à la levure maltée","Crudités : chou rouge râpé"]}],hydration:"Eau à volonté (1,5 L min.), eau citronnée, tisanes sans théine",tip:"Levure maltée généreuse — goût fromagé profond"},
+  { day:14,week:2,theme:"Équilibre",intention:"Clôturer la phase d'équilibre, préparer mentalement la semaine d'ancrage",coachWord:"Deux semaines passées. La semaine 3 introduit en douceur la volaille bio — une réintroduction contrôlée pour ancrer un nouvel équilibre.",meals:[{moment:"matin",items:["Compote poire-pêche sans sucre","Noix de pécan","1 c.c. miel brut"],conseil:"Collation si faim : 1 pomme"},{moment:"midi",items:["Tarte salée sans gluten (pâte sarrasin/riz)","Poireaux confits, tofu soyeux mixé, curry doux","Salade verte"]},{moment:"après-midi",items:["1 orange (si faim)"]},{moment:"soir",items:["Poêlée chou rouge à la pomme (cannelle, anis étoilé)","Millet cuit","Crudités : carotte râpée"]}],hydration:"Eau à volonté (1,5 L min.), eau citronnée, tisanes sans théine",tip:"Un trait de tamari dans le chou rouge pour équilibrer le sucré"},
+  { day:15,week:3,theme:"Ancrage",intention:"Entrer dans la phase d'ancrage, consolider les bases végétales avant la réintroduction",coachWord:"Les falafels maison se congèlent très bien — prépare-en une grande quantité pendant que tu y es.",meals:[{moment:"matin",items:["2 clémentines","Grenade","Noisettes","1 c.c. miel brut","Filet de citron"],conseil:"Collation si faim : 1 poire"},{moment:"midi",items:["Falafels maison (pois chiches, persil, coriandre, cumin) cuits au four","Sauce yaourt coco-citron-ciboulette","Salade de crudités"]},{moment:"après-midi",items:["1 banane (si faim)"]},{moment:"soir",items:["Courge butternut rôtie au thym, huile d'olive","Graines de courge torréfiées","Crudités : fenouil râpé"]}],hydration:"Eau à volonté (1,5 L min.), eau citronnée, tisanes sans théine",tip:"Rôtir la courge jusqu'à caramélisation = umami naturel"},
+  { day:16,week:3,theme:"Ancrage",intention:"Réintroduire la volaille bio en douceur, observer la réaction du corps",coachWord:"Choisis un poulet de qualité — label rouge ou bio. La qualité de la protéine compte autant que la méthode de cuisson.",meals:[{moment:"matin",items:["1 bol framboises","1 figue fraîche","Amandes","1 c.c. miel brut","Pincée de cannelle"],conseil:"Collation si faim : 1 kiwi"},{moment:"midi",items:["Salade pâtes de riz ou soba sarrasin","Carotte, concombre, radis, coriandre, cacahuètes concassées","Sauce sésame, tamari, citron vert, gingembre"]},{moment:"après-midi",items:["1 pomme (si faim)"]},{moment:"soir",items:["🐓 Blanc de poulet bio poêlé au citron et câpres","Purée de céleri-rave","Haricots verts vapeur","Crudités : roquette"]}],hydration:"Eau à volonté (1,5 L min.), eau citronnée, tisanes sans théine",tip:"Câpres + citron relèvent le poulet et remplacent avantageusement le beurre"},
+  { day:17,week:3,theme:"Ancrage",intention:"Consolider la réintroduction, maintenir la légèreté des deux premières semaines",coachWord:"Cuisson douce à 180° pour le poulet — il reste moelleux et garde ses nutriments. Évite la friture.",meals:[{moment:"matin",items:["1 mangue en dés","Noix de macadamia","1 c.c. miel brut","Filet de citron"],conseil:"Collation si faim : 1 orange"},{moment:"midi",items:["Soupe miso (bouillon kombu, miso hors ébullition)","Tofu ferme, shiitake, poireau, carotte"]},{moment:"après-midi",items:["1 poignée raisins secs (si faim)"]},{moment:"soir",items:["🐓 Cuisses de poulet rôties au thym","Poireaux fondants, chiffonnade de bettes","Crudités : betterave crue râpée"]}],hydration:"Eau à volonté (1,5 L min.), eau citronnée, tisanes sans théine",tip:"Thym et rôtissage concentrent les saveurs"},
+  { day:18,week:3,theme:"Ancrage",intention:"Explorer les combinaisons sucré-salé, ancrer le plaisir dans l'alimentation saine",coachWord:"L'association poire-cannelle sur la volaille est une découverte — note-la dans ton carnet de recettes pour après la cure.",meals:[{moment:"matin",items:["2 kiwis","1 banane","Noisettes","1 c.c. miel brut","1 pruneau"],conseil:"Collation si faim : 1 clémentine"},{moment:"midi",items:["Galettes de sarrasin","Ratatouille maison (courgette, aubergine, poivron)","Sauce levure maltée","Salade verte"]},{moment:"après-midi",items:["1 poire (si faim)"]},{moment:"soir",items:["🐓 Aiguillettes canard ou poulet fumé bio, poêlées à la poire et cannelle","Écrasé de patates douces","Crudités : fenouil en fines lamelles"]}],hydration:"Eau à volonté (1,5 L min.), eau citronnée, tisanes sans théine",tip:"Le sucré-salé (poire/cannelle) sur la volaille — ajouter une pincée de sel fumé"},
+  { day:19,week:3,theme:"Ancrage",intention:"Ancrer les nouvelles habitudes alimentaires, préparer la sortie de cure",coachWord:"La marinade tamari-citron-gingembre peut s'utiliser sur toutes les viandes blanches. Garde-la dans tes réflexes.",meals:[{moment:"matin",items:["Myrtilles","1 orange","Noix de Grenoble","1 c.c. miel brut","Pincée de cannelle"],conseil:"Collation si faim : 1 kiwi"},{moment:"midi",items:["Houmous de betterave (pois chiches, betterave cuite, tahini, citron)","Bâtonnets de légumes crus","Crackers de sarrasin"]},{moment:"après-midi",items:["1 banane (si faim)"]},{moment:"soir",items:["🐓 Brochettes de poulet marinées citron confit et gingembre","Courgettes et aubergines grillées","Crudités : chou kale émincé"]}],hydration:"Eau à volonté (1,5 L min.), eau citronnée, tisanes sans théine",tip:"Marinade : jus citron, gingembre râpé, tamari, huile d'olive — 30 min minimum"},
+  { day:20,week:3,theme:"Ancrage",intention:"Célébrer les 20 jours accomplis, ancrer les recettes de l'après-cure",coachWord:"La sauce crème de champignons-cajou est une base versatile pour l'après-cure. Retiens la recette.",meals:[{moment:"matin",items:["2 clémentines","1 pomme","Amandes effilées","1 c.c. miel brut","Filet de citron"],conseil:"Collation si faim : 1 orange"},{moment:"midi",items:["Salade lentilles vertes au curry doux","Mangue fraîche, coriandre, ciboulette","Huile d'olive, citron vert"]},{moment:"après-midi",items:["1 poignée de cerises (si faim)"]},{moment:"soir",items:["🐓 Suprême de volaille sauce crème de champignons et noix de cajou","Lit d'épinards frais","Crudités : radis noir râpé"]}],hydration:"Eau à volonté (1,5 L min.), eau citronnée, tisanes sans théine",tip:"Sauce : mixer champignons cuits + noix de cajou trempées + un peu de lait de coco"},
+  { day:21,week:3,theme:"Ancrage",intention:"Clôturer les 21 jours avec conscience, ancrer un rapport différent à l'alimentation",coachWord:"Ce n'est pas la fin d'un régime — c'est le début d'une nouvelle façon de te nourrir. Les règles d'or peuvent devenir ta boussole permanente.",meals:[{moment:"matin",items:["1 mangue râpée","Banane écrasée","Noix de pécan","1 c.c. miel brut","Filet de citron","Pincée de cannelle"],conseil:"Collation si faim : 1 pomme"},{moment:"midi",items:["Assiette composée : jeunes pousses, avocat, betterave crue râpée","Pamplemousse, graines de tournesol","Vinaigrette huile de noix + tamari"]},{moment:"après-midi",items:["1 kiwi (si faim)"]},{moment:"soir",items:["Soupe crémeuse potimarron lait coco-curcuma","Salade fenouil-orange","Crudités : fenouil râpé"]}],hydration:"Eau à volonté (1,5 L min.), eau citronnée, tisanes sans théine",tip:"Quelques gouttes d'huile de sésame grillé sur la soupe — finition parfaite"},
+]
+
+const PROGRAM_NEW = [
+  { day:1,chapter:"Détox",meals:[{time:"7h",label:"Petit-déjeuner",items:"Salade de fruits : banane, pomme, fraises, amandes, noisettes, citron, miel."},{time:"12h",label:"Déjeuner",items:"Salade de chou, sésame noir, graines, avocat, œuf mollet. Café ou thé.",alts:["Pas d'œuf ? Sardines à l'huile d'olive."]},{time:"19h",label:"Dîner",items:"Poêlée courgettes-poireaux au curry, riz thaï aux aromates. Crudités en entrée.",alts:["Pas de riz ? Quinoa."]}]},
+  { day:2,chapter:"Détox",meals:[{time:"7h",label:"Petit-déjeuner",items:"Jus pomme-poire-kiwi. Figues séchées, oléagineux."},{time:"12h",label:"Déjeuner",items:"Crudités (carotte râpée, chou, graines). Lentilles tièdes, avocat, vinaigrette tamari-citron.",alts:["Pas de lentilles ? Pois chiches."]},{time:"19h",label:"Dîner",items:"Légumes vapeur (courgette, brocoli, haricots verts), lentilles vertes, vinaigrette citron-huile d'olive.",alts:["Pas de brocoli ? Chou-fleur."]}]},
+  { day:3,chapter:"Détox",meals:[{time:"7h",label:"Petit-déjeuner",items:"Jus pomme-citron-mangue. Banane, amandes."},{time:"12h",label:"Déjeuner",items:"Crudités (concombre, avocat, basilic, vinaigrette).",alts:["Pas d'avocat ? Houmous."]},{time:"19h",label:"Dîner",items:"Crudités en entrée. Dal de lentilles corail au curry-gingembre, riz basmati.",alts:["Pas de lentilles corail ? Lentilles vertes.","Pas de riz ? Quinoa."],note:"Dal + riz : association tolérée, tout végétal."}]},
+  { day:4,chapter:"Détox",meals:[{time:"7h",label:"Petit-déjeuner",items:"Jus ananas-poire-fraises. Oléagineux."},{time:"12h",label:"Déjeuner",items:"Navet râpé, chou rouge, champignons, carottes, graines germées, vinaigrette.",alts:["Pas de navet ? Céleri râpé."]},{time:"19h",label:"Dîner",items:"Crudités en entrée. Pois chiches à l'indienne, riz au cumin, coriandre.",alts:["Pas de pois chiches ? Haricots rouges."]}]},
+  { day:5,chapter:"Détox",meals:[{time:"7h",label:"Petit-déjeuner",items:"Banane, fruits de saison, figues séchées, amandes-noisettes. Jus de pomme."},{time:"12h",label:"Déjeuner",items:"Concombre, tomates, roquette, avocat, graines de courge, vinaigrette citron vert.",alts:["Pas de roquette ? Mâche."]},{time:"19h",label:"Dîner",items:"Crudités en entrée. Légumes vapeur, poulet fermier grillé, herbes, citron.",alts:["Pas de poulet ? Dinde ou lapin."],note:"Fruits 2h après."}]},
+  { day:6,chapter:"Détox",meals:[{time:"7h",label:"Petit-déjeuner",items:"Jus pomme-carotte-betterave-gingembre. Oléagineux."},{time:"12h",label:"Déjeuner",items:"Tomates, mâche, avocat, graines germées, vinaigrette. Tartare de bœuf bio.",alts:["Pas de bœuf ? Tartare de saumon."]},{time:"19h",label:"Dîner",items:"Crudités en entrée. Roquette, figues fraîches, avocat, noix. Jambon cru.",alts:["Pas de jambon cru ? Tranche de saumon fumé."],note:"Fruits 2h après."}]},
+  { day:7,chapter:"Détox",meals:[{time:"7h",label:"Petit-déjeuner",items:"Jus pomme-citron-poire-kaki. Fruits frais."},{time:"12h",label:"Déjeuner",items:"Mesclun, tomates, olives, avocat. Thon mi-cuit, vinaigrette citron.",alts:["Pas de thon ? Maquereau."]},{time:"19h",label:"Dîner",items:"Crudités en entrée. Concombre, fenouil, betterave râpée. Saumon gravlax, aneth, citron vert.",alts:["Pas de saumon ? Truite fumée."],note:"Fruits 2h après."}]},
+  { day:8,chapter:"Énergie",meals:[{time:"7h",label:"Petit-déjeuner",items:"Jus pomme-poire-kiwi. Fruits frais, oléagineux."},{time:"12h",label:"Déjeuner",items:"Crudités (carotte, concombre, chou rouge, graines germées, vinaigrette)."},{time:"19h",label:"Dîner",items:"Crudités en entrée. Pommes de terre vapeur, lentilles bio au curry-cumin-tamari.",alts:["Pas de lentilles ? Pois chiches."]}]},
+  { day:9,chapter:"Énergie",meals:[{time:"7h",label:"Petit-déjeuner",items:"Jus pomme-citron-mangue. Salade de fruits."},{time:"12h",label:"Déjeuner",items:"Asperges snackées à l'huile d'olive, curry, tamari. Mesclun, avocat.",alts:["Pas d'asperges ? Haricots verts."]},{time:"19h",label:"Dîner",items:"Crudités en entrée. Pâtes de riz, courgettes, tomates cerises, basilic, ail.",alts:["Pas de pâtes de riz ? Riz complet."]}]},
+  { day:10,chapter:"Énergie",meals:[{time:"7h",label:"Petit-déjeuner",items:"Jus ananas-poire-fraises. Oléagineux."},{time:"12h",label:"Déjeuner",items:"Roquette, avocat, concombre, graines germées, vinaigrette."},{time:"19h",label:"Dîner",items:"Crudités en entrée. Haricots verts, courgettes, brocoli vapeur. Filet de truite au four, citron, aneth.",alts:["Pas de truite ? Saumon ou dorade."],note:"Fruits 2h après."}]},
+  { day:11,chapter:"Énergie",meals:[{time:"7h",label:"Petit-déjeuner",items:"Jus pomme-carotte-betterave-gingembre. Fruits secs."},{time:"12h",label:"Déjeuner",items:"Carottes, navets, champignons en lamelles, gomasio, graines de courge.",alts:["Pas de navets ? Céleri."]},{time:"19h",label:"Dîner",items:"Crudités en entrée. Cœurs d'artichaut poêlés au tamari. Poulet bio grillé, herbes.",alts:["Pas d'artichaut ? Champignons poêlés."],note:"Fruits 2h après."}]},
+  { day:12,chapter:"Énergie",meals:[{time:"7h",label:"Petit-déjeuner",items:"Jus pomme-citron-poire-kaki. Banane, oléagineux."},{time:"12h",label:"Déjeuner",items:"Betteraves, champignons, avocat, ciboulette, gomasio, vinaigrette.",alts:["Pas de betterave ? Carotte râpée."]},{time:"19h",label:"Dîner",items:"Crudités en entrée. Poireaux vapeur à la vinaigrette moutarde-citron. Pavé de saumon vapeur.",alts:["Pas de saumon ? Cabillaud."],note:"Fruits 2h après."}]},
+  { day:13,chapter:"Énergie",meals:[{time:"7h",label:"Petit-déjeuner",items:"Jus pomme-carotte-citron. Banane, oléagineux."},{time:"12h",label:"Déjeuner",items:"Mesclun, tomates, concombre, avocat, graines de chanvre, vinaigrette."},{time:"19h",label:"Dîner",items:"Crudités en entrée. Purée de patate douce, châtaignes, huile de coco.",alts:["Pas de châtaignes ? Pois chiches."]}]},
+  { day:14,chapter:"Énergie",meals:[{time:"7h",label:"Petit-déjeuner",items:"Mangue, papaye, fruits rouges. Noix, amandes."},{time:"12h",label:"Déjeuner",items:"Mâche, radis, concombre, graines germées, vinaigrette."},{time:"19h",label:"Dîner",items:"Crudités en entrée. Aubergine, poivron, courgette rôtis. Maquereau au four, citron, herbes.",alts:["Pas de maquereau ? Sardines fraîches."],note:"Fruits 2h après."}]},
+  { day:15,chapter:"Ancrage",meals:[{time:"7h",label:"Petit-déjeuner",items:"Jus pomme-ananas-épinards-gingembre. Fruits frais."},{time:"12h",label:"Déjeuner",items:"Mesclun, tomates, olives, avocat, vinaigrette citron.",alts:["Pas d'olives ? Câpres."]},{time:"19h",label:"Dîner",items:"Crudités en entrée. Ratatouille (courgette, aubergine, tomate). Émincé de dinde bio grillé.",alts:["Pas de dinde ? Poulet."],note:"Fruits 2h après."}]},
+  { day:16,chapter:"Ancrage",meals:[{time:"7h",label:"Petit-déjeuner",items:"Mangue, ananas, kiwi, amandes."},{time:"12h",label:"Déjeuner",items:"Concombre, fenouil, betterave crue, graines germées, vinaigrette."},{time:"19h",label:"Dîner",items:"Crudités en entrée. Mesclun, avocat, herbes fraîches. Tartare de daurade citron vert-aneth.",alts:["Pas de daurade ? Tartare de saumon."],note:"Fruits 2h après."}]},
+  { day:17,chapter:"Ancrage",meals:[{time:"7h",label:"Petit-déjeuner",items:"Jus pomme-épinard-concombre-citron. Banane, oléagineux."},{time:"12h",label:"Déjeuner",items:"Betterave, mâche, noix, gomasio, vinaigrette.",alts:["Pas de betterave ? Carotte râpée."]},{time:"19h",label:"Dîner",items:"Crudités en entrée. Brocoli, haricots verts vapeur. Crevettes sautées ail-citron-persil.",alts:["Pas de crevettes ? Noix de Saint-Jacques."],note:"Fruits 2h après."}]},
+  { day:18,chapter:"Ancrage",meals:[{time:"7h",label:"Petit-déjeuner",items:"Fruits de saison, figues fraîches, noix, amandes. Jus d'orange pressé."},{time:"12h",label:"Déjeuner",items:"Poivron rouge, chou rouge, carotte, persil, graines de courge, vinaigrette.",alts:["Pas de poivron ? Tomates cerises."]},{time:"19h",label:"Dîner",items:"Crudités en entrée. Épinards sautés à l'ail. Filet de sole vapeur, citron.",alts:["Pas de sole ? Cabillaud ou limande."],note:"Fruits 2h après."}]},
+  { day:19,chapter:"Ancrage",meals:[{time:"7h",label:"Petit-déjeuner",items:"Jus pomme-carotte-betterave-gingembre. Banane, oléagineux."},{time:"12h",label:"Déjeuner",items:"Fenouil, chou-fleur, carottes, roquette, avocat, vinaigrette.",alts:["Pas de fenouil ? Céleri."]},{time:"19h",label:"Dîner",items:"Crudités en entrée. Roquette, câpres, huile d'olive. Carpaccio de bœuf bio, poivre.",alts:["Pas de bœuf ? Carpaccio de saumon."],note:"Fruits 2h après."}]},
+  { day:20,chapter:"Ancrage",meals:[{time:"7h",label:"Petit-déjeuner",items:"Papaye, mangue, ananas, citron vert, noix de cajou."},{time:"12h",label:"Déjeuner",items:"Mesclun, concombre, tomates, avocat, graines germées, vinaigrette."},{time:"19h",label:"Dîner",items:"Crudités en entrée. Poivrons, courgettes, aubergines rôtis au thym. Côtelettes d'agneau bio grillées.",alts:["Pas d'agneau ? Veau ou poulet."],note:"Fruits 2h après."}]},
+  { day:21,chapter:"Ancrage",meals:[{time:"7h",label:"Petit-déjeuner",items:"Jus pomme-ananas-Green Magma. Fruits frais, oléagineux."},{time:"12h",label:"Déjeuner",items:"Mesclun, avocat, betterave, graines de chanvre, vinaigrette citron-aneth."},{time:"19h",label:"Dîner",items:"Crudités en entrée. Asperges vertes, brocoli vapeur. Coquilles Saint-Jacques poêlées à l'huile de coco.",alts:["Pas de Saint-Jacques ? Crevettes ou gambas."],note:"Fruits 2h après."}]},
+]
+
+const PRINCIPLES_V2 = [
+  { n:1, title:"Associer les aliments",     body:"Le repère qui change le plus la digestion. Les protéines vont bien avec les légumes, les céréales aussi — mais pas les trois ensemble. Le corps fatigue moins, l'énergie reste haute après les repas." },
+  { n:2, title:"La mastication",             body:"Mâcher prend du temps, et c'est ce qu'on cherche. Le corps a besoin de cette lenteur pour reconnaître ce qu'il reçoit, doser ce qu'il digère, et sentir quand c'est suffisant." },
+  { n:3, title:"Le temps entre les choses",  body:"Les fruits se digèrent à part — plutôt 30 minutes avant un repas, ou 2 heures après. Entre le dîner et le petit-déjeuner du lendemain, on laisse douze heures." },
+  { n:4, title:"Manger vivant",              body:"Quelque chose de cru à chaque repas — crudités, fruits frais, jeunes pousses, graines germées. La cuisson tue une partie des enzymes, le cru les apporte." },
+  { n:5, title:"Ce qu'on met de côté",       body:"Pendant les trois semaines : pas de sucre raffiné, pas de lait de vache, pas de blé. Pas pour toujours, juste le temps de laisser le corps respirer sans eux." },
+  { n:6, title:"L'eau",                      body:"Un grand verre au réveil. 1,5 à 2 litres répartis dans la journée. Pas pendant les repas si tu peux — ça dilue ce qui doit digérer." },
+  { n:7, title:"Bouger, trente minutes",     body:"Pas du sport, juste du mouvement quotidien : marche rapide, vélo doux, escaliers. Le corps a autant besoin de bouger que de manger juste." },
+]
+
+// ─────────────────────────────────────────────────────────────────────────────
+// RENDER — Programme V1
+// ─────────────────────────────────────────────────────────────────────────────
+function renderProgramme() {
+  const root = document.getElementById('programme-root')
+  let html = ''
+  ;[1,2,3].forEach(w => {
+    const wt   = WEEK_THEMES[w]
+    const days = PROGRAM.filter(d => d.week === w)
+    html += `<div class="week-header">
+      <span class="week-badge" style="background:${wt.color}">${['','Semaine 1','Semaine 2','Semaine 3'][w]}</span>
+      <div><div class="week-title">${wt.title}</div><div class="week-desc">${wt.desc}</div></div>
+    </div><div class="days-grid">`
+    days.forEach(day => {
+      const meals = day.meals.map(m => `
+        <div class="meal-row">
+          <div class="meal-moment">${m.moment}</div>
+          <div><div class="meal-items">${m.items.join(' · ')}</div>${m.conseil ? `<div class="meal-conseil">${m.conseil}</div>` : ''}</div>
+        </div>`).join('')
+      html += `<div class="day-card" id="day-${day.day}" onclick="toggleDay(${day.day})">
+        <div class="day-head">
+          <div class="day-num">${day.day}</div>
+          <div><div class="day-theme">${day.theme}</div><div class="day-intention">${day.intention}</div></div>
+        </div>
+        <div class="day-body">
+          <div class="coach-word">${day.coachWord}</div>
+          <div class="meal-list">${meals}</div>
+          <div class="day-footer">
+            <div class="foot-block"><div class="foot-label">💧 Hydratation</div><div class="foot-val">${day.hydration}</div></div>
+            <div class="foot-block"><div class="foot-label">💡 Astuce</div><div class="foot-val">${day.tip}</div></div>
+          </div>
+        </div>
+      </div>`
+    })
+    html += `</div>`
+  })
+  root.innerHTML = html
+}
+
+function toggleDay(n) {
+  document.getElementById('day-'+n).classList.toggle('expanded')
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// RENDER — Programme V2
+// ─────────────────────────────────────────────────────────────────────────────
+function renderProgrammeNew() {
+  const root = document.getElementById('programme-new-root')
+  const col  = { "Détox":"#5CB551", "Énergie":"#A8BBA5", "Ancrage":"#BF7D2C" }
+  let html = `<div class="pnew-title">Programme V2 — PROGRAM_NEW</div>
+    <div class="pnew-sub">3 repas par jour · avec alternatives · source de vérité de l'app</div>
+    <div class="pnew-grid">`
+  PROGRAM_NEW.forEach(day => {
+    const meals = day.meals.map(m => `
+      <div class="pnew-meal">
+        <div class="pnew-time">${m.time}</div>
+        <div><div class="pnew-label">${m.label}</div><div class="pnew-items">${m.items}</div>
+          ${m.alts ? `<div class="pnew-alts">${m.alts.join(' / ')}</div>` : ''}
+          ${m.note ? `<div class="pnew-note">${m.note}</div>` : ''}
+        </div>
+      </div>`).join('')
+    html += `<div class="pnew-card">
+      <div class="pnew-head">
+        <div class="pnew-day">${day.day}</div>
+        <div><div class="pnew-chapter" style="color:${col[day.chapter]}">${day.chapter}</div>
+          <div style="font-size:10.5px;color:var(--text-faint)">Jour ${day.day}</div></div>
+      </div>
+      <div class="pnew-meals">${meals}</div>
+    </div>`
+  })
+  html += `</div>
+    <div style="margin-top:48px">
+      <div class="pnew-title">Principes V2</div>
+      <div class="pnew-sub">7 principes · groupés par Comment manger / Ce qu'on mange / Ce qui accompagne</div>
+      <div class="principles-grid">`
+  PRINCIPLES_V2.forEach(p => {
+    html += `<div class="principle-card">
+      <div class="principle-n">${p.n}</div>
+      <div class="principle-title">${p.title}</div>
+      <div class="principle-body">${p.body}</div>
+    </div>`
+  })
+  html += `</div></div>`
+  root.innerHTML = html
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// RENDER — Emails (fond crème intentionnel — c'est le vrai rendu email)
+// ─────────────────────────────────────────────────────────────────────────────
+const EMAILS = [
+  { id:'welcome',  label:'Bienvenue (J0)'  },
+  { id:'magic',    label:'Magic Link'      },
+  { id:'chapter1', label:'Chapitre 1 (J1)' },
+  { id:'chapter2', label:'Chapitre 2 (J8)' },
+  { id:'chapter3', label:'Chapitre 3 (J15)'},
+]
+
+function emailHTML(id) {
+  const day1meals = PROGRAM_NEW[0].meals.map(m => `
+    <tr><td class="em-meal-time">${m.time}</td>
+    <td class="em-meal-content"><div class="em-meal-name">${m.label}</div><div class="em-meal-detail">${m.items}</div></td></tr>`).join('')
+
+  const tpl = {
+    welcome: `<div class="em-card">
+      <p class="em-eyebrow">une lettre · jour 0</p>
+      <p class="em-h1">Bonjour <em>Prénom</em>.</p>
+      <p class="em-p">Merci de me faire confiance pour ces trois semaines. On a tout le temps qu'il faut, et il n'y a rien d'autre à faire que d'y aller doucement.</p>
+      <p class="em-section-label">la méthode</p>
+      <p style="font-family:var(--serif);font-style:italic;font-size:22px;color:#2A2520;line-height:1.2;margin-bottom:10px">Verissimo</p>
+      <p class="em-p" style="font-size:14.5px">Le programme s'appuie sur la méthode pensée par le naturopathe Jean-Pierre Verissimo. Pas un régime, pas une cure — une manière de manger qui respecte le rythme de la digestion.</p>
+      <p class="em-section-label">le rythme</p>
+      <div class="em-chapter-block"><span class="em-chapter-name">Détox</span><span class="em-chapter-days"> jours 1–7</span><p class="em-chapter-desc">On allège, on laisse le corps souffler.</p></div>
+      <div class="em-chapter-block"><span class="em-chapter-name">Énergie</span><span class="em-chapter-days"> jours 8–14</span><p class="em-chapter-desc">Il retrouve son rythme, on remet du jeu.</p></div>
+      <div class="em-chapter-block" style="margin-bottom:28px"><span class="em-chapter-name">Ancrage</span><span class="em-chapter-days"> jours 15–21</span><p class="em-chapter-desc">On installe ce qui restera après.</p></div>
+      <a class="em-cta" href="#">Ouvrir l'application</a>
+      <p class="em-sig">— Camille</p><p class="em-sig-sub">Écris-moi quand tu veux.</p>
+    </div><p class="em-footer">back to energy · backtoenergy.fr · Tu peux répondre à cet email.</p>`,
+
+    magic: `<div class="em-card">
+      <p class="em-h1" style="font-size:22px">Bonjour Prénom,</p>
+      <p class="em-p">Voilà ton accès à l'application. Tu peux y entrer sans mot de passe en passant par ce lien.</p>
+      <p class="em-p-sm">Il reste valable une heure, et fonctionne une seule fois.</p>
+      <a class="em-cta" href="#">Ouvrir l'application</a>
+      <p class="em-sig">— Camille</p><p class="em-sig-sub">Ta coach.</p>
+    </div><p class="em-footer" style="margin-top:16px">Tu n'as pas demandé ce lien ? Ignore cet email, ton compte reste en sécurité.<br>back to energy · backtoenergy.fr</p>`,
+
+    chapter1: `<div class="em-card">
+      <p class="em-eyebrow">premier matin · jour 1</p>
+      <p class="em-h1">Premier matin avec <em>toi</em>.</p>
+      <p class="em-p">Bonjour Prénom. On y est.</p>
+      <p class="em-p">Cette première semaine, on cherche juste à alléger un peu. Pas de jeûne, pas de privation — on enlève ce qui charge la digestion, et on laisse le corps faire le reste.</p>
+      <p class="em-p">Petite chose pour ce matin : un grand verre d'eau tiède avec un peu de citron, à jeun.</p>
+      <p style="font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;color:#A89E88;margin-bottom:14px">ce qui est prévu aujourd'hui</p>
+      <table class="em-meal-table">${day1meals}</table>
+      <a class="em-cta" href="#">Ouvrir l'application</a>
+      <p class="em-sig">— Camille</p><p class="em-sig-sub">Écris-moi quand tu veux.</p>
+    </div><p class="em-footer">back to energy · backtoenergy.fr · Tu peux répondre à cet email.</p>`,
+
+    chapter2: `<div class="em-card">
+      <p class="em-eyebrow">deuxième chapitre · jour 8</p>
+      <p class="em-h1">Une <em>semaine</em>, déjà.</p>
+      <p class="em-p">Bonjour Prénom.</p>
+      <p class="em-p">Tu as passé la première semaine. C'est la plus exigeante des trois — le corps lâche ce qu'il garde, c'est rarement confortable. Si tu t'es senti plus léger le matin, c'est exactement ce qu'on cherchait.</p>
+      <p class="em-p">Cette semaine, on remet du jeu. Des aliments un peu plus riches dans l'app, et l'énergie qui va avec.</p>
+      <p class="em-p" style="margin-bottom:32px">On continue à se parler comme on l'a fait.</p>
+      <a class="em-cta" href="#">Ouvrir l'application</a>
+      <p class="em-sig">— Camille</p><p class="em-sig-sub">Belle journée.</p>
+    </div><p class="em-footer">back to energy · backtoenergy.fr · Tu peux répondre à cet email.</p>`,
+
+    chapter3: `<div class="em-card">
+      <p class="em-eyebrow">dernier chapitre · jour 15</p>
+      <p class="em-h1">Ce qui <em>restera</em>.</p>
+      <p class="em-p">Bonjour Prénom.</p>
+      <p class="em-p">Tu entres dans la dernière semaine. Le plus dur est derrière toi. À partir de maintenant, on ne cherche plus à transformer quoi que ce soit — on installe ce qui peut tenir dans ta vie quand l'application ne sera plus là.</p>
+      <p class="em-p">Une chose à la fois. Le matin avec son verre d'eau. Le dîner un peu plus tôt. La fourchette qu'on pose entre les bouchées.</p>
+      <p class="em-p" style="margin-bottom:32px">On se retrouve dans le journal cette semaine pour parler de la suite.</p>
+      <a class="em-cta" href="#">Ouvrir l'application</a>
+      <p class="em-sig">— Camille</p><p class="em-sig-sub">Profite de ces sept jours.</p>
+    </div><p class="em-footer">back to energy · backtoenergy.fr · Tu peux répondre à cet email.</p>`,
+  }
+  return tpl[id] || ''
+}
+
+function renderEmails() {
+  document.getElementById('email-picker').innerHTML =
+    EMAILS.map((e,i) => `<button class="epick${i===0?' active':''}" onclick="selectEmail('${e.id}',this)">${e.label}</button>`).join('')
+  document.getElementById('email-content').innerHTML = emailHTML('welcome')
+}
+function selectEmail(id,btn) {
+  document.querySelectorAll('.epick').forEach(b => b.classList.remove('active'))
+  btn.classList.add('active')
+  document.getElementById('email-content').innerHTML = emailHTML(id)
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// RENDER — Parcours
+// ─────────────────────────────────────────────────────────────────────────────
+function renderParcours() {
+  const root = document.getElementById('parcours-root')
+  root.innerHTML = `
+    <div class="journey-section-head">
+      <span class="journey-phase-badge" style="background:#f59e0b">Préparation</span>
+      <span class="journey-phase-title">J-3 → J0 — Prépare ton terrain</span>
+    </div>
+    <div class="journey-timeline">
+      <div class="journey-step prep"><div class="step-card">
+        <div class="step-tag">J-3</div><div class="step-title">Descente en douceur</div>
+        <div class="step-body">Réduire les toxiques pour ne pas être en manque brutal au J1</div>
+        <div class="step-actions">
+          <span class="step-action">Café : max 1 tasse le matin</span><span class="step-action">Alcool : zéro</span>
+          <span class="step-action">Viande rouge : dernière fois</span><span class="step-action">Eau : 1,5 L min.</span>
+          <span class="step-action">🛒 Liste de courses semaine 1</span>
+        </div>
+        <div class="step-coach">Ces 3 jours ne sont pas une contrainte — c'est le début de ta transformation.</div>
+      </div></div>
+      <div class="journey-step prep"><div class="step-card">
+        <div class="step-tag">J-2</div><div class="step-title">Légèreté croissante</div>
+        <div class="step-body">Alimentation végétale uniquement. Café supprimé. Pas de protéines animales.</div>
+        <div class="step-coach">Ton foie et ton intestin commencent déjà à souffler.</div>
+      </div></div>
+      <div class="journey-step prep"><div class="step-card">
+        <div class="step-tag">J-1</div><div class="step-title">Journée fruits & purge</div>
+        <div class="step-body">Fruits uniquement toute la journée. Purge chlorure de magnésium à 19h et 21h.</div>
+        <div class="step-warn">⚠️ La purge est essentielle — elle vide le colon et permet dès J1 une assimilation maximale.</div>
+        <div class="step-coach">Demain matin, tu te lèveras différent.</div>
+      </div></div>
+      <div class="journey-step prep"><div class="step-card">
+        <div class="step-tag">J0 · 📧 Email bienvenue</div><div class="step-title">C'est demain</div>
+        <div class="step-body">Confirmer la liste de courses. Préparer la gourde. Dormir tôt.</div>
+        <div class="step-coach">Tu as fait le plus dur : tu as décidé.</div>
+      </div></div>
+    </div>
+
+    <div class="journey-section-head">
+      <span class="journey-phase-badge" style="background:#5CB551">Détox</span>
+      <span class="journey-phase-title">Jours 1–7 — Fondations</span>
+    </div>
+    <div class="journey-timeline">
+      <div class="journey-step detox"><div class="step-card">
+        <div class="step-tag">Jour 1 · 📧 Email chapitre 1</div><div class="step-title">Premier matin avec toi</div>
+        <div class="step-body">Eau tiède + citron au réveil. 5 moments de repas. Commencer par les crudités le soir. Zéro gluten / lactose / sucre raffiné.</div>
+      </div></div>
+      <div class="journey-step detox"><div class="step-card">
+        <div class="step-tag">Jours 2–4</div><div class="step-title">Stabiliser le rythme</div>
+        <div class="step-body">Espacer les repas de 4-5h. Umami : miso, levure maltée, tamari. Anticiper les repas à l'avance.</div>
+      </div></div>
+      <div class="journey-step detox"><div class="step-card">
+        <div class="step-tag">Jour 5 — Mi-semaine</div><div class="step-title">Maintenir le cap</div>
+        <div class="step-body">Moment le plus difficile mentalement. Chaque repas préparé est un acte de confiance.</div>
+      </div></div>
+      <div class="journey-step detox"><div class="step-card">
+        <div class="step-tag">Jours 6–7</div><div class="step-title">Clôturer la semaine 1</div>
+        <div class="step-body">7 jours sans gluten, lactose, sucre raffiné. Journal d'observation. Préparer mentalement la semaine 2.</div>
+      </div></div>
+    </div>
+
+    <div class="journey-section-head">
+      <span class="journey-phase-badge" style="background:#A8BBA5;color:#15130E">Énergie</span>
+      <span class="journey-phase-title">Jours 8–14 — Équilibre</span>
+    </div>
+    <div class="journey-timeline">
+      <div class="journey-step energie"><div class="step-card">
+        <div class="step-tag">Jour 8 · 📧 Email chapitre 2</div><div class="step-title">Une semaine, déjà</div>
+        <div class="step-body">Plus de cru dans les repas. Betterave, tabboulé de sarrasin, riz sauvage. Aliments plus riches.</div>
+      </div></div>
+      <div class="journey-step energie"><div class="step-card">
+        <div class="step-tag">Jour 10 — Célébration</div><div class="step-title">10 jours accomplis</div>
+        <div class="step-body">Le corps a commencé à puiser dans ses réserves et à reconstruire. Consolider les nouvelles habitudes.</div>
+      </div></div>
+      <div class="journey-step energie"><div class="step-card">
+        <div class="step-tag">Jours 11–13</div><div class="step-title">Nourrir en profondeur</div>
+        <div class="step-body">Soutenir le microbiote. Velouté potimarron, poivrons farcis, wok légumes. Préparer la transition.</div>
+      </div></div>
+      <div class="journey-step energie"><div class="step-card">
+        <div class="step-tag">Jour 14</div><div class="step-title">Clôturer l'Équilibre</div>
+        <div class="step-body">Deux semaines passées. Préparer mentalement l'introduction de la volaille bio dès le jour 16.</div>
+      </div></div>
+    </div>
+
+    <div class="journey-section-head">
+      <span class="journey-phase-badge" style="background:#BF7D2C">Ancrage</span>
+      <span class="journey-phase-title">Jours 15–21 — Ancrage</span>
+    </div>
+    <div class="journey-timeline">
+      <div class="journey-step ancrage"><div class="step-card">
+        <div class="step-tag">Jour 15 · 📧 Email chapitre 3</div><div class="step-title">Ce qui restera</div>
+        <div class="step-body">Dernière semaine. On installe ce qui peut tenir dans la vie. Falafels, courge butternut.</div>
+      </div></div>
+      <div class="journey-step ancrage"><div class="step-card">
+        <div class="step-tag">Jour 16 — 🐓 Réintroduction volaille</div><div class="step-title">Volaille bio en douceur</div>
+        <div class="step-body">Premier poulet bio depuis 15 jours. Label rouge ou bio. 2-3 fois max sur la semaine 3.</div>
+        <div class="step-actions">
+          <span class="step-action">Blanc de poulet poêlé</span><span class="step-action">Cuisses rôties au thym</span>
+          <span class="step-action">Aiguillettes canard</span><span class="step-action">Brochettes marinées</span>
+          <span class="step-action">Suprême + sauce cajou</span>
+        </div>
+      </div></div>
+      <div class="journey-step ancrage"><div class="step-card">
+        <div class="step-tag">Jour 20 — Célébration</div><div class="step-title">20 jours accomplis</div>
+        <div class="step-body">Ancrer les recettes de l'après-cure. Sauce crème champignons-cajou, marinade tamari-gingembre.</div>
+      </div></div>
+      <div class="journey-step ancrage"><div class="step-card">
+        <div class="step-tag">Jour 21 — 🎉 Fin de cure</div><div class="step-title">Clôturer avec conscience</div>
+        <div class="step-body">Ce n'est pas la fin d'un régime — c'est le début d'une nouvelle façon de se nourrir.</div>
+        <div class="step-actions">
+          <span class="step-action">Journal final</span><span class="step-action">Bilan 21 jours</span><span class="step-action">Règles d'or à emporter</span>
+        </div>
+      </div></div>
+    </div>
+
+    <div class="journey-section-head">
+      <span class="journey-phase-badge" style="background:rgba(168,187,165,.25);color:var(--coach)">Post-cure</span>
+      <span class="journey-phase-title">J22+ — Après</span>
+    </div>
+    <div class="journey-timeline">
+      <div class="journey-step post"><div class="step-card">
+        <div class="step-tag">J22+</div><div class="step-title">Sortie progressive</div>
+        <div class="step-body">Garder les rituels fondamentaux : eau citronnée, crudités, fenêtre nocturne 12h, 30 min mouvement.</div>
+        <div class="step-actions">
+          <span class="step-action">Eau tiède + citron</span><span class="step-action">Fruits seuls entre repas</span>
+          <span class="step-action">Dîner avant 20h</span><span class="step-action">Jeûne nocturne 12h</span>
+        </div>
+      </div></div>
+    </div>
+
+    <div style="margin-top:40px">
+      <div class="journey-section-head">
+        <span class="journey-phase-badge" style="background:var(--bg-elev);border:1px solid var(--line);color:var(--text-dim)">Méthode</span>
+        <span class="journey-phase-title">7 Principes Verissimo</span>
+      </div>
+      <div class="principles-grid">
+        ${PRINCIPLES_V2.map(p => `<div class="principle-card">
+          <div class="principle-n">${p.n}</div>
+          <div class="principle-title">${p.title}</div>
+          <div class="principle-body">${p.body}</div>
+        </div>`).join('')}
+      </div>
+    </div>`
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TABS
+// ─────────────────────────────────────────────────────────────────────────────
+function showTab(name, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'))
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'))
+  document.getElementById('section-'+name).classList.add('active')
+  btn.classList.add('active')
+}
+
+renderProgramme()
+renderProgrammeNew()
+renderEmails()
+renderParcours()
+</script>
+</body>
+</html>

@@ -1,0 +1,1480 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Back to Energy — Wireframes</title>
+<style>
+/* ─── Reset & base ─────────────────────────────────────────────────────────── */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: #0d0d10;
+  color: #fff;
+  min-height: 100vh;
+}
+
+/* ─── Design tokens ────────────────────────────────────────────────────────── */
+:root {
+  --bg-primary:   #0f1117;
+  --bg-secondary: #1a1d27;
+  --bg-card:      #1a1d27;
+  --green-dim:    #dce03d;
+  --blue-dim:     #62ce9d;
+  --blue:         #26c5ce;
+  --green:        #9fd76d;
+  --accent-lime:  #dce03d;
+  --accent-mint:  #62ce9d;
+  --accent-cyan:  #26c5ce;
+  --text-primary:   #ffffff;
+  --text-secondary: rgba(255,255,255,0.65);
+  --text-muted:     rgba(255,255,255,0.35);
+  --border:         rgba(255,255,255,0.08);
+  --border-accent:  rgba(255,255,255,0.14);
+  --glass:          rgba(255,255,255,0.055);
+  --glass-border:   rgba(255,255,255,0.1);
+  --G: #2dd4a0;
+  --B: #4cc9f0;
+}
+
+/* ─── Page layout ──────────────────────────────────────────────────────────── */
+.page-header {
+  padding: 32px 40px 24px;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  background: rgba(255,255,255,0.02);
+}
+.page-header h1 {
+  font-size: 22px;
+  font-weight: 900;
+  background: linear-gradient(135deg, #2dd4a0, #4cc9f0);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 4px;
+}
+.page-header p { font-size: 13px; color: rgba(255,255,255,0.4); }
+
+.section {
+  padding: 40px 40px 0;
+}
+.section-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.3);
+  margin-bottom: 8px;
+}
+.section-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 24px;
+}
+
+/* ─── Screen gallery ───────────────────────────────────────────────────────── */
+.screens-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 32px;
+  padding-bottom: 40px;
+}
+
+.screen-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.screen-name {
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.4);
+  letter-spacing: 0.05em;
+}
+.screen-device {
+  width: 320px;
+  height: 640px;
+  background: linear-gradient(160deg, #0b1e38 0%, #07111e 55%, #050e1a 100%);
+  border-radius: 28px;
+  border: 1px solid rgba(255,255,255,0.09);
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.6);
+}
+.screen-device.desktop {
+  width: 760px;
+  height: 480px;
+  border-radius: 16px;
+}
+.screen-device iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  transform-origin: top left;
+}
+
+/* ─── Design system blocks ─────────────────────────────────────────────────── */
+.ds-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 32px;
+}
+.swatch {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: center;
+}
+.swatch-color {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+.swatch-name { font-size: 10px; color: rgba(255,255,255,0.4); }
+.swatch-hex  { font-size: 10px; color: rgba(255,255,255,0.6); font-family: monospace; }
+
+.comp-row { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start; margin-bottom: 24px; }
+
+/* ─── Inline preview components (design system section) ────────────────────── */
+.prev-card {
+  background: rgba(255,255,255,0.055);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 22px;
+  padding: 20px;
+  width: 220px;
+}
+.prev-card-dark {
+  background: rgba(4,10,22,0.7);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 22px;
+  padding: 20px;
+  width: 220px;
+}
+.prev-btn {
+  background: linear-gradient(135deg, #62ce9d, #26c5ce);
+  color: #03111e;
+  font-weight: 700;
+  font-size: 13px;
+  border-radius: 14px;
+  padding: 12px 20px;
+  border: none;
+  cursor: pointer;
+  letter-spacing: 0.02em;
+}
+.prev-btn-ghost {
+  background: rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.65);
+  font-weight: 600;
+  font-size: 13px;
+  border-radius: 14px;
+  padding: 12px 20px;
+  border: 1px solid rgba(255,255,255,0.1);
+  cursor: pointer;
+}
+.prev-tag {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 8px;
+  padding: 4px 11px;
+  font-size: 11px;
+  color: rgba(255,255,255,0.7);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+}
+.prev-tag-cyan {
+  background: rgba(38,197,206,0.12);
+  border: 1px solid rgba(38,197,206,0.25);
+  border-radius: 8px;
+  padding: 4px 11px;
+  font-size: 11px;
+  color: #26c5ce;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+}
+.prev-tag-mint {
+  background: rgba(98,206,157,0.12);
+  border: 1px solid rgba(98,206,157,0.25);
+  border-radius: 8px;
+  padding: 4px 11px;
+  font-size: 11px;
+  color: #62ce9d;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+}
+.prev-input {
+  width: 100%;
+  padding: 10px 12px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 12px;
+  color: rgba(255,255,255,0.35);
+  font-size: 13px;
+  font-family: inherit;
+}
+.prev-progress {
+  height: 4px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 2px;
+  overflow: hidden;
+  width: 200px;
+}
+.prev-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #26c5ce, #62ce9d);
+  border-radius: 2px;
+  width: 38%;
+}
+.type-row { margin-bottom: 12px; }
+.type-row span { color: rgba(255,255,255,0.3); font-size: 11px; margin-left: 10px; }
+
+/* ─── Divider ──────────────────────────────────────────────────────────────── */
+.divider {
+  border: none;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  margin: 8px 0 0;
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<!--  PAGE HEADER                                                              -->
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<div class="page-header">
+  <h1>Back to Energy · Wireframes</h1>
+  <p>Design system · Parcours collaborateur · Espace coach — backtoenergy.fr</p>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<!--  1. DESIGN SYSTEM                                                         -->
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">01 — Fondations</div>
+  <div class="section-title">Design System</div>
+
+  <!-- Couleurs -->
+  <p style="font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:14px">Palette</p>
+  <div class="ds-grid" style="margin-bottom:32px">
+    <div class="swatch"><div class="swatch-color" style="background:#0f1117"></div><span class="swatch-name">bg-primary</span><span class="swatch-hex">#0f1117</span></div>
+    <div class="swatch"><div class="swatch-color" style="background:#1a1d27"></div><span class="swatch-name">bg-card</span><span class="swatch-hex">#1a1d27</span></div>
+    <div class="swatch"><div class="swatch-color" style="background:rgba(255,255,255,0.055);"></div><span class="swatch-name">glass</span><span class="swatch-hex">rgba(255,255,255,.055)</span></div>
+    <div class="swatch" style="margin-left:16px"><div class="swatch-color" style="background:#26c5ce"></div><span class="swatch-name">accent-cyan</span><span class="swatch-hex">#26c5ce</span></div>
+    <div class="swatch"><div class="swatch-color" style="background:#62ce9d"></div><span class="swatch-name">accent-mint</span><span class="swatch-hex">#62ce9d</span></div>
+    <div class="swatch"><div class="swatch-color" style="background:#dce03d"></div><span class="swatch-name">accent-lime</span><span class="swatch-hex">#dce03d</span></div>
+    <div class="swatch"><div class="swatch-color" style="background:#9fd76d"></div><span class="swatch-name">green</span><span class="swatch-hex">#9fd76d</span></div>
+    <div class="swatch" style="margin-left:16px"><div class="swatch-color" style="background:#fff"></div><span class="swatch-name">text-primary</span><span class="swatch-hex">#ffffff</span></div>
+    <div class="swatch"><div class="swatch-color" style="background:rgba(255,255,255,0.65)"></div><span class="swatch-name">text-secondary</span><span class="swatch-hex">rgba(255,255,255,.65)</span></div>
+    <div class="swatch"><div class="swatch-color" style="background:rgba(255,255,255,0.35)"></div><span class="swatch-name">text-muted</span><span class="swatch-hex">rgba(255,255,255,.35)</span></div>
+  </div>
+
+  <!-- Typographie -->
+  <p style="font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:14px">Typographie — Plus Jakarta Sans</p>
+  <div style="margin-bottom:32px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:16px;padding:24px">
+    <div class="type-row"><span style="font-size:32px;font-weight:900;background:linear-gradient(135deg,#26c5ce,#62ce9d);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">Heading XL / 900</span><span>32px · 900</span></div>
+    <div class="type-row"><span style="font-size:24px;font-weight:800;color:#fff">Heading L / 800</span><span>24px · 800</span></div>
+    <div class="type-row"><span style="font-size:18px;font-weight:700;color:#fff">Heading M / 700</span><span>18px · 700</span></div>
+    <div class="type-row"><span style="font-size:15px;font-weight:500;color:rgba(255,255,255,0.85)">Body regular</span><span>15px · 500</span></div>
+    <div class="type-row"><span style="font-size:13px;color:rgba(255,255,255,0.65)">Body secondary</span><span>13px · 400</span></div>
+    <div class="type-row"><span style="font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,0.35)">LABEL / 700</span><span>11px · 700 · uppercase</span></div>
+  </div>
+
+  <!-- Composants -->
+  <p style="font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-bottom:14px">Composants</p>
+  <div class="comp-row">
+    <div>
+      <p style="font-size:11px;color:rgba(255,255,255,0.3);margin-bottom:8px">Bouton primaire</p>
+      <button class="prev-btn">Commencer mon programme →</button>
+    </div>
+    <div>
+      <p style="font-size:11px;color:rgba(255,255,255,0.3);margin-bottom:8px">Bouton ghost</p>
+      <button class="prev-btn-ghost">Passer cette étape</button>
+    </div>
+    <div>
+      <p style="font-size:11px;color:rgba(255,255,255,0.3);margin-bottom:8px">Tags</p>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <span class="prev-tag">Détox</span>
+        <span class="prev-tag-cyan">S1 · J3</span>
+        <span class="prev-tag-mint">Actif</span>
+      </div>
+    </div>
+  </div>
+  <div class="comp-row">
+    <div>
+      <p style="font-size:11px;color:rgba(255,255,255,0.3);margin-bottom:8px">Card glass</p>
+      <div class="prev-card">
+        <p style="font-size:13px;font-weight:700;margin-bottom:6px">Rituel du matin</p>
+        <p style="font-size:12px;color:rgba(255,255,255,0.55);line-height:1.6">Eau citronnée à jeun + 5 min de stretching</p>
+      </div>
+    </div>
+    <div>
+      <p style="font-size:11px;color:rgba(255,255,255,0.3);margin-bottom:8px">Card dark</p>
+      <div class="prev-card-dark">
+        <p style="font-size:13px;font-weight:700;margin-bottom:6px">Score de vitalité</p>
+        <p style="font-size:32px;font-weight:900;background:linear-gradient(135deg,#26c5ce,#62ce9d);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">72<span style="font-size:14px;font-weight:400;color:rgba(255,255,255,0.35)"> /100</span></p>
+      </div>
+    </div>
+    <div>
+      <p style="font-size:11px;color:rgba(255,255,255,0.3);margin-bottom:8px">Input</p>
+      <input class="prev-input" placeholder="votre@email.com" style="width:220px">
+    </div>
+    <div>
+      <p style="font-size:11px;color:rgba(255,255,255,0.3);margin-bottom:8px">Progress bar</p>
+      <div class="prev-progress"><div class="prev-progress-fill"></div></div>
+      <p style="font-size:11px;color:rgba(255,255,255,0.3);margin-top:4px">38% — J8 / J21</p>
+    </div>
+  </div>
+</div>
+
+<hr class="divider" style="margin:32px 0 0">
+
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<!--  2. AUTHENTIFICATION                                                      -->
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">02 — Authentification</div>
+  <div class="section-title">Login & Accès</div>
+  <div class="screens-grid">
+
+    <!-- LOGIN COLLABORATEUR -->
+    <div class="screen-wrap">
+      <div class="screen-name">Login collaborateur</div>
+      <div class="screen-device">
+        <div style="min-height:640px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;background:linear-gradient(160deg,#0b1e38,#050e1a)">
+          <div style="width:52px;height:52px;border-radius:16px;background:linear-gradient(135deg,#2dd4a0,#4cc9f0);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;color:#050e1a;margin:0 auto 14px">B</div>
+          <p style="font-size:20px;font-weight:900;background:linear-gradient(135deg,#2dd4a0,#4cc9f0);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-align:center;margin-bottom:28px">Backtoenergy</p>
+          <div style="background:rgba(4,10,22,.72);border:1px solid rgba(255,255,255,.08);border-radius:20px;width:100%;max-width:300px;padding:24px">
+            <h2 style="font-size:16px;font-weight:800;margin-bottom:4px">Accéder à mon programme</h2>
+            <p style="font-size:12px;color:rgba(255,255,255,.65);margin-bottom:20px">Un lien de connexion sécurisé vous sera envoyé.</p>
+            <div style="margin-bottom:12px">
+              <label style="display:block;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:5px">Email</label>
+              <div style="width:100%;padding:11px 13px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:12px;color:rgba(255,255,255,.3);font-size:13px">votre@email.com</div>
+            </div>
+            <div style="display:block;width:100%;padding:14px;border-radius:14px;background:linear-gradient(135deg,#2dd4a0,#4cc9f0);color:#050e1a;font-weight:900;font-size:13px;letter-spacing:.04em;text-align:center">Recevoir mon lien →</div>
+          </div>
+          <p style="font-size:11px;color:rgba(255,255,255,.35);margin-top:18px">Vous êtes coach ? →</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- LOGIN COACH -->
+    <div class="screen-wrap">
+      <div class="screen-name">Login coach</div>
+      <div class="screen-device">
+        <div style="min-height:640px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;background:linear-gradient(160deg,#0b1e38,#050e1a)">
+          <div style="width:52px;height:52px;border-radius:16px;background:linear-gradient(135deg,#2dd4a0,#4cc9f0);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;color:#050e1a;margin:0 auto 14px">B</div>
+          <p style="font-size:20px;font-weight:900;background:linear-gradient(135deg,#2dd4a0,#4cc9f0);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-align:center;margin-bottom:28px">Espace Coach</p>
+          <div style="background:rgba(4,10,22,.72);border:1px solid rgba(255,255,255,.08);border-radius:20px;width:100%;max-width:300px;padding:24px">
+            <h2 style="font-size:16px;font-weight:800;margin-bottom:4px">Connexion coach</h2>
+            <p style="font-size:12px;color:rgba(255,255,255,.65);margin-bottom:20px">Email + mot de passe</p>
+            <div style="margin-bottom:10px">
+              <label style="display:block;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:5px">Email</label>
+              <div style="padding:11px 13px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:12px;color:rgba(255,255,255,.3);font-size:13px">coach@backtoenergy.fr</div>
+            </div>
+            <div style="margin-bottom:16px">
+              <label style="display:block;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:5px">Mot de passe</label>
+              <div style="padding:11px 13px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:12px;color:rgba(255,255,255,.3);font-size:13px">••••••••</div>
+            </div>
+            <div style="display:block;width:100%;padding:14px;border-radius:14px;background:linear-gradient(135deg,#2dd4a0,#4cc9f0);color:#050e1a;font-weight:900;font-size:13px;letter-spacing:.04em;text-align:center">Se connecter →</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RESET PASSWORD -->
+    <div class="screen-wrap">
+      <div class="screen-name">Reset mot de passe</div>
+      <div class="screen-device">
+        <div style="min-height:640px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;background:linear-gradient(160deg,#0b1e38,#050e1a)">
+          <div style="width:52px;height:52px;border-radius:16px;background:linear-gradient(135deg,#2dd4a0,#4cc9f0);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;color:#050e1a;margin:0 auto 14px">B</div>
+          <div style="background:rgba(4,10,22,.72);border:1px solid rgba(255,255,255,.08);border-radius:20px;width:100%;max-width:300px;padding:24px">
+            <h2 style="font-size:15px;font-weight:800;margin-bottom:4px">Nouveau mot de passe</h2>
+            <p style="font-size:12px;color:rgba(255,255,255,.55);margin-bottom:18px">Choisissez un mot de passe sécurisé pour votre compte.</p>
+            <div style="margin-bottom:10px">
+              <label style="display:block;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:5px">Nouveau mot de passe</label>
+              <div style="padding:11px 13px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:12px;color:rgba(255,255,255,.3);font-size:13px">••••••••</div>
+            </div>
+            <div style="margin-bottom:16px">
+              <label style="display:block;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:5px">Confirmer</label>
+              <div style="padding:11px 13px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:12px;color:rgba(255,255,255,.3);font-size:13px">••••••••</div>
+            </div>
+            <div style="display:block;width:100%;padding:14px;border-radius:14px;background:linear-gradient(135deg,#2dd4a0,#4cc9f0);color:#050e1a;font-weight:900;font-size:13px;text-align:center">Enregistrer →</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<hr class="divider" style="margin:32px 0 0">
+
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<!--  3. ONBOARDING COLLABORATEUR                                              -->
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">03 — Onboarding</div>
+  <div class="section-title">Premier accès collaborateur</div>
+  <div class="screens-grid">
+
+    <!-- WELCOME SCREEN -->
+    <div class="screen-wrap">
+      <div class="screen-name">Écran de bienvenue</div>
+      <div class="screen-device">
+        <div style="min-height:640px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;background:#07111e">
+          <div style="width:100%;max-width:300px;text-align:center">
+            <div style="width:52px;height:52px;border-radius:16px;background:linear-gradient(135deg,#2dd4a0,#4cc9f0);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;color:#050e1a;margin:0 auto 14px">B</div>
+            <p style="font-size:32px;font-weight:900;color:#fff;margin-bottom:24px">Laurent</p>
+            <div style="background:rgba(255,255,255,.05);border:1px solid rgba(45,212,160,.25);border-radius:20px;padding:24px;text-align:left;margin-bottom:20px;backdrop-filter:blur(20px)">
+              <p style="font-size:17px;font-weight:900;color:#fff;margin-bottom:8px">Bienvenue dans votre programme BacktoEnergy.</p>
+              <p style="font-size:13px;color:rgba(255,255,255,.65);line-height:1.7">Vous avez fait le premier pas vers une énergie durable. Votre coach est là pour vous accompagner.</p>
+            </div>
+            <div style="display:block;width:100%;padding:14px;border-radius:14px;background:linear-gradient(135deg,#2dd4a0,#4cc9f0);color:#050e1a;font-weight:900;font-size:13px;text-align:center">Commencer mon programme →</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RÈGLES D'OR J1 -->
+    <div class="screen-wrap">
+      <div class="screen-name">Règles d'or (J1)</div>
+      <div class="screen-device">
+        <div style="min-height:640px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;background:linear-gradient(160deg,#0b1e38,#050e1a)">
+          <div style="width:100%;max-width:300px">
+            <div style="text-align:center;margin-bottom:20px">
+              <div style="width:52px;height:52px;border-radius:16px;background:linear-gradient(135deg,#2dd4a0,#4cc9f0);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;color:#050e1a;margin:0 auto 10px">B</div>
+              <h1 style="font-size:22px;font-weight:900;background:linear-gradient(135deg,#2dd4a0,#4cc9f0);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">BacktoEnergy</h1>
+            </div>
+            <div style="background:rgba(4,10,22,.72);border:1px solid rgba(45,212,160,.25);border-radius:20px;padding:20px;margin-bottom:16px">
+              <p style="font-size:14px;font-weight:700;margin-bottom:8px">Bienvenue, Laurent 🌿</p>
+              <p style="font-size:12px;color:rgba(255,255,255,.65);line-height:1.7;margin-bottom:14px">Votre programme commence aujourd'hui. Les 3 règles d'or :</p>
+              <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:10px">
+                <span style="font-size:15px;flex-shrink:0">💧</span>
+                <p style="font-size:12px;color:rgba(255,255,255,.7);line-height:1.6">Eau citronnée à jeun chaque matin, 15 min avant de manger</p>
+              </div>
+              <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:10px">
+                <span style="font-size:15px;flex-shrink:0">🍽️</span>
+                <p style="font-size:12px;color:rgba(255,255,255,.7);line-height:1.6">Protéines uniquement avec légumes — jamais avec des céréales</p>
+              </div>
+              <div style="display:flex;align-items:flex-start;gap:10px">
+                <span style="font-size:15px;flex-shrink:0">🌙</span>
+                <p style="font-size:12px;color:rgba(255,255,255,.7);line-height:1.6">Dîner avant 20h, jeûne nocturne 12h minimum</p>
+              </div>
+            </div>
+            <div style="display:block;width:100%;padding:14px;border-radius:14px;background:linear-gradient(135deg,#2dd4a0,#4cc9f0);color:#050e1a;font-weight:900;font-size:13px;text-align:center">Commencer le Jour 1 →</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROFIL SETUP -->
+    <div class="screen-wrap">
+      <div class="screen-name">Configuration profil</div>
+      <div class="screen-device">
+        <div style="min-height:640px;padding:28px 20px;background:linear-gradient(160deg,#0b1e38,#050e1a)">
+          <div style="max-width:300px;margin:0 auto">
+            <div style="text-align:center;margin-bottom:24px">
+              <div style="width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,#2dd4a0,#4cc9f0);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900;color:#050e1a;margin:0 auto 8px">B</div>
+              <h1 style="font-size:17px;font-weight:900;background:linear-gradient(135deg,#2dd4a0,#4cc9f0);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">BacktoEnergy</h1>
+            </div>
+            <div style="background:rgba(4,10,22,.72);border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:20px">
+              <h2 style="font-size:14px;font-weight:700;margin-bottom:3px">Votre profil 👋</h2>
+              <p style="font-size:12px;color:rgba(255,255,255,.55);margin-bottom:16px">Pour personnaliser votre programme.</p>
+              ${["Prénom · Laurent","Genre · Homme","Âge · 38","Taille (cm) · 178","Poids (kg) · 82"].map(f => `
+              <div style="margin-bottom:10px">
+                <label style="display:block;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:4px">${f.split(" · ")[0]}</label>
+                <div style="padding:10px 12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:10px;color:rgba(255,255,255,.7);font-size:13px">${f.split(" · ")[1]}</div>
+              </div>`).join("")}
+              <div style="display:block;width:100%;padding:13px;border-radius:13px;background:linear-gradient(135deg,#2dd4a0,#4cc9f0);color:#050e1a;font-weight:900;font-size:13px;text-align:center;margin-top:8px">Démarrer mon programme →</div>
+            </div>
+            <p style="text-align:center;font-size:11px;color:rgba(255,255,255,.3);margin-top:10px">Passer cette étape →</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<hr class="divider" style="margin:32px 0 0">
+
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<!--  4. DASHBOARD COLLABORATEUR                                               -->
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">04 — Dashboard collaborateur</div>
+  <div class="section-title">Programme 21 jours</div>
+  <div class="screens-grid">
+
+    <!-- TAB: REPAS / PROGRAMME -->
+    <div class="screen-wrap">
+      <div class="screen-name">Repas du jour</div>
+      <div class="screen-device">
+        <div style="min-height:640px;background:linear-gradient(160deg,#0b1e38,#050e1a);overflow:hidden;position:relative">
+          <!-- Header -->
+          <div style="position:sticky;top:0;padding:10px 16px;background:rgba(5,14,26,.85);backdrop-filter:blur(28px);border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;justify-content:space-between">
+            <div style="display:flex;align-items:center;gap:8px">
+              <div style="width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,#2dd4a0,#4cc9f0);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:11px;color:#050e1a">B</div>
+              <span style="font-weight:900;font-size:12px;background:linear-gradient(135deg,#2dd4a0,#4cc9f0);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">BacktoEnergy</span>
+            </div>
+            <div style="display:flex;gap:6px">
+              <span style="background:rgba(76,201,240,.1);color:#4cc9f0;border:1px solid rgba(76,201,240,.25);font-size:10px;padding:3px 8px;border-radius:6px;font-weight:700">S1·J3</span>
+              <span style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.75);font-size:10px;padding:3px 8px;border-radius:8px">Moi ↗</span>
+            </div>
+          </div>
+          <!-- Tabs -->
+          <div style="padding:10px 14px">
+            <div style="display:flex;gap:3px;padding:5px;border-radius:16px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);margin-bottom:14px">
+              ${["Repas","Journal","Courses","Progrès","💡"].map((t,i) => `<div style="flex:1;padding:8px 2px;border-radius:10px;font-weight:600;font-size:10px;text-align:center;background:${i===0?"rgba(255,255,255,.1)":"transparent"};color:${i===0?"#fff":"rgba(255,255,255,.4)"};${i===0?"border-bottom:2px solid #4cc9f0":""}">${t}</div>`).join("")}
+            </div>
+            <!-- Hero card -->
+            <div style="background:rgba(4,10,22,.72);border:1px solid rgba(76,201,240,.2);border-radius:20px;padding:18px;margin-bottom:12px;backdrop-filter:blur(28px)">
+              <div style="display:flex;gap:6px;margin-bottom:14px">
+                <span style="background:rgba(76,201,240,.1);color:#4cc9f0;border:1px solid rgba(76,201,240,.2);font-size:10px;padding:3px 8px;border-radius:6px;font-weight:700">Détox & Purification</span>
+              </div>
+              <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px">
+                <div>
+                  <h1 style="font-size:18px;font-weight:900;margin-bottom:5px">Bonjour, Laurent 👋</h1>
+                  <p style="font-size:11px;color:#4cc9f0;font-style:italic">"Chaque geste d'aujourd'hui est une graine pour demain."</p>
+                </div>
+                <div style="flex-shrink:0;width:52px;height:52px;border-radius:14px;background:rgba(76,201,240,.08);border:1px solid rgba(76,201,240,.18);display:flex;flex-direction:column;align-items:center;justify-content:center">
+                  <span style="font-size:22px;font-weight:900;background:linear-gradient(135deg,#2dd4a0,#4cc9f0);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1">3</span>
+                  <span style="font-size:10px;color:rgba(255,255,255,.35)">/ 21</span>
+                </div>
+              </div>
+              <div style="margin-bottom:10px">
+                <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+                  <span style="font-size:11px;color:rgba(255,255,255,.4)">Progression</span>
+                  <span style="font-size:11px;font-weight:700;color:#4cc9f0">14%</span>
+                </div>
+                <div style="height:4px;background:rgba(255,255,255,.07);border-radius:99px;overflow:hidden"><div style="height:100%;width:14%;background:linear-gradient(90deg,#4cc9f0,#2dd4a0);border-radius:99px"></div></div>
+              </div>
+            </div>
+            <!-- Meal navigator -->
+            <div style="display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:10px 14px;margin-bottom:10px">
+              <div style="width:30px;height:30px;border-radius:8px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;font-size:14px;color:rgba(255,255,255,.8)">←</div>
+              <div style="text-align:center">
+                <div style="font-size:13px;font-weight:900">Jour 3 <span style="background:rgba(125,232,255,.15);color:#4cc9f0;font-size:9px;padding:2px 5px;border-radius:99px">Aujourd'hui</span></div>
+                <div style="font-size:11px;color:rgba(255,255,255,.4);margin-top:1px">Détox & Purification</div>
+              </div>
+              <div style="width:30px;height:30px;border-radius:8px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;font-size:14px;color:rgba(255,255,255,.8)">→</div>
+            </div>
+            <!-- Meal cards -->
+            ${[["🌅","Petit-déjeuner","7h – 9h"],["🌞","Déjeuner","12h – 14h"],["🌤","Collation","15h – 17h"],["🌙","Dîner","18h – 20h"]].map(([icon,label,horaire]) => `
+            <div style="border:1px solid rgba(255,255,255,.08);background:rgba(4,10,22,.6);border-radius:14px;overflow:hidden;margin-bottom:6px">
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 13px">
+                <div style="display:flex;align-items:center;gap:10px">
+                  <span style="font-size:16px">${icon}</span>
+                  <div>
+                    <p style="font-size:12px;font-weight:700">${label}</p>
+                    <p style="font-size:11px;color:rgba(255,255,255,.35)">${horaire}</p>
+                  </div>
+                </div>
+                <span style="font-size:12px;color:rgba(255,255,255,.4)">▾</span>
+              </div>
+            </div>`).join("")}
+          </div>
+          <!-- Bottom nav -->
+          <div style="position:absolute;bottom:0;left:0;right:0;background:rgba(5,12,22,.95);backdrop-filter:blur(28px);border-top:1px solid rgba(255,255,255,.07);padding:4px 0">
+            <div style="display:flex;justify-content:space-around">
+              ${[["🍽️","Repas",true],["📓","Journal",false],["🛒","Courses",false],["📈","Progrès",false],["💡","Principes",false]].map(([icon,label,active]) => `
+              <div style="display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px;flex:1">
+                <span style="font-size:18px;line-height:1">${icon}</span>
+                <span style="font-size:9px;font-weight:600;color:${active?"#4cc9f0":"rgba(255,255,255,.4)"}">${label}</span>
+                ${active?`<div style="width:14px;height:2px;border-radius:99px;background:#4cc9f0"></div>`:""}
+              </div>`).join("")}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: JOURNAL -->
+    <div class="screen-wrap">
+      <div class="screen-name">Journal du jour</div>
+      <div class="screen-device">
+        <div style="min-height:640px;background:linear-gradient(160deg,#0b1e38,#050e1a);overflow:hidden;position:relative">
+          <!-- Header -->
+          <div style="padding:10px 16px;background:rgba(5,14,26,.85);backdrop-filter:blur(28px);border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;justify-content:space-between">
+            <div style="display:flex;align-items:center;gap:8px">
+              <div style="width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,#2dd4a0,#4cc9f0);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:11px;color:#050e1a">B</div>
+              <span style="font-weight:900;font-size:12px;background:linear-gradient(135deg,#2dd4a0,#4cc9f0);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">BacktoEnergy</span>
+            </div>
+            <span style="background:rgba(76,201,240,.1);color:#4cc9f0;border:1px solid rgba(76,201,240,.25);font-size:10px;padding:3px 8px;border-radius:6px;font-weight:700">S1·J3</span>
+          </div>
+          <!-- Tabs -->
+          <div style="padding:10px 14px 0">
+            <div style="display:flex;gap:3px;padding:5px;border-radius:16px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);margin-bottom:14px">
+              ${["Repas","Journal","Courses","Progrès","💡"].map((t,i) => `<div style="flex:1;padding:8px 2px;border-radius:10px;font-weight:600;font-size:10px;text-align:center;background:${i===1?"rgba(255,255,255,.1)":"transparent"};color:${i===1?"#fff":"rgba(255,255,255,.4)"};${i===1?"border-bottom:2px solid #4cc9f0":""}">${t}</div>`).join("")}
+            </div>
+          </div>
+          <div style="padding:0 14px">
+            <div style="background:rgba(4,10,22,.72);border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:16px;margin-bottom:10px">
+              <p style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:14px">Comment vous sentez-vous ?</p>
+              ${[["⚡","Énergie",7],["😊","Humeur",8],["💧","Hydratation",6],["😴","Sommeil",7]].map(([icon,label,val]) => `
+              <div style="margin-bottom:14px">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+                  <span style="font-size:12px;font-weight:600">${icon} ${label}</span>
+                  <span style="font-size:16px;font-weight:900;color:#4cc9f0">${val}/10</span>
+                </div>
+                <div style="height:5px;background:rgba(255,255,255,.07);border-radius:99px;overflow:hidden">
+                  <div style="height:100%;width:${Number(val)*10}%;background:linear-gradient(90deg,#2dd4a0,#4cc9f0);border-radius:99px"></div>
+                </div>
+              </div>`).join("")}
+            </div>
+            <div style="background:rgba(4,10,22,.72);border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:16px;margin-bottom:10px">
+              <p style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:10px">Hydratation du jour</p>
+              <div style="text-align:center;margin-bottom:8px">
+                <span style="font-size:28px;font-weight:900;color:#4cc9f0">1.5L</span>
+                <span style="font-size:12px;color:rgba(255,255,255,.35)"> / 2.5L objectif</span>
+              </div>
+              <div style="display:flex;gap:6px">
+                ${["0.25","0.5","1"].map(v => `<div style="flex:1;padding:6px;border-radius:8px;background:rgba(76,201,240,.1);border:1px solid rgba(76,201,240,.2);color:#4cc9f0;font-size:11px;font-weight:600;text-align:center">+${v}L</div>`).join("")}
+              </div>
+            </div>
+            <div style="background:rgba(4,10,22,.72);border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:16px;margin-bottom:10px">
+              <p style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:8px">Note libre</p>
+              <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:10px;min-height:56px">
+                <p style="font-size:12px;color:rgba(255,255,255,.55);line-height:1.7">Je me sens plus léger ce matin…</p>
+              </div>
+            </div>
+            <div style="display:block;width:100%;padding:13px;border-radius:13px;background:linear-gradient(135deg,#2dd4a0,#4cc9f0);color:#050e1a;font-weight:900;font-size:13px;text-align:center;margin-bottom:80px">Enregistrer mon journal →</div>
+          </div>
+          <!-- Bottom nav -->
+          <div style="position:absolute;bottom:0;left:0;right:0;background:rgba(5,12,22,.95);border-top:1px solid rgba(255,255,255,.07);padding:4px 0">
+            <div style="display:flex;justify-content:space-around">
+              ${[["🍽️","Repas",false],["📓","Journal",true],["🛒","Courses",false],["📈","Progrès",false],["💡","Principes",false]].map(([icon,label,active]) => `
+              <div style="display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px;flex:1">
+                <span style="font-size:18px;line-height:1">${icon}</span>
+                <span style="font-size:9px;font-weight:600;color:${active?"#4cc9f0":"rgba(255,255,255,.4)"}">${label}</span>
+                ${active?`<div style="width:14px;height:2px;border-radius:99px;background:#4cc9f0"></div>`:""}
+              </div>`).join("")}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: PROGRESSION -->
+    <div class="screen-wrap">
+      <div class="screen-name">Progression</div>
+      <div class="screen-device">
+        <div style="min-height:640px;background:linear-gradient(160deg,#0b1e38,#050e1a);overflow:hidden;position:relative">
+          <!-- Header -->
+          <div style="padding:10px 16px;background:rgba(5,14,26,.85);backdrop-filter:blur(28px);border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;justify-content:space-between">
+            <div style="display:flex;align-items:center;gap:8px">
+              <div style="width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,#2dd4a0,#4cc9f0);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:11px;color:#050e1a">B</div>
+              <span style="font-weight:900;font-size:12px;background:linear-gradient(135deg,#2dd4a0,#4cc9f0);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">BacktoEnergy</span>
+            </div>
+            <span style="background:rgba(76,201,240,.1);color:#4cc9f0;border:1px solid rgba(76,201,240,.25);font-size:10px;padding:3px 8px;border-radius:6px;font-weight:700">S1·J3</span>
+          </div>
+          <!-- Tabs -->
+          <div style="padding:10px 14px 0">
+            <div style="display:flex;gap:3px;padding:5px;border-radius:16px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);margin-bottom:14px">
+              ${["Repas","Journal","Courses","Progrès","💡"].map((t,i) => `<div style="flex:1;padding:8px 2px;border-radius:10px;font-weight:600;font-size:10px;text-align:center;background:${i===3?"rgba(255,255,255,.1)":"transparent"};color:${i===3?"#fff":"rgba(255,255,255,.4)"};${i===3?"border-bottom:2px solid #4cc9f0":""}">${t}</div>`).join("")}
+            </div>
+          </div>
+          <div style="padding:0 14px">
+            <!-- Stats -->
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px">
+              ${[["🔥","2","Jours actifs"],["📅","S1","Semaine"],["🎯","3j","Série"]].map(([icon,val,label]) => `
+              <div style="background:rgba(4,10,22,.72);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:12px;text-align:center">
+                <div style="font-size:16px;margin-bottom:2px">${icon}</div>
+                <div style="font-size:16px;font-weight:900;background:linear-gradient(135deg,#2dd4a0,#4cc9f0);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:1px">${val}</div>
+                <div style="font-size:10px;color:rgba(255,255,255,.35)">${label}</div>
+              </div>`).join("")}
+            </div>
+            <!-- Poids -->
+            <div style="background:rgba(4,10,22,.72);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:14px;margin-bottom:10px">
+              <p style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:10px">Poids</p>
+              <div style="display:flex;align-items:baseline;gap:4px;margin-bottom:8px">
+                <span style="font-size:28px;font-weight:900;color:#fff">82</span>
+                <span style="font-size:13px;color:rgba(255,255,255,.35)">kg</span>
+              </div>
+              <div style="height:4px;background:rgba(255,255,255,.07);border-radius:99px;overflow:hidden"><div style="height:100%;width:40%;background:linear-gradient(90deg,#2dd4a0,#4cc9f0);border-radius:99px"></div></div>
+            </div>
+            <!-- Semaines -->
+            ${[["#2dd4a0","Semaine 1","Détox & Purification",3,7],["#4cc9f0","Semaine 2","Énergie & Vitalité",0,7],["#818cf8","Semaine 3","Ancrage & Performance",0,7]].map(([color,week,title,done,total]) => `
+            <div style="background:rgba(4,10,22,.72);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:14px;margin-bottom:8px">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+                <div>
+                  <span style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:${color}">${week}</span>
+                  <p style="font-size:12px;font-weight:700;margin-top:2px">${title}</p>
+                </div>
+                <span style="background:rgba(255,255,255,.07);color:rgba(255,255,255,.4);font-size:11px;padding:2px 7px;border-radius:6px">${done}/${total}</span>
+              </div>
+              <div style="height:4px;background:rgba(255,255,255,.07);border-radius:99px;overflow:hidden">
+                <div style="height:100%;width:${Math.round(Number(done)/Number(total)*100)}%;background:${color};border-radius:99px"></div>
+              </div>
+            </div>`).join("")}
+            <!-- Vitality score -->
+            <div style="background:rgba(4,10,22,.72);border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:14px;margin-bottom:80px;text-align:center">
+              <p style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:10px">Score de vitalité</p>
+              <span style="font-size:44px;font-weight:900;background:linear-gradient(135deg,#2dd4a0,#4cc9f0);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">72</span>
+              <span style="font-size:13px;color:rgba(255,255,255,.35)">/100</span>
+              <p style="font-size:12px;color:#2dd4a0;margin-top:4px">↑ En progression</p>
+            </div>
+          </div>
+          <!-- Bottom nav -->
+          <div style="position:absolute;bottom:0;left:0;right:0;background:rgba(5,12,22,.95);border-top:1px solid rgba(255,255,255,.07);padding:4px 0">
+            <div style="display:flex;justify-content:space-around">
+              ${[["🍽️","Repas",false],["📓","Journal",false],["🛒","Courses",false],["📈","Progrès",true],["💡","Principes",false]].map(([icon,label,active]) => `
+              <div style="display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px;flex:1">
+                <span style="font-size:18px;line-height:1">${icon}</span>
+                <span style="font-size:9px;font-weight:600;color:${active?"#4cc9f0":"rgba(255,255,255,.4)"}">${label}</span>
+                ${active?`<div style="width:14px;height:2px;border-radius:99px;background:#4cc9f0"></div>`:""}
+              </div>`).join("")}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: PRINCIPES -->
+    <div class="screen-wrap">
+      <div class="screen-name">Principes Verissimo</div>
+      <div class="screen-device">
+        <div style="min-height:640px;background:linear-gradient(160deg,#0b1e38,#050e1a);overflow:hidden;position:relative">
+          <div style="padding:10px 16px;background:rgba(5,14,26,.85);backdrop-filter:blur(28px);border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;justify-content:space-between">
+            <div style="display:flex;align-items:center;gap:8px">
+              <div style="width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,#2dd4a0,#4cc9f0);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:11px;color:#050e1a">B</div>
+              <span style="font-weight:900;font-size:12px;background:linear-gradient(135deg,#2dd4a0,#4cc9f0);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">BacktoEnergy</span>
+            </div>
+            <span style="background:rgba(76,201,240,.1);color:#4cc9f0;border:1px solid rgba(76,201,240,.25);font-size:10px;padding:3px 8px;border-radius:6px;font-weight:700">S1·J3</span>
+          </div>
+          <div style="padding:10px 14px 0">
+            <div style="display:flex;gap:3px;padding:5px;border-radius:16px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);margin-bottom:14px">
+              ${["Repas","Journal","Courses","Progrès","💡"].map((t,i) => `<div style="flex:1;padding:8px 2px;border-radius:10px;font-weight:600;font-size:10px;text-align:center;background:${i===4?"rgba(255,255,255,.1)":"transparent"};color:${i===4?"#fff":"rgba(255,255,255,.4)"};${i===4?"border-bottom:2px solid #4cc9f0":""}">${t}</div>`).join("")}
+            </div>
+          </div>
+          <div style="padding:0 14px">
+            ${[
+              ["1","La mastication","Mâcher 20–30 fois. Digestion améliorée de 50%.","#2dd4a0"],
+              ["2","Dissociation alimentaire","Protéines + légumes OU céréales + légumes, jamais ensemble.","#4cc9f0"],
+              ["3","Temps de digestion","Respecter les intervalles entre repas (3–4h).","#62ce9d"],
+              ["4","Équilibre acido-basique","Dîner 100% végétalien pour neutraliser l'acidité.","#dce03d"],
+              ["5","Manger vivant","Crudités à chaque repas, huile d'olive à froid.","#9fd76d"],
+              ["6","Hydratation","1,5–2L/j, eau citronnée à jeun, pas de boisson aux repas.","#4cc9f0"],
+              ["7","Repos digestif","3 repas max, 4h d'intervalle, 12h de jeûne nocturne.","#2dd4a0"],
+            ].map(([num,title,desc,color]) => `
+            <div style="background:rgba(4,10,22,.72);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:12px;margin-bottom:8px;display:flex;gap:10px">
+              <div style="width:24px;height:24px;border-radius:8px;background:${color}1a;border:1px solid ${color}44;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:11px;font-weight:900;color:${color}">${num}</div>
+              <div>
+                <p style="font-size:12px;font-weight:700;margin-bottom:2px">${title}</p>
+                <p style="font-size:11px;color:rgba(255,255,255,.5);line-height:1.5">${desc}</p>
+              </div>
+            </div>`).join("")}
+          </div>
+          <div style="position:absolute;bottom:0;left:0;right:0;background:rgba(5,12,22,.95);border-top:1px solid rgba(255,255,255,.07);padding:4px 0">
+            <div style="display:flex;justify-content:space-around">
+              ${[["🍽️","Repas",false],["📓","Journal",false],["🛒","Courses",false],["📈","Progrès",false],["💡","Principes",true]].map(([icon,label,active]) => `
+              <div style="display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px;flex:1">
+                <span style="font-size:18px;line-height:1">${icon}</span>
+                <span style="font-size:9px;font-weight:600;color:${active?"#4cc9f0":"rgba(255,255,255,.4)"}">${label}</span>
+                ${active?`<div style="width:14px;height:2px;border-radius:99px;background:#4cc9f0"></div>`:""}
+              </div>`).join("")}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<hr class="divider" style="margin:32px 0 0">
+
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<!--  5. ESPACE COACH                                                          -->
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">05 — Espace coach</div>
+  <div class="section-title">Dashboard coach</div>
+  <div class="screens-grid">
+
+    <!-- LISTE COLLABORATEURS -->
+    <div class="screen-wrap">
+      <div class="screen-name">Liste collaborateurs</div>
+      <div class="screen-device desktop">
+        <div style="min-height:480px;background:linear-gradient(160deg,#0b1e38,#050e1a);overflow:hidden">
+          <!-- Header -->
+          <div style="padding:12px 24px;background:rgba(5,14,26,.9);backdrop-filter:blur(28px);border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;justify-content:space-between">
+            <div style="display:flex;align-items:center;gap:10px">
+              <div style="width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,#2dd4a0,#4cc9f0);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:13px;color:#050e1a">B</div>
+              <span style="font-weight:900;font-size:14px;background:linear-gradient(135deg,#2dd4a0,#4cc9f0);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">BacktoEnergy</span>
+              <span style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.55);font-size:11px;padding:3px 10px;border-radius:8px">Espace coach</span>
+            </div>
+            <div style="display:flex;gap:8px">
+              <div style="padding:8px 14px;border-radius:10px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.65);font-size:12px;cursor:pointer">Menus →</div>
+              <div style="padding:8px 14px;border-radius:10px;background:linear-gradient(135deg,#2dd4a0,#4cc9f0);color:#050e1a;font-weight:700;font-size:12px;cursor:pointer">+ Inviter</div>
+            </div>
+          </div>
+          <div style="padding:20px 24px">
+            <!-- Filtres -->
+            <div style="display:flex;gap:8px;margin-bottom:16px">
+              ${["Tous (8)","Actifs (5)","Inactifs (3)"].map((f,i) => `
+              <div style="padding:6px 14px;border-radius:10px;background:${i===0?"rgba(76,201,240,.12)":"rgba(255,255,255,.05)"};border:1px solid ${i===0?"rgba(76,201,240,.3)":"rgba(255,255,255,.08)"};color:${i===0?"#4cc9f0":"rgba(255,255,255,.55)"};font-size:12px;font-weight:600;cursor:pointer">${f}</div>`).join("")}
+              <div style="margin-left:auto;padding:6px 14px;border-radius:10px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);color:rgba(255,255,255,.55);font-size:12px">Éditeur menus →</div>
+            </div>
+            <!-- Grid collaborateurs -->
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
+              ${[
+                ["Sophie M.","J8","Énergie","8","#4cc9f0",true],
+                ["Marc D.","J3","Détox","7","#2dd4a0",true],
+                ["Emma L.","J15","Ancrage","9","#9fd76d",true],
+                ["Léo B.","J1","Détox","–","#4cc9f0",false],
+                ["Chloé R.","J12","Énergie","6","#4cc9f0",true],
+                ["Antoine F.","J0","–","–","rgba(255,255,255,.2)",false],
+                ["Isabelle G.","J21","✓","8","#2dd4a0",true],
+                ["Paul V.","J5","Détox","7","#4cc9f0",true],
+              ].map(([name,day,phase,score,color,active]) => `
+              <div style="background:rgba(4,10,22,.72);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:14px;cursor:pointer">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+                  <div style="width:32px;height:32px;border-radius:10px;background:${color}22;border:1px solid ${color}44;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:${color}">${name[0]}</div>
+                  <div>
+                    <p style="font-size:12px;font-weight:700">${name}</p>
+                    <div style="display:flex;align-items:center;gap:4px;margin-top:1px">
+                      <div style="width:6px;height:6px;border-radius:50%;background:${active?"#2dd4a0":"rgba(255,255,255,.2)"}"></div>
+                      <span style="font-size:10px;color:rgba(255,255,255,.4)">${active?"Actif":"Inactif"}</span>
+                    </div>
+                  </div>
+                </div>
+                <div style="display:flex;justify-content:space-between">
+                  <span style="background:${color}1a;border:1px solid ${color}33;color:${color};font-size:10px;padding:2px 7px;border-radius:6px;font-weight:700">${day}</span>
+                  <span style="font-size:11px;color:rgba(255,255,255,.35)">${phase}</span>
+                  <span style="font-size:11px;font-weight:700;color:${color}">${score !== "–" ? "⚡"+score : "–"}</span>
+                </div>
+              </div>`).join("")}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROFIL COLLABORATEUR (expanded) -->
+    <div class="screen-wrap">
+      <div class="screen-name">Détail collaborateur</div>
+      <div class="screen-device">
+        <div style="min-height:640px;background:linear-gradient(160deg,#0b1e38,#050e1a);overflow:hidden">
+          <div style="padding:12px 16px;background:rgba(5,14,26,.9);border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;gap:10px">
+            <div style="width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,#2dd4a0,#4cc9f0);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:11px;color:#050e1a">B</div>
+            <span style="font-weight:900;font-size:12px;background:linear-gradient(135deg,#2dd4a0,#4cc9f0);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">BacktoEnergy</span>
+          </div>
+          <div style="padding:16px">
+            <!-- Collab header -->
+            <div style="background:rgba(4,10,22,.72);border:1px solid rgba(76,201,240,.2);border-radius:18px;padding:16px;margin-bottom:12px">
+              <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+                <div style="width:44px;height:44px;border-radius:14px;background:rgba(76,201,240,.12);border:1px solid rgba(76,201,240,.25);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;color:#4cc9f0">S</div>
+                <div>
+                  <p style="font-size:15px;font-weight:900">Sophie Martin</p>
+                  <div style="display:flex;gap:6px;margin-top:3px">
+                    <span style="background:rgba(76,201,240,.1);color:#4cc9f0;border:1px solid rgba(76,201,240,.2);font-size:10px;padding:2px 7px;border-radius:6px;font-weight:700">J8</span>
+                    <span style="font-size:10px;color:rgba(255,255,255,.4)">Femme · 34 ans · 62 kg</span>
+                  </div>
+                </div>
+              </div>
+              <!-- Énergie score -->
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;margin-bottom:8px">
+                <span style="font-size:12px;color:rgba(255,255,255,.65)">⚡ Énergie moyenne</span>
+                <span style="font-size:14px;font-weight:900;color:#4cc9f0">8.2 / 10</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;padding:10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px">
+                <span style="font-size:12px;color:rgba(255,255,255,.65)">📅 Dernier journal</span>
+                <span style="font-size:12px;color:rgba(255,255,255,.55)">Aujourd'hui</span>
+              </div>
+            </div>
+            <!-- Override -->
+            <div style="background:rgba(4,10,22,.72);border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:14px;margin-bottom:12px">
+              <p style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:10px">Personnalisation coach</p>
+              <div style="margin-bottom:8px">
+                <label style="display:block;font-size:10px;color:rgba(255,255,255,.35);margin-bottom:4px">Note coach (J8)</label>
+                <div style="padding:8px 10px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:10px;color:rgba(255,255,255,.6);font-size:12px">Excellent engagement, continuez comme ça !</div>
+              </div>
+              <div>
+                <label style="display:block;font-size:10px;color:rgba(255,255,255,.35);margin-bottom:4px">Intention personnalisée</label>
+                <div style="padding:8px 10px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:10px;color:rgba(255,255,255,.35);font-size:12px">Ajouter une intention…</div>
+              </div>
+            </div>
+            <!-- Logs repas -->
+            <div style="background:rgba(4,10,22,.72);border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:14px">
+              <p style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:10px">Repas enregistrés</p>
+              ${[["🌅","Petit-déjeuner","Avocat, œufs, salade"],["🌞","Déjeuner","Saumon, courgettes vapeur"]].map(([icon,label,items]) => `
+              <div style="display:flex;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05)">
+                <span style="font-size:14px">${icon}</span>
+                <div>
+                  <p style="font-size:11px;font-weight:700">${label}</p>
+                  <p style="font-size:11px;color:rgba(255,255,255,.45)">${items}</p>
+                </div>
+              </div>`).join("")}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL INVITATION -->
+    <div class="screen-wrap">
+      <div class="screen-name">Inviter un collaborateur</div>
+      <div class="screen-device">
+        <div style="min-height:640px;background:rgba(0,0,0,.5);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;padding:20px">
+          <div style="width:100%;max-width:300px;background:#0d1929;border:1px solid rgba(76,201,240,.25);border-radius:24px;padding:24px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+              <h2 style="font-size:16px;font-weight:800">Inviter un collaborateur</h2>
+              <div style="width:28px;height:28px;border-radius:8px;background:rgba(255,255,255,.07);display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.4);font-size:14px;cursor:pointer">✕</div>
+            </div>
+            <div style="margin-bottom:12px">
+              <label style="display:block;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:5px">Prénom</label>
+              <div style="padding:10px 12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:12px;color:rgba(255,255,255,.3);font-size:13px">Sophie</div>
+            </div>
+            <div style="margin-bottom:18px">
+              <label style="display:block;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:5px">Email</label>
+              <div style="padding:10px 12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:12px;color:rgba(255,255,255,.3);font-size:13px">sophie@acme.com</div>
+            </div>
+            <div style="display:block;width:100%;padding:13px;border-radius:13px;background:linear-gradient(135deg,#2dd4a0,#4cc9f0);color:#050e1a;font-weight:900;font-size:13px;text-align:center;margin-bottom:8px">Envoyer l'invitation →</div>
+            <div style="text-align:center;padding:10px;border-radius:10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06)">
+              <p style="font-size:11px;color:rgba(255,255,255,.35)">Un email d'accès sera envoyé avec le code entreprise.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<hr class="divider" style="margin:32px 0 0">
+
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<!--  6. ÉDITEUR MENUS COACH                                                  -->
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">06 — Éditeur menus</div>
+  <div class="section-title">Gestion des repas (vue coach)</div>
+  <div class="screens-grid">
+
+    <!-- ÉDITEUR MENUS DESKTOP -->
+    <div class="screen-wrap">
+      <div class="screen-name">Éditeur menus (desktop)</div>
+      <div class="screen-device desktop">
+        <div style="min-height:480px;background:linear-gradient(160deg,#0b1e38,#050e1a);overflow:hidden">
+          <div style="padding:12px 24px;background:rgba(5,14,26,.9);border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;justify-content:space-between">
+            <div style="display:flex;align-items:center;gap:10px">
+              <div style="width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,#2dd4a0,#4cc9f0);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:13px;color:#050e1a">B</div>
+              <span style="font-weight:900;font-size:14px;background:linear-gradient(135deg,#2dd4a0,#4cc9f0);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">BacktoEnergy</span>
+              <span style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.55);font-size:11px;padding:3px 10px;border-radius:8px">Éditeur menus</span>
+            </div>
+            <div style="display:flex;gap:8px">
+              <div style="padding:7px 12px;border-radius:9px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.55);font-size:11px">← Collaborateurs</div>
+              <div style="padding:7px 12px;border-radius:9px;background:linear-gradient(135deg,#2dd4a0,#4cc9f0);color:#050e1a;font-weight:700;font-size:11px">Sauvegarder ✓</div>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:180px 1fr;height:calc(480px - 53px)">
+            <!-- Sidebar jours -->
+            <div style="background:rgba(4,10,22,.5);border-right:1px solid rgba(255,255,255,.06);overflow-y:auto;padding:10px">
+              ${[["S1","Détox","#4cc9f0",[1,2,3,4,5,6,7]],["S2","Énergie","#2dd4a0",[8,9,10]],["S3","Ancrage","#9fd76d",[]]].map(([week,theme,color,days]) => `
+              <div style="margin-bottom:10px">
+                <p style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:${color};padding:4px 8px;margin-bottom:4px">${week} · ${theme}</p>
+                ${(days as number[]).map(d => `
+                <div style="padding:7px 10px;border-radius:8px;background:${d===3?"rgba(76,201,240,.1)":"transparent"};border:${d===3?"1px solid rgba(76,201,240,.25)":"1px solid transparent"};color:${d===3?"#4cc9f0":"rgba(255,255,255,.55)"};font-size:12px;cursor:pointer;margin-bottom:2px">
+                  Jour ${d}${d===3?" ·":""}<span style="font-size:10px;color:${d===3?"rgba(76,201,240,.7)":"rgba(255,255,255,.25)"}"> ${d===3?"Auj.":""}</span>
+                </div>`).join("")}
+              </div>`).join("")}
+            </div>
+            <!-- Main editor -->
+            <div style="padding:16px;overflow-y:auto">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+                <h2 style="font-size:15px;font-weight:800">Jour 3</h2>
+                <span style="background:rgba(76,201,240,.1);color:#4cc9f0;border:1px solid rgba(76,201,240,.2);font-size:10px;padding:2px 7px;border-radius:6px;font-weight:700">Détox & Purification</span>
+              </div>
+              ${[
+                ["🌅","Petit-déjeuner","Avocat · Œufs à la coque · Salade verte · Citron"],
+                ["🌞","Déjeuner","Saumon vapeur · Haricots verts · Carottes râpées · Huile d'olive"],
+                ["🌤","Collation","Amandes · Pomme · Tisane"],
+                ["🌙","Dîner","Soupe de légumes · Courgettes · Épinards · Bouillon"],
+                ["✨","Astuce Umami","Ajouter une pincée de fleur de sel sur les légumes vapeur."],
+              ].map(([icon,label,val]) => `
+              <div style="margin-bottom:10px">
+                <label style="display:block;font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:4px">${icon} ${label}</label>
+                <div style="padding:9px 12px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:10px;color:rgba(255,255,255,.75);font-size:12px;line-height:1.5">${val}</div>
+              </div>`).join("")}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PREVIEW PROGRAMME COLLABORATEUR (coach) -->
+    <div class="screen-wrap">
+      <div class="screen-name">Preview programme (coach)</div>
+      <div class="screen-device">
+        <div style="min-height:640px;background:linear-gradient(160deg,#0b1e38,#050e1a);overflow:hidden">
+          <div style="padding:10px 16px;background:rgba(5,14,26,.9);border-bottom:1px solid rgba(255,255,255,.07);display:flex;align-items:center;justify-content:space-between">
+            <div style="display:flex;align-items:center;gap:8px">
+              <div style="width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,#2dd4a0,#4cc9f0);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:11px;color:#050e1a">B</div>
+              <span style="font-weight:900;font-size:12px;background:linear-gradient(135deg,#2dd4a0,#4cc9f0);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">Preview Sophie M.</span>
+            </div>
+            <div style="font-size:11px;color:rgba(255,255,255,.4)">← Retour</div>
+          </div>
+          <div style="padding:14px">
+            <div style="background:rgba(4,10,22,.72);border:1px solid rgba(76,201,240,.2);border-radius:18px;padding:16px;margin-bottom:12px">
+              <div style="display:flex;gap:6px;margin-bottom:12px">
+                <span style="background:rgba(76,201,240,.1);color:#4cc9f0;border:1px solid rgba(76,201,240,.2);font-size:10px;padding:2px 7px;border-radius:6px;font-weight:700">Énergie & Vitalité</span>
+                <span style="background:rgba(255,255,255,.05);color:rgba(255,255,255,.4);border:1px solid rgba(255,255,255,.07);font-size:10px;padding:2px 7px;border-radius:6px;font-weight:700">Légèreté</span>
+              </div>
+              <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:12px">
+                <div>
+                  <h1 style="font-size:17px;font-weight:900;margin-bottom:5px">Bonjour, Sophie 👋</h1>
+                  <p style="font-size:11px;color:#4cc9f0;font-style:italic">"L'énergie suit l'intention."</p>
+                </div>
+                <div style="flex-shrink:0;width:44px;height:44px;border-radius:12px;background:rgba(76,201,240,.08);border:1px solid rgba(76,201,240,.18);display:flex;flex-direction:column;align-items:center;justify-content:center">
+                  <span style="font-size:18px;font-weight:900;background:linear-gradient(135deg,#2dd4a0,#4cc9f0);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1">8</span>
+                  <span style="font-size:9px;color:rgba(255,255,255,.35)">/ 21</span>
+                </div>
+              </div>
+              <!-- Note coach -->
+              <div style="background:rgba(45,212,160,.06);border:1px solid rgba(45,212,160,.2);border-radius:10px;padding:10px">
+                <p style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#2dd4a0;margin-bottom:4px">💬 Note de votre coach</p>
+                <p style="font-size:11px;color:rgba(255,255,255,.7);line-height:1.6">Excellent engagement depuis le début, continuez sur cette lancée !</p>
+              </div>
+            </div>
+            <!-- Repas du jour -->
+            ${[["🌅","Petit-déjeuner","Avocat · Œufs · Salade"],["🌞","Déjeuner","Saumon · Haricots verts"],["🌤","Collation","Amandes · Pomme"],["🌙","Dîner","Soupe légumes · Épinards"]].map(([icon,label,items]) => `
+            <div style="border:1px solid rgba(255,255,255,.08);background:rgba(4,10,22,.6);border-radius:14px;overflow:hidden;margin-bottom:8px">
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:11px 13px">
+                <div style="display:flex;align-items:center;gap:10px">
+                  <span style="font-size:15px">${icon}</span>
+                  <div>
+                    <p style="font-size:12px;font-weight:700">${label}</p>
+                    <p style="font-size:11px;color:rgba(255,255,255,.4)">${items}</p>
+                  </div>
+                </div>
+                <span style="font-size:12px;color:rgba(255,255,255,.35)">▾</span>
+              </div>
+            </div>`).join("")}
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<hr class="divider" style="margin:32px 0 0">
+
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<!--  7. EMAILS TRANSACTIONNELS                                                -->
+<!-- ══════════════════════════════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="section-label">07 — Emails transactionnels</div>
+  <div class="section-title">Tous les templates email (Resend)</div>
+
+  <!-- Légende design email -->
+  <div style="display:flex;gap:16px;align-items:center;margin-bottom:28px;padding:14px 18px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:12px">
+    <div style="display:flex;align-items:center;gap:8px"><div style="width:14px;height:14px;border-radius:4px;background:#070d0f;border:1px solid rgba(255,255,255,.2)"></div><span style="font-size:12px;color:rgba(255,255,255,.4)">Fond #070d0f</span></div>
+    <div style="display:flex;align-items:center;gap:8px"><div style="width:14px;height:14px;border-radius:4px;background:#0d1f2d;border:1px solid rgba(76,201,240,.3)"></div><span style="font-size:12px;color:rgba(255,255,255,.4)">Card #0d1f2d</span></div>
+    <div style="display:flex;align-items:center;gap:8px"><div style="width:14px;height:14px;border-radius:4px;background:linear-gradient(135deg,#2dd4a0,#4cc9f0)"></div><span style="font-size:12px;color:rgba(255,255,255,.4)">Gradient CTA</span></div>
+    <div style="display:flex;align-items:center;gap:8px"><div style="width:14px;height:14px;border-radius:4px;background:#f87171"></div><span style="font-size:12px;color:rgba(255,255,255,.4)">Accent danger (reset)</span></div>
+    <span style="font-size:11px;color:rgba(255,255,255,.25);margin-left:auto">Police : -apple-system · max-width 560px</span>
+  </div>
+
+  <div class="screens-grid">
+
+    <!-- ── 1. MAGIC LINK ──────────────────────────────────────────────────── -->
+    <div class="screen-wrap">
+      <div class="screen-name">Magic link (connexion collaborateur)</div>
+      <div class="screen-device" style="height:auto;min-height:460px">
+        <div style="background:#070d0f;padding:32px 16px;min-height:460px">
+          <!-- Header logo -->
+          <div style="text-align:center;padding-bottom:24px">
+            <div style="width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,#2dd4a0,#4cc9f0);display:inline-flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;color:#070d0f;margin-bottom:10px">B</div><br>
+            <span style="font-size:22px;font-weight:900;background:linear-gradient(135deg,#2dd4a0,#4cc9f0);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">Back to Energy</span>
+          </div>
+          <!-- Card -->
+          <div style="background:#0d1f2d;border:1px solid rgba(76,201,240,0.18);border-radius:20px;padding:28px">
+            <h1 style="margin:0 0 14px;font-size:20px;font-weight:900;color:#fff;line-height:1.2">Ta connexion au programme 21 jours 🌿</h1>
+            <p style="margin:0 0 20px;font-size:13px;color:rgba(255,255,255,0.65);line-height:1.7">Clique sur le bouton ci-dessous pour accéder à ton espace BacktoEnergy.<br>Ce lien est personnel, sécurisé et valable <strong style="color:#fff">1 heure</strong>.</p>
+            <div style="text-align:center;margin:24px 0">
+              <div style="display:inline-block;padding:13px 28px;border-radius:12px;background:linear-gradient(135deg,#2dd4a0,#4cc9f0);font-size:13px;font-weight:700;color:#070d0f;letter-spacing:0.02em">Accéder à mon programme →</div>
+            </div>
+            <p style="margin:18px 0 0;font-size:11px;color:rgba(255,255,255,0.3);text-align:center">Si tu n'es pas à l'origine de cette demande, ignore cet email.</p>
+          </div>
+          <!-- Footer -->
+          <div style="text-align:center;padding-top:22px">
+            <p style="font-size:11px;color:rgba(255,255,255,0.3);line-height:1.8">Back to Energy · backtoenergy.fr<br>Ce message est automatique, merci de ne pas y répondre.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 2. BIENVENUE ───────────────────────────────────────────────────── -->
+    <div class="screen-wrap">
+      <div class="screen-name">Bienvenue (post-inscription)</div>
+      <div class="screen-device" style="height:auto;min-height:760px">
+        <div style="background:#070d0f;padding:32px 16px;min-height:760px">
+          <div style="text-align:center;padding-bottom:24px">
+            <div style="width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,#2dd4a0,#4cc9f0);display:inline-flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;color:#070d0f;margin-bottom:10px">B</div><br>
+            <span style="font-size:22px;font-weight:900;background:linear-gradient(135deg,#2dd4a0,#4cc9f0);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">Back to Energy</span>
+          </div>
+          <div style="background:#0d1f2d;border:1px solid rgba(76,201,240,0.18);border-radius:20px;padding:28px">
+            <p style="margin:0 0 5px;font-size:11px;font-weight:700;letter-spacing:0.12em;color:#2dd4a0;text-transform:uppercase">Accès confirmé</p>
+            <h1 style="margin:0 0 14px;font-size:20px;font-weight:900;color:#fff;line-height:1.2">Bienvenue Sophie 🌱</h1>
+            <p style="margin:0 0 20px;font-size:13px;color:rgba(255,255,255,0.65);line-height:1.8">Votre programme <strong style="color:#fff">Back to Energy — 21 jours</strong> commence maintenant. Pendant 3 semaines, vous allez retrouver une énergie durable, un nettoyage digestif en profondeur, un corps plus léger.</p>
+            <!-- Semaines -->
+            <p style="margin:0 0 10px;font-size:10px;font-weight:700;letter-spacing:0.1em;color:rgba(255,255,255,0.4);text-transform:uppercase">Votre parcours</p>
+            <div style="border-bottom:1px solid rgba(255,255,255,0.06);padding:8px 0">
+              <span style="font-size:13px;font-weight:700;color:#fff">🌅 Semaine 1 — Détox &amp; Purification</span><br>
+              <span style="font-size:11px;color:rgba(255,255,255,0.5)">On libère le corps de ce qui l'encombre.</span>
+            </div>
+            <div style="border-bottom:1px solid rgba(255,255,255,0.06);padding:8px 0">
+              <span style="font-size:13px;font-weight:700;color:#fff">⚡ Semaine 2 — Énergie &amp; Vitalité</span><br>
+              <span style="font-size:11px;color:rgba(255,255,255,0.5)">On relance la machine, profondément.</span>
+            </div>
+            <div style="padding:8px 0;margin-bottom:18px">
+              <span style="font-size:13px;font-weight:700;color:#fff">🏔️ Semaine 3 — Ancrage &amp; Performance</span><br>
+              <span style="font-size:11px;color:rgba(255,255,255,0.5)">On installe des habitudes qui durent.</span>
+            </div>
+            <!-- Principes -->
+            <div style="background:rgba(45,212,160,0.07);border:1px solid rgba(45,212,160,0.2);border-radius:14px;padding:16px;margin-bottom:18px">
+              <p style="margin:0 0 10px;font-size:10px;font-weight:700;letter-spacing:0.1em;color:#2dd4a0;text-transform:uppercase">Les grands principes</p>
+              <p style="margin:0 0 7px;font-size:12px;color:rgba(255,255,255,0.7);line-height:1.7">🥗 <strong style="color:#fff">Associations alimentaires :</strong> fruits seuls, protéines + légumes, féculents sans protéines animales.</p>
+              <p style="margin:0 0 7px;font-size:12px;color:rgba(255,255,255,0.7);line-height:1.7">💧 <strong style="color:#fff">Hydratation :</strong> eau, tisanes, jus de légumes frais — votre meilleur carburant.</p>
+              <p style="margin:0;font-size:12px;color:rgba(255,255,255,0.7);line-height:1.7">✨ <strong style="color:#fff">Pour que la cure agisse :</strong> sans sucre raffiné, sans produits laitiers animaux, sans blé.</p>
+            </div>
+            <p style="margin:0 0 20px;font-size:12px;color:rgba(255,255,255,0.5);line-height:1.7;text-align:center;font-style:italic">Chaque jour, votre programme vous attend dans l'app. Faites-vous confiance 💪</p>
+            <div style="text-align:center">
+              <div style="display:inline-block;padding:13px 28px;border-radius:12px;background:linear-gradient(135deg,#2dd4a0,#4cc9f0);font-size:13px;font-weight:700;color:#070d0f">Démarrer mon programme →</div>
+            </div>
+          </div>
+          <div style="text-align:center;padding-top:22px">
+            <p style="font-size:11px;color:rgba(255,255,255,0.3);line-height:1.8">Back to Energy · backtoenergy.fr<br>Ce message est automatique, merci de ne pas y répondre.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 3. INVITATION COACH ────────────────────────────────────────────── -->
+    <div class="screen-wrap">
+      <div class="screen-name">Invitation (envoyée par le coach)</div>
+      <div class="screen-device" style="height:auto;min-height:620px">
+        <div style="background:#070d0f;padding:32px 16px;min-height:620px">
+          <div style="text-align:center;padding-bottom:24px">
+            <div style="width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,#2dd4a0,#4cc9f0);display:inline-flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;color:#070d0f;margin-bottom:10px">B</div><br>
+            <span style="font-size:22px;font-weight:900;background:linear-gradient(135deg,#2dd4a0,#4cc9f0);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">Back to Energy</span>
+          </div>
+          <div style="background:#0d1f2d;border:1px solid rgba(76,201,240,0.18);border-radius:20px;padding:28px">
+            <p style="margin:0 0 5px;font-size:11px;font-weight:700;letter-spacing:0.12em;color:#2dd4a0;text-transform:uppercase">Votre accès est prêt</p>
+            <h1 style="margin:0 0 14px;font-size:20px;font-weight:900;color:#fff;line-height:1.2">Bonjour Sophie 👋</h1>
+            <p style="margin:0 0 18px;font-size:13px;color:rgba(255,255,255,0.65);line-height:1.7">Votre coach vous a ouvert un accès au programme <strong style="color:#fff">Back to Energy — 21 jours</strong>. Cliquez sur le bouton ci-dessous pour créer votre espace et démarrer votre parcours.</p>
+            <div style="background:rgba(45,212,160,0.07);border:1px solid rgba(45,212,160,0.2);border-radius:14px;padding:16px;margin-bottom:20px">
+              <p style="margin:0 0 8px;font-size:10px;font-weight:700;letter-spacing:0.1em;color:#2dd4a0;text-transform:uppercase">Votre programme en 3 semaines</p>
+              <p style="margin:0 0 5px;font-size:12px;color:rgba(255,255,255,0.7);line-height:1.6">🌅 <strong style="color:#fff">Semaine 1 :</strong> Détox &amp; Purification</p>
+              <p style="margin:0 0 5px;font-size:12px;color:rgba(255,255,255,0.7);line-height:1.6">⚡ <strong style="color:#fff">Semaine 2 :</strong> Énergie &amp; Vitalité</p>
+              <p style="margin:0;font-size:12px;color:rgba(255,255,255,0.7);line-height:1.6">🏔️ <strong style="color:#fff">Semaine 3 :</strong> Ancrage &amp; Performance</p>
+            </div>
+            <div style="text-align:center;margin-bottom:18px">
+              <div style="display:inline-block;padding:13px 28px;border-radius:12px;background:linear-gradient(135deg,#2dd4a0,#4cc9f0);font-size:13px;font-weight:700;color:#070d0f">Définir mon mot de passe →</div>
+            </div>
+            <p style="margin:0;font-size:11px;color:rgba(255,255,255,0.3);text-align:center">Ce lien est valable <strong style="color:rgba(255,255,255,0.5)">1 heure</strong>. Si vous ne l'avez pas demandé, ignorez cet email.</p>
+          </div>
+          <div style="text-align:center;padding-top:22px">
+            <p style="font-size:11px;color:rgba(255,255,255,0.3);line-height:1.8">Back to Energy · backtoenergy.fr<br>Ce message est automatique, merci de ne pas y répondre.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 4. INVITATION PROGRAMME ────────────────────────────────────────── -->
+    <div class="screen-wrap">
+      <div class="screen-name">Invitation programme (accès direct)</div>
+      <div class="screen-device" style="height:auto;min-height:700px">
+        <div style="background:#070d0f;padding:32px 16px;min-height:700px">
+          <div style="text-align:center;padding-bottom:24px">
+            <div style="width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,#2dd4a0,#4cc9f0);display:inline-flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;color:#070d0f;margin-bottom:10px">B</div><br>
+            <span style="font-size:22px;font-weight:900;background:linear-gradient(135deg,#2dd4a0,#4cc9f0);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">Back to Energy</span>
+          </div>
+          <div style="background:#0d1f2d;border:1px solid rgba(76,201,240,0.18);border-radius:20px;padding:28px">
+            <p style="margin:0 0 5px;font-size:11px;font-weight:700;letter-spacing:0.12em;color:#2dd4a0;text-transform:uppercase">Votre accès est prêt</p>
+            <h1 style="margin:0 0 14px;font-size:19px;font-weight:900;color:#fff;line-height:1.2">Votre programme Back to Energy est prêt, Sophie 🌱</h1>
+            <p style="margin:0 0 22px;font-size:13px;color:rgba(255,255,255,0.65);line-height:1.7">En 21 jours, vous retrouvez une énergie que vous n'avez peut-être plus ressentie depuis longtemps.</p>
+            <p style="margin:0 0 10px;font-size:10px;font-weight:700;letter-spacing:0.1em;color:rgba(255,255,255,0.4);text-transform:uppercase">Votre parcours en 3 semaines</p>
+            <div style="border-bottom:1px solid rgba(255,255,255,0.06);padding:8px 0"><span style="font-size:13px;font-weight:700;color:#fff">🌅 Semaine 1 — Détox &amp; Purification</span></div>
+            <div style="border-bottom:1px solid rgba(255,255,255,0.06);padding:8px 0"><span style="font-size:13px;font-weight:700;color:#fff">⚡ Semaine 2 — Énergie &amp; Vitalité</span></div>
+            <div style="padding:8px 0;margin-bottom:18px"><span style="font-size:13px;font-weight:700;color:#fff">🏔️ Semaine 3 — Ancrage &amp; Performance</span></div>
+            <div style="background:rgba(45,212,160,0.07);border:1px solid rgba(45,212,160,0.2);border-radius:14px;padding:16px;margin-bottom:22px">
+              <p style="margin:0 0 10px;font-size:10px;font-weight:700;letter-spacing:0.1em;color:#2dd4a0;text-transform:uppercase">Les principes de la méthode</p>
+              <p style="margin:0 0 7px;font-size:12px;color:rgba(255,255,255,0.7);line-height:1.7">🍋 <strong style="color:#fff">Eau citronnée à jeun</strong> chaque matin — le premier geste qui change tout.</p>
+              <p style="margin:0 0 7px;font-size:12px;color:rgba(255,255,255,0.7);line-height:1.7">🥗 <strong style="color:#fff">50 % de l'assiette vivante</strong> — crudités et légumes peu cuits à chaque repas.</p>
+              <p style="margin:0;font-size:12px;color:rgba(255,255,255,0.7);line-height:1.7">🚫 <strong style="color:#fff">Sans sucre raffiné, sans blé, sans lait de vache</strong> — le temps de laisser votre corps respirer.</p>
+            </div>
+            <div style="text-align:center">
+              <div style="display:inline-block;padding:13px 28px;border-radius:12px;background:linear-gradient(135deg,#2dd4a0,#4cc9f0);font-size:13px;font-weight:700;color:#070d0f">Accéder à mon programme →</div>
+            </div>
+          </div>
+          <div style="text-align:center;padding-top:22px">
+            <p style="font-size:11px;color:rgba(255,255,255,0.3);line-height:1.8">Back to Energy · backtoenergy.fr<br>Ce message est automatique, merci de ne pas y répondre.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 5. RESET PASSWORD ───────────────────────────────────────────────── -->
+    <div class="screen-wrap">
+      <div class="screen-name">Réinitialisation mot de passe (coach)</div>
+      <div class="screen-device" style="height:auto;min-height:480px">
+        <div style="background:#070d0f;padding:32px 16px;min-height:480px">
+          <div style="text-align:center;padding-bottom:24px">
+            <div style="width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,#2dd4a0,#4cc9f0);display:inline-flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;color:#070d0f;margin-bottom:10px">B</div><br>
+            <span style="font-size:22px;font-weight:900;background:linear-gradient(135deg,#2dd4a0,#4cc9f0);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">Back to Energy</span>
+          </div>
+          <div style="background:#0d1f2d;border:1px solid rgba(76,201,240,0.18);border-radius:20px;padding:28px">
+            <p style="margin:0 0 5px;font-size:11px;font-weight:700;letter-spacing:0.12em;color:#f87171;text-transform:uppercase">Sécurité</p>
+            <h1 style="margin:0 0 14px;font-size:20px;font-weight:900;color:#fff;line-height:1.2">Réinitialisation<br>du mot de passe</h1>
+            <p style="margin:0 0 22px;font-size:13px;color:rgba(255,255,255,0.65);line-height:1.7">Bonjour Laurent,<br><br>Une demande de réinitialisation de mot de passe a été effectuée pour votre compte coach Back to Energy. Ce lien est valable <strong style="color:#fff">1 heure</strong>.</p>
+            <div style="text-align:center;margin-bottom:20px">
+              <div style="display:inline-block;padding:13px 28px;border-radius:12px;background:linear-gradient(135deg,#2dd4a0,#4cc9f0);font-size:13px;font-weight:700;color:#070d0f">Réinitialiser mon mot de passe →</div>
+            </div>
+            <p style="margin:0;font-size:11px;color:rgba(255,255,255,0.3);text-align:center">Si vous n'avez pas fait cette demande, ignorez cet email — votre mot de passe reste inchangé.</p>
+          </div>
+          <div style="text-align:center;padding-top:22px">
+            <p style="font-size:11px;color:rgba(255,255,255,0.3);line-height:1.8">Back to Energy · backtoenergy.fr<br>Ce message est automatique, merci de ne pas y répondre.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 6. EMAIL ÉTAPE (J1) ────────────────────────────────────────────── -->
+    <div class="screen-wrap">
+      <div class="screen-name">Email étape — Jour 1 (Détox)</div>
+      <div class="screen-device" style="height:auto;min-height:720px">
+        <div style="background:#070d0f;padding:32px 16px;min-height:720px">
+          <div style="text-align:center;padding-bottom:24px">
+            <div style="width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,#2dd4a0,#4cc9f0);display:inline-flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;color:#070d0f;margin-bottom:10px">B</div><br>
+            <span style="font-size:22px;font-weight:900;background:linear-gradient(135deg,#2dd4a0,#4cc9f0);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">Back to Energy</span>
+          </div>
+          <div style="background:#0d1f2d;border:1px solid rgba(76,201,240,0.18);border-radius:20px;padding:28px">
+            <!-- Week badge + day -->
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+              <span style="display:inline-block;padding:4px 10px;border-radius:6px;background:rgba(76,201,240,0.1);border:1px solid rgba(76,201,240,0.3);font-size:10px;font-weight:700;letter-spacing:0.1em;color:#4cc9f0;text-transform:uppercase">Détox &amp; Purification</span>
+              <div style="width:44px;height:44px;border-radius:12px;background:rgba(76,201,240,0.12);border:1px solid rgba(76,201,240,0.25);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;color:#fff">1</div>
+            </div>
+            <h1 style="margin:0 0 5px;font-size:19px;font-weight:900;color:#fff;line-height:1.2">Jour 1 — Réveil &amp; Nettoyage</h1>
+            <p style="margin:0 0 20px;font-size:13px;font-style:italic;color:#4cc9f0;opacity:0.85;line-height:1.6">"Chaque matin est une nouvelle opportunité de se réinventer."</p>
+            <!-- Repas -->
+            <p style="margin:0 0 10px;font-size:10px;font-weight:700;letter-spacing:0.1em;color:rgba(255,255,255,0.4);text-transform:uppercase">Au menu aujourd'hui</p>
+            <div style="border-bottom:1px solid rgba(255,255,255,0.06);padding:8px 0">
+              <p style="margin:0 0 3px;font-size:10px;font-weight:700;letter-spacing:0.1em;color:#4cc9f0;text-transform:uppercase">Petit-déjeuner</p>
+              <p style="margin:0;font-size:12px;color:rgba(255,255,255,0.7);line-height:1.6">Avocat · Œufs à la coque · Salade verte · Citron</p>
+            </div>
+            <div style="border-bottom:1px solid rgba(255,255,255,0.06);padding:8px 0">
+              <p style="margin:0 0 3px;font-size:10px;font-weight:700;letter-spacing:0.1em;color:#4cc9f0;text-transform:uppercase">Déjeuner</p>
+              <p style="margin:0;font-size:12px;color:rgba(255,255,255,0.7);line-height:1.6">Saumon vapeur · Haricots verts · Carottes râpées · Huile d'olive</p>
+            </div>
+            <div style="border-bottom:1px solid rgba(255,255,255,0.06);padding:8px 0">
+              <p style="margin:0 0 3px;font-size:10px;font-weight:700;letter-spacing:0.1em;color:#4cc9f0;text-transform:uppercase">Collation</p>
+              <p style="margin:0;font-size:12px;color:rgba(255,255,255,0.7);line-height:1.6">Amandes · Pomme · Tisane verte</p>
+            </div>
+            <div style="padding:8px 0;margin-bottom:16px">
+              <p style="margin:0 0 3px;font-size:10px;font-weight:700;letter-spacing:0.1em;color:#4cc9f0;text-transform:uppercase">Dîner</p>
+              <p style="margin:0;font-size:12px;color:rgba(255,255,255,0.7);line-height:1.6">Soupe de légumes · Courgettes · Épinards · Bouillon</p>
+            </div>
+            <!-- Rituels -->
+            <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px;margin-bottom:14px">
+              <p style="margin:0 0 6px;font-size:10px;font-weight:700;letter-spacing:0.1em;color:rgba(255,255,255,0.4);text-transform:uppercase">Rituels du jour</p>
+              <p style="margin:0 0 5px;font-size:12px;color:rgba(255,255,255,0.65);line-height:1.6">🌅 <strong style="color:#fff">Matin :</strong> Eau citronnée à jeun + 5 minutes de stretching doux</p>
+              <p style="margin:0;font-size:12px;color:rgba(255,255,255,0.65);line-height:1.6">🌙 <strong style="color:#fff">Soir :</strong> Tisane de camomille + journal de gratitude</p>
+            </div>
+            <!-- Conseil -->
+            <div style="background:rgba(76,201,240,0.08);border:1px solid rgba(76,201,240,0.2);border-radius:12px;padding:13px;margin-bottom:20px">
+              <p style="margin:0;font-size:12px;color:rgba(255,255,255,0.75);line-height:1.65">✨ <strong style="color:#fff">Conseil du jour :</strong> Commencez chaque journée par 30 secondes de respiration consciente — cela active le système nerveux parasympathique.</p>
+            </div>
+            <div style="text-align:center;margin-bottom:16px">
+              <div style="display:inline-block;padding:13px 28px;border-radius:12px;background:linear-gradient(135deg,#2dd4a0,#4cc9f0);font-size:13px;font-weight:700;color:#070d0f">Voir mon programme du jour →</div>
+            </div>
+            <p style="margin:0;text-align:center;font-size:11px;color:rgba(255,255,255,0.3)">Sophie, vous êtes au jour 1/21. Continuez 💪</p>
+          </div>
+          <div style="text-align:center;padding-top:22px">
+            <p style="font-size:11px;color:rgba(255,255,255,0.3);line-height:1.8">Back to Energy · backtoenergy.fr<br>Ce message est automatique, merci de ne pas y répondre.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 7. EMAIL ÉTAPE (J8) ────────────────────────────────────────────── -->
+    <div class="screen-wrap">
+      <div class="screen-name">Email étape — Jour 8 (Énergie)</div>
+      <div class="screen-device" style="height:auto;min-height:720px">
+        <div style="background:#070d0f;padding:32px 16px;min-height:720px">
+          <div style="text-align:center;padding-bottom:24px">
+            <div style="width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,#2dd4a0,#4cc9f0);display:inline-flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;color:#070d0f;margin-bottom:10px">B</div><br>
+            <span style="font-size:22px;font-weight:900;background:linear-gradient(135deg,#2dd4a0,#4cc9f0);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">Back to Energy</span>
+          </div>
+          <div style="background:#0d1f2d;border:1px solid rgba(76,201,240,0.18);border-radius:20px;padding:28px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+              <span style="display:inline-block;padding:4px 10px;border-radius:6px;background:rgba(45,212,160,0.1);border:1px solid rgba(45,212,160,0.3);font-size:10px;font-weight:700;letter-spacing:0.1em;color:#2dd4a0;text-transform:uppercase">Énergie &amp; Vitalité</span>
+              <div style="width:44px;height:44px;border-radius:12px;background:rgba(45,212,160,0.12);border:1px solid rgba(45,212,160,0.25);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;color:#fff">8</div>
+            </div>
+            <h1 style="margin:0 0 5px;font-size:19px;font-weight:900;color:#fff;line-height:1.2">Jour 8 — Relance &amp; Momentum</h1>
+            <p style="margin:0 0 20px;font-size:13px;font-style:italic;color:#2dd4a0;opacity:0.85;line-height:1.6">"L'énergie suit l'intention. Posez-la clairement ce matin."</p>
+            <div style="border-bottom:1px solid rgba(255,255,255,0.06);padding:8px 0">
+              <p style="margin:0 0 3px;font-size:10px;font-weight:700;letter-spacing:0.1em;color:#2dd4a0;text-transform:uppercase">Petit-déjeuner</p>
+              <p style="margin:0;font-size:12px;color:rgba(255,255,255,0.7);line-height:1.6">Smoothie vert · Graines de chia · Noix de cajou · Citron</p>
+            </div>
+            <div style="border-bottom:1px solid rgba(255,255,255,0.06);padding:8px 0">
+              <p style="margin:0 0 3px;font-size:10px;font-weight:700;letter-spacing:0.1em;color:#2dd4a0;text-transform:uppercase">Déjeuner</p>
+              <p style="margin:0;font-size:12px;color:rgba(255,255,255,0.7);line-height:1.6">Poulet rôti · Quinoa · Légumes grillés · Huile d'olive</p>
+            </div>
+            <div style="border-bottom:1px solid rgba(255,255,255,0.06);padding:8px 0">
+              <p style="margin:0 0 3px;font-size:10px;font-weight:700;letter-spacing:0.1em;color:#2dd4a0;text-transform:uppercase">Collation</p>
+              <p style="margin:0;font-size:12px;color:rgba(255,255,255,0.7);line-height:1.6">Noix · Poire · Eau citronnée</p>
+            </div>
+            <div style="padding:8px 0;margin-bottom:16px">
+              <p style="margin:0 0 3px;font-size:10px;font-weight:700;letter-spacing:0.1em;color:#2dd4a0;text-transform:uppercase">Dîner</p>
+              <p style="margin:0;font-size:12px;color:rgba(255,255,255,0.7);line-height:1.6">Velouté de brocoli · Lentilles · Épinards · Citron</p>
+            </div>
+            <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px;margin-bottom:14px">
+              <p style="margin:0 0 6px;font-size:10px;font-weight:700;letter-spacing:0.1em;color:rgba(255,255,255,0.4);text-transform:uppercase">Rituels du jour</p>
+              <p style="margin:0 0 5px;font-size:12px;color:rgba(255,255,255,0.65);line-height:1.6">🌅 <strong style="color:#fff">Matin :</strong> 10 min de marche à jeun + eau citronnée chaude</p>
+              <p style="margin:0;font-size:12px;color:rgba(255,255,255,0.65);line-height:1.6">🌙 <strong style="color:#fff">Soir :</strong> Bain chaud + lecture 15 min avant de dormir</p>
+            </div>
+            <div style="background:rgba(45,212,160,0.08);border:1px solid rgba(45,212,160,0.2);border-radius:12px;padding:13px;margin-bottom:20px">
+              <p style="margin:0;font-size:12px;color:rgba(255,255,255,0.75);line-height:1.65">✨ <strong style="color:#fff">Conseil du jour :</strong> Mâchez chaque bouchée 20 fois minimum — la digestion commence dans la bouche.</p>
+            </div>
+            <div style="text-align:center;margin-bottom:16px">
+              <div style="display:inline-block;padding:13px 28px;border-radius:12px;background:linear-gradient(135deg,#2dd4a0,#4cc9f0);font-size:13px;font-weight:700;color:#070d0f">Voir mon programme du jour →</div>
+            </div>
+            <p style="margin:0;text-align:center;font-size:11px;color:rgba(255,255,255,0.3)">Sophie, vous êtes au jour 8/21. Continuez 💪</p>
+          </div>
+          <div style="text-align:center;padding-top:22px">
+            <p style="font-size:11px;color:rgba(255,255,255,0.3);line-height:1.8">Back to Energy · backtoenergy.fr<br>Ce message est automatique, merci de ne pas y répondre.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 8. EMAIL MIDPOINT (J10) ────────────────────────────────────────── -->
+    <div class="screen-wrap">
+      <div class="screen-name">Mi-parcours — Jour 10</div>
+      <div class="screen-device" style="height:auto;min-height:560px">
+        <div style="background:#070d0f;padding:32px 16px;min-height:560px">
+          <div style="text-align:center;padding-bottom:24px">
+            <div style="width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,#2dd4a0,#4cc9f0);display:inline-flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;color:#070d0f;margin-bottom:10px">B</div><br>
+            <span style="font-size:22px;font-weight:900;background:linear-gradient(135deg,#2dd4a0,#4cc9f0);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">Back to Energy</span>
+          </div>
+          <div style="background:#0d1f2d;border:1px solid rgba(76,201,240,0.18);border-radius:20px;padding:28px">
+            <p style="margin:0 0 5px;font-size:11px;font-weight:700;letter-spacing:0.12em;color:#4cc9f0;text-transform:uppercase">Mi-parcours</p>
+            <h1 style="margin:0 0 14px;font-size:20px;font-weight:900;color:#fff;line-height:1.2">Jour 10 — Halfway There 🏔️</h1>
+            <p style="margin:0 0 20px;font-size:13px;color:rgba(255,255,255,0.65);line-height:1.7">Sophie, vous avez atteint la moitié du programme ! C'est le moment de faire un bilan et de reconnaître votre engagement.</p>
+            <div style="background:rgba(45,212,160,0.07);border:1px solid rgba(45,212,160,0.2);border-radius:14px;padding:18px;margin-bottom:18px">
+              <p style="margin:0 0 8px;font-size:10px;font-weight:700;letter-spacing:0.1em;color:#2dd4a0;text-transform:uppercase">Comment vous vous sentez ?</p>
+              <p style="margin:0;font-size:12px;color:rgba(255,255,255,0.7);line-height:1.7">Vous avez passé la première semaine de détox et commencez la seconde phase d'énergie. C'est normal de sentir des changements dans votre corps et votre esprit. Écoutez-vous.</p>
+            </div>
+            <p style="margin:0 0 20px;font-size:13px;color:rgba(255,255,255,0.65);line-height:1.7">Il vous reste 11 jours pour consolider ces habitudes et sentir la transformation s'approfondir.</p>
+            <div style="text-align:center;margin-bottom:16px">
+              <div style="display:inline-block;padding:13px 28px;border-radius:12px;background:linear-gradient(135deg,#2dd4a0,#4cc9f0);font-size:13px;font-weight:700;color:#070d0f">Continuer mon programme →</div>
+            </div>
+            <p style="margin:0;text-align:center;font-size:11px;color:rgba(255,255,255,0.3)">Sophie, vous êtes à mi-chemin. Vous avez déjà réussi la moitié 💪</p>
+          </div>
+          <div style="text-align:center;padding-top:22px">
+            <p style="font-size:11px;color:rgba(255,255,255,0.3);line-height:1.8">Back to Energy · backtoenergy.fr<br>Ce message est automatique, merci de ne pas y répondre.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 9. EMAIL ÉTAPE (J15) ───────────────────────────────────────────── -->
+    <div class="screen-wrap">
+      <div class="screen-name">Email étape — Jour 15 (Ancrage)</div>
+      <div class="screen-device" style="height:auto;min-height:680px">
+        <div style="background:#070d0f;padding:32px 16px;min-height:680px">
+          <div style="text-align:center;padding-bottom:24px">
+            <div style="width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,#2dd4a0,#4cc9f0);display:inline-flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;color:#070d0f;margin-bottom:10px">B</div><br>
+            <span style="font-size:22px;font-weight:900;background:linear-gradient(135deg,#2dd4a0,#4cc9f0);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">Back to Energy</span>
+          </div>
+          <div style="background:#0d1f2d;border:1px solid rgba(76,201,240,0.18);border-radius:20px;padding:28px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+              <span style="display:inline-block;padding:4px 10px;border-radius:6px;background:rgba(129,140,248,0.1);border:1px solid rgba(129,140,248,0.3);font-size:10px;font-weight:700;letter-spacing:0.1em;color:#818cf8;text-transform:uppercase">Ancrage &amp; Performance</span>
+              <div style="width:44px;height:44px;border-radius:12px;background:rgba(129,140,248,0.12);border:1px solid rgba(129,140,248,0.25);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;color:#fff">15</div>
+            </div>
+            <h1 style="margin:0 0 5px;font-size:19px;font-weight:900;color:#fff;line-height:1.2">Jour 15 — Ancrage &amp; Durabilité</h1>
+            <p style="margin:0 0 20px;font-size:13px;font-style:italic;color:#818cf8;opacity:0.85;line-height:1.6">"Ce qui se construit dans la durée, s'ancre dans le corps."</p>
+            <div style="border-bottom:1px solid rgba(255,255,255,0.06);padding:8px 0">
+              <p style="margin:0 0 3px;font-size:10px;font-weight:700;letter-spacing:0.1em;color:#818cf8;text-transform:uppercase">Petit-déjeuner</p>
+              <p style="margin:0;font-size:12px;color:rgba(255,255,255,0.7);line-height:1.6">Porridge d'avoine · Fruits rouges · Noix · Miel d'acacia</p>
+            </div>
+            <div style="border-bottom:1px solid rgba(255,255,255,0.06);padding:8px 0">
+              <p style="margin:0 0 3px;font-size:10px;font-weight:700;letter-spacing:0.1em;color:#818cf8;text-transform:uppercase">Déjeuner</p>
+              <p style="margin:0;font-size:12px;color:rgba(255,255,255,0.7);line-height:1.6">Riz complet · Légumes sautés · Tofu grillé · Sésame</p>
+            </div>
+            <div style="border-bottom:1px solid rgba(255,255,255,0.06);padding:8px 0">
+              <p style="margin:0 0 3px;font-size:10px;font-weight:700;letter-spacing:0.1em;color:#818cf8;text-transform:uppercase">Collation</p>
+              <p style="margin:0;font-size:12px;color:rgba(255,255,255,0.7);line-height:1.6">Banane · Purée d'amandes · Eau plate</p>
+            </div>
+            <div style="padding:8px 0;margin-bottom:16px">
+              <p style="margin:0 0 3px;font-size:10px;font-weight:700;letter-spacing:0.1em;color:#818cf8;text-transform:uppercase">Dîner</p>
+              <p style="margin:0;font-size:12px;color:rgba(255,255,255,0.7);line-height:1.6">Velouté de potiron · Légumes verts · Courge · Herbes fraîches</p>
+            </div>
+            <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px;margin-bottom:14px">
+              <p style="margin:0 0 6px;font-size:10px;font-weight:700;letter-spacing:0.1em;color:rgba(255,255,255,0.4);text-transform:uppercase">Rituels du jour</p>
+              <p style="margin:0 0 5px;font-size:12px;color:rgba(255,255,255,0.65);line-height:1.6">🌅 <strong style="color:#fff">Matin :</strong> 20 min de yoga doux ou Qi Gong</p>
+              <p style="margin:0;font-size:12px;color:rgba(255,255,255,0.65);line-height:1.6">🌙 <strong style="color:#fff">Soir :</strong> Méditation 10 min + gratitude pour 3 choses</p>
+            </div>
+            <div style="background:rgba(129,140,248,0.08);border:1px solid rgba(129,140,248,0.2);border-radius:12px;padding:13px;margin-bottom:20px">
+              <p style="margin:0;font-size:12px;color:rgba(255,255,255,0.75);line-height:1.65">✨ <strong style="color:#fff">Conseil du jour :</strong> Cette dernière semaine, observez ce que votre corps vous dit sans le forcer. L'ancrage, c'est l'écoute.</p>
+            </div>
+            <div style="text-align:center;margin-bottom:16px">
+              <div style="display:inline-block;padding:13px 28px;border-radius:12px;background:linear-gradient(135deg,#2dd4a0,#4cc9f0);font-size:13px;font-weight:700;color:#070d0f">Voir mon programme du jour →</div>
+            </div>
+            <p style="margin:0;text-align:center;font-size:11px;color:rgba(255,255,255,0.3)">Sophie, vous êtes au jour 15/21. Plus que 6 jours 💪</p>
+          </div>
+          <div style="text-align:center;padding-top:22px">
+            <p style="font-size:11px;color:rgba(255,255,255,0.3);line-height:1.8">Back to Energy · backtoenergy.fr<br>Ce message est automatique, merci de ne pas y répondre.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 10. POST-CURE (J22) ────────────────────────────────────────────── -->
+    <div class="screen-wrap">
+      <div class="screen-name">Post-cure — Programme terminé (J22)</div>
+      <div class="screen-device" style="height:auto;min-height:600px">
+        <div style="background:#070d0f;padding:32px 16px;min-height:600px">
+          <div style="text-align:center;padding-bottom:24px">
+            <div style="width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,#2dd4a0,#4cc9f0);display:inline-flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;color:#070d0f;margin-bottom:10px">B</div><br>
+            <span style="font-size:22px;font-weight:900;background:linear-gradient(135deg,#2dd4a0,#4cc9f0);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">Back to Energy</span>
+          </div>
+          <div style="background:#0d1f2d;border:1px solid rgba(76,201,240,0.18);border-radius:20px;padding:28px">
+            <p style="margin:0 0 5px;font-size:11px;font-weight:700;letter-spacing:0.12em;color:#2dd4a0;text-transform:uppercase">Programme Terminé</p>
+            <h1 style="margin:0 0 14px;font-size:20px;font-weight:900;color:#fff;line-height:1.2">Sophie, vous avez réussi ! 🎉</h1>
+            <p style="margin:0 0 20px;font-size:13px;color:rgba(255,255,255,0.65);line-height:1.7">Félicitations pour avoir complété le programme Back to Energy. Les 21 jours sont derrière vous — ce qui vient maintenant, c'est de maintenir et renforcer ce que vous avez construit.</p>
+            <div style="background:rgba(129,140,248,0.07);border:1px solid rgba(129,140,248,0.2);border-radius:14px;padding:18px;margin-bottom:18px">
+              <p style="margin:0 0 10px;font-size:10px;font-weight:700;letter-spacing:0.1em;color:#818cf8;text-transform:uppercase">Et maintenant ?</p>
+              <p style="margin:0 0 8px;font-size:12px;color:rgba(255,255,255,0.7);line-height:1.7">Les principes d'alimentation que vous avez appris peuvent devenir votre mode de vie. Les rituels du matin et du soir : conservez-les quand vous pouvez.</p>
+              <p style="margin:0;font-size:12px;color:rgba(255,255,255,0.7);line-height:1.7">L'important ? Rester à l'écoute de votre corps. Vous avez maintenant les outils pour savoir ce qui vous convient.</p>
+            </div>
+            <p style="margin:0 0 20px;font-size:13px;color:rgba(255,255,255,0.65);line-height:1.7">Si vous souhaitez lancer un nouveau cycle ou obtenir du coaching personnalisé, nous sommes là pour vous.</p>
+            <div style="text-align:center;margin-bottom:16px">
+              <div style="display:inline-block;padding:13px 28px;border-radius:12px;background:linear-gradient(135deg,#2dd4a0,#4cc9f0);font-size:13px;font-weight:700;color:#070d0f">Voir mon bilan →</div>
+            </div>
+            <p style="margin:0;text-align:center;font-size:11px;color:rgba(255,255,255,0.3)">Merci d'avoir suivi le programme Back to Energy. Votre wellbeing commence ici 🌿</p>
+          </div>
+          <div style="text-align:center;padding-top:22px">
+            <p style="font-size:11px;color:rgba(255,255,255,0.3);line-height:1.8">Back to Energy · backtoenergy.fr<br>Ce message est automatique, merci de ne pas y répondre.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Padding final -->
+<div style="height:60px"></div>
+
+</body>
+</html>

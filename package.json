@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "preview": "npx serve preview -p 8090"
   },
   "dependencies": {
     "@supabase/ssr": "^0.10.2",

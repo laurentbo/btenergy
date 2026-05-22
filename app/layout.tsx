@@ -1,11 +1,14 @@
-import type { Metadata } from "next"
+import type { Metadata, Viewport } from "next"
 import { AuthProvider } from "@/lib/auth-context"
 import "./globals.css"
+
+export const viewport: Viewport = {
+  themeColor: "#15130E",
+}
 
 export const metadata: Metadata = {
   title: "Back to Energy",
   description: "Programme de coaching nutritionnel 21 jours — méthode Verissimo.",
-  themeColor: "#15130E",
   appleWebApp: {
     capable: true,
     title: "Back to Energy",
