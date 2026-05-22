@@ -124,7 +124,12 @@ function Avatar({ who, size = 26 }: { who: "coach" | "me"; size?: number }) {
 
 // ─── Mobile header ────────────────────────────────────────────────────────────
 
-function AppHeader({ currentDay }: { currentDay: number }) {
+function AppHeader({ currentDay, prenom, onSignOut }: {
+  currentDay: number
+  prenom: string
+  onSignOut: () => void
+}) {
+  const initial = prenom ? prenom.charAt(0).toUpperCase() : "?"
   return (
     <div className="mobile-header" style={{
       padding: "env(safe-area-inset-top, 44px) 22px 14px",
@@ -139,10 +144,26 @@ function AppHeader({ currentDay }: { currentDay: number }) {
           <div style={{ fontSize: 11, color: "var(--text-mute)", marginTop: 2 }}>ta coach</div>
         </div>
       </div>
-      <div style={{
-        fontFamily: "var(--serif)", fontStyle: "italic",
-        fontSize: 13, color: "var(--text-mute)",
-      }}>jour {currentDay}</div>
+      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        <div style={{
+          fontFamily: "var(--serif)", fontStyle: "italic",
+          fontSize: 13, color: "var(--text-mute)",
+        }}>jour {currentDay}</div>
+        <button
+          onClick={onSignOut}
+          title="Se déconnecter"
+          style={{
+            width: 28, height: 28, borderRadius: 999, flexShrink: 0,
+            background: "rgba(236,228,210,0.08)",
+            border: "1px solid rgba(236,228,210,0.12)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            color: "var(--text-dim)",
+            fontFamily: "var(--serif)", fontStyle: "italic",
+            fontSize: 13, fontWeight: 400,
+            cursor: "pointer",
+          }}
+        >{initial}</button>
+      </div>
     </div>
   )
 }
@@ -190,8 +211,9 @@ function TabBar({ active, onChange }: { active: Tab; onChange: (t: Tab) => void 
 
 // ─── Side nav (desktop) ───────────────────────────────────────────────────────
 
-function SideNav({ active, onChange, currentDay }: {
+function SideNav({ active, onChange, currentDay, prenom, onSignOut }: {
   active: Tab; onChange: (t: Tab) => void; currentDay: number
+  prenom: string; onSignOut: () => void
 }) {
   const logoUrl = process.env.NEXT_PUBLIC_LOGO_DARK_URL ?? ""
   return (
@@ -224,6 +246,31 @@ function SideNav({ active, onChange, currentDay }: {
       <div className="dnav-day">
         <div className="dnav-day-label">jour {currentDay}</div>
         <div className="dnav-day-meta">{todayLong()}</div>
+      </div>
+      <hr className="dnav-rule" />
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 0 2px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <div style={{
+            width: 26, height: 26, borderRadius: 999, flexShrink: 0,
+            background: "rgba(236,228,210,0.08)",
+            border: "1px solid rgba(236,228,210,0.12)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            color: "var(--text-dim)",
+            fontFamily: "var(--serif)", fontStyle: "italic",
+            fontSize: 12,
+          }}>
+            {prenom ? prenom.charAt(0).toUpperCase() : "?"}
+          </div>
+          <div style={{ fontSize: 12.5, color: "var(--text-dim)" }}>{cap(prenom)}</div>
+        </div>
+        <button
+          onClick={onSignOut}
+          style={{
+            background: "transparent", border: 0, cursor: "pointer",
+            fontSize: 11.5, color: "var(--text-faint)", fontFamily: "var(--sans)",
+            padding: "4px 0",
+          }}
+        >Se déconnecter</button>
       </div>
     </aside>
   )
@@ -1255,7 +1302,7 @@ function PillBtn({ children, onClick }: { children: React.ReactNode; onClick?: (
 // ─── Main page ────────────────────────────────────────────────────────────────
 
 export default function DashboardPage() {
-  const { user } = useAuth()
+  const { user, signOut } = useAuth()
   const supabase = createClient()
 
   const [tab, setTab]             = useState<Tab>("today")
@@ -1428,9 +1475,9 @@ export default function DashboardPage() {
 
   return (
     <div className="app-root web">
-      <SideNav active={tab} onChange={setTab} currentDay={currentDay} />
+      <SideNav active={tab} onChange={setTab} currentDay={currentDay} prenom={prenom} onSignOut={signOut} />
 
-      <AppHeader currentDay={currentDay} />
+      <AppHeader currentDay={currentDay} prenom={prenom} onSignOut={signOut} />
 
       <div className="app-main" style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
         {tab === "today" && (

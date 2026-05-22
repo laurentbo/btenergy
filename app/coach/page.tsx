@@ -204,6 +204,7 @@ export default function CoachDashboard() {
           </div>
           <div className="flex items-center gap-2">
             <span className="text-xs" style={{ color: "var(--text-muted)" }}>{coachProfile?.prenom}</span>
+            <a href="/admin/cockpit" className="tag" style={{ textDecoration: "none", cursor: "pointer" }}>Cockpit</a>
             <button onClick={signOut} className="tag cursor-pointer">Déconnexion</button>
           </div>
         </div>
