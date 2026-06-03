@@ -1,36 +1,36 @@
 @import "tailwindcss";
 
-/* ── Design tokens — Plein jour (fond clair naturel) ──────────────────────── */
+/* ── Design tokens — Menthe fraîche ──────────────────────────────────────── */
 :root {
   /* Backgrounds */
-  --bg:          #FBFCF7;
-  --bg-lift:     #F3F5EE;
+  --bg:          #EDFAF4;
+  --bg-lift:     #DCF5E8;
   --bg-surface:  #FFFFFF;
-  --bg-elev:     #EEF1E8;
+  --bg-elev:     #CCF0DC;
 
   /* Lines */
-  --line:        rgba(35,82,54,0.10);
-  --line-soft:   rgba(35,82,54,0.06);
+  --line:        rgba(12,110,58,0.12);
+  --line-soft:   rgba(12,110,58,0.07);
 
   /* Text */
-  --text:        #1A2E1D;
-  --text-dim:    rgba(26,46,29,0.65);
-  --text-mute:   rgba(26,46,29,0.40);
-  --text-faint:  rgba(26,46,29,0.20);
+  --text:        #0D2B1A;
+  --text-dim:    rgba(13,43,26,0.65);
+  --text-mute:   rgba(13,43,26,0.40);
+  --text-faint:  rgba(13,43,26,0.20);
 
-  /* Vert primaire */
-  --accent:      #3E8E4F;
-  --accent-soft: rgba(62,142,79,0.12);
-  --coach:       #235236;
+  /* Vert primaire frais */
+  --accent:      #1DB864;
+  --accent-soft: rgba(29,184,100,0.10);
+  --coach:       #0C6E3A;
 
-  /* Brand vert — CTA, états actifs */
-  --brand:       #3E8E4F;
-  --brand-soft:  rgba(62,142,79,0.12);
-  --forest:      #235236;
+  /* Brand vert frais — CTA, états actifs */
+  --brand:       #1DB864;
+  --brand-soft:  rgba(29,184,100,0.12);
+  --forest:      #0C6E3A;
 
-  /* Accent chaud miel — encarts secondaires */
-  --warm:        #C8964C;
-  --warm-soft:   rgba(200,150,76,0.12);
+  /* Accent menthe moyen — encarts secondaires */
+  --warm:        #5CC8A0;
+  --warm-soft:   rgba(92,200,160,0.12);
 
   /* Type stacks — alimentés par next/font via les variables CSS */
   --sans:    var(--font-sans, system-ui, sans-serif);
