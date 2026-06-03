@@ -19,6 +19,8 @@ type JournalMessage = {
   body: string | null
   photo_url: string | null
   is_question: boolean
+  read_by_coach: boolean
+  read_by_user: boolean
   created_at: string
 }
 
@@ -56,13 +58,16 @@ type DailyCheckin = {
 
 const TABS: { id: Tab; label: string }[] = [
   { id: "today",      label: "Aujourd'hui" },
-  { id: "journal",    label: "Journal" },
+  { id: "journal",    label: "Coach" },
   { id: "meals",      label: "Repas" },
   { id: "journey",    label: "Parcours" },
   { id: "principles", label: "Principes" },
 ]
 
-const COACH = { name: "Camille", initial: "C" }
+const COACH = { name: "Laurent", initial: "L" }
+
+const WELCOME_MESSAGE = (prenom: string) =>
+  `Bonjour ${prenom}, je serai présent tout au long de ces 21 jours, tu peux me poser à tout moment des questions et aussi tes ressentis ou difficultés. Laurent`
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -386,7 +391,7 @@ function JournalScreen({
   messages: JournalMessage[]
   prefill: string
   onPrefillConsumed: () => void
-  onSend: (body: string, isQuestion: boolean) => Promise<void>
+  onSend: (body: string) => Promise<void>
 }) {
   const [draft, setDraft] = useState("")
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -411,11 +416,10 @@ function JournalScreen({
     if (!body || sending) return
     setSending(true)
     setDraft("")
-    await onSend(body, body.toLowerCase().startsWith("j'ai une question"))
+    await onSend(body)
     setSending(false)
   }
 
-  // Group messages by date for day separators
   const grouped: Array<{ type: "separator"; label: string } | { type: "msg"; msg: JournalMessage }> = []
   let lastDate = ""
   for (const msg of messages) {
@@ -434,25 +438,40 @@ function JournalScreen({
         padding: "22px 18px 14px",
         display: "flex", flexDirection: "column", gap: 14,
       }}>
-        <div style={{ marginBottom: 6 }}>
-          <Eyebrow>journal partagé</Eyebrow>
-          <div style={{
-            fontFamily: "var(--serif)",
-            fontSize: 26, lineHeight: 1.15, marginTop: 8,
-            color: "var(--text)", letterSpacing: "-0.01em",
-          }}>
-            Toi et <em style={{ color: "var(--coach)", fontStyle: "italic" }}>{COACH.name}</em>.
+        {/* En-tête coach */}
+        <div style={{ marginBottom: 4 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
+            <div style={{
+              width: 44, height: 44, borderRadius: 999, flexShrink: 0,
+              background: "var(--brand-soft)",
+              border: "1.5px solid var(--line)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontFamily: "var(--heading)", fontSize: 18, fontWeight: 700,
+              color: "var(--forest)",
+            }}>L</div>
+            <div>
+              <div style={{ fontSize: 15, fontWeight: 600, color: "var(--text)", fontFamily: "var(--heading)" }}>
+                Laurent
+              </div>
+              <div style={{ fontSize: 12, color: "var(--text-mute)", marginTop: 2 }}>
+                Ton coach · répond dans la journée
+              </div>
+            </div>
           </div>
-          <div style={{ fontSize: 12, color: "var(--text-mute)", marginTop: 6 }}>
-            Ce qui est noté ici reste entre vous deux.
+
+          {/* Bandeau d'intro fixe */}
+          <div style={{
+            padding: "12px 14px",
+            background: "var(--bg-lift)",
+            border: "1px solid var(--line)",
+            borderRadius: 12,
+            fontSize: 13, lineHeight: 1.6,
+            color: "var(--text-dim)",
+            fontStyle: "italic",
+          }}>
+            Je t'accompagne tout au long de ton parcours. Une question, une interrogation ? Dis-moi. Je suis à ton écoute.
           </div>
         </div>
-
-        {messages.length === 0 && (
-          <div style={{ textAlign: "center", paddingTop: 48, color: "var(--text-faint)", fontSize: 13 }}>
-            Commence à écrire — {COACH.name} te répond dans la journée.
-          </div>
-        )}
 
         {grouped.map((item, i) => {
           if (item.type === "separator") {
@@ -463,8 +482,7 @@ function JournalScreen({
               }}>
                 <div style={{ flex: 1, height: 1, background: "var(--line-soft)" }} />
                 <div style={{
-                  fontFamily: "var(--serif)", fontStyle: "italic",
-                  fontSize: 12, color: "var(--text-mute)",
+                  fontSize: 11, color: "var(--text-mute)", fontStyle: "italic",
                 }}>{item.label}</div>
                 <div style={{ flex: 1, height: 1, background: "var(--line-soft)" }} />
               </div>
@@ -480,9 +498,6 @@ function JournalScreen({
         borderTop: "1px solid var(--line-soft)",
         display: "flex", alignItems: "flex-end", gap: 8,
       }}>
-        <IconBtn aria-label="Ajouter une photo">
-          <PhotoIcon />
-        </IconBtn>
         <div style={{
           flex: 1,
           background: "var(--bg-lift)",
@@ -496,7 +511,7 @@ function JournalScreen({
             value={draft}
             onChange={e => setDraft(e.target.value)}
             onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend() } }}
-            placeholder="un mot, une photo, rien…"
+            placeholder="Écris à Laurent…"
             style={{
               flex: 1, background: "transparent", border: 0, outline: "none",
               color: "var(--text)", fontFamily: "var(--sans)", fontSize: 14,
@@ -525,7 +540,16 @@ function JournalBubble({ msg }: { msg: JournalMessage }) {
       flexDirection: isMe ? "row-reverse" : "row",
       alignItems: "flex-end",
     }}>
-      {isCoach && <Avatar who="coach" size={26} />}
+      {isCoach && (
+        <div style={{
+          width: 26, height: 26, borderRadius: 999, flexShrink: 0,
+          background: "var(--brand-soft)",
+          border: "1px solid var(--line)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          fontFamily: "var(--heading)", fontSize: 11, fontWeight: 700,
+          color: "var(--forest)",
+        }}>L</div>
+      )}
       <div style={{
         maxWidth: "78%", display: "flex", flexDirection: "column", gap: 5,
         alignItems: isMe ? "flex-end" : "flex-start",
@@ -533,16 +557,16 @@ function JournalBubble({ msg }: { msg: JournalMessage }) {
         {msg.body && (
           <div style={{
             padding: "10px 14px",
-            background: isCoach ? "transparent" : "var(--bg-elev)",
-            border: isCoach ? "1px solid rgba(168,187,165,0.18)" : "1px solid var(--line)",
+            background: isCoach ? "var(--bg-lift)" : "var(--brand-soft)",
+            border: isCoach ? "1px solid var(--line)" : "1px solid rgba(62,142,79,0.2)",
             borderRadius: 18,
             borderBottomLeftRadius: isCoach ? 6 : 18,
             borderBottomRightRadius: isMe ? 6 : 18,
-            color: isCoach ? "var(--coach)" : "var(--text)",
-            fontFamily: isCoach ? "var(--serif)" : "var(--sans)",
+            color: isCoach ? "var(--forest)" : "var(--text)",
+            fontFamily: isCoach ? "var(--heading)" : "var(--sans)",
             fontStyle: isCoach ? "italic" : "normal",
-            fontSize: isCoach ? 15.5 : 13.5,
-            lineHeight: 1.55,
+            fontSize: isCoach ? 15 : 13.5,
+            lineHeight: 1.6,
           }}>
             {msg.body}
           </div>
@@ -582,7 +606,7 @@ function MealsScreen({ currentDay }: { currentDay: number }) {
         Ce qui est <em style={{ fontStyle: "italic", color: "var(--brand)" }}>prévu</em>.
       </h2>
       <p style={{ margin: "10px 0 0", fontSize: 13.5, color: "var(--text-dim)", lineHeight: 1.55 }}>
-        Camille a composé tes repas selon le moment du parcours. Tu peux adapter selon ce que tu trouves.
+        Laurent a composé tes repas selon le moment du parcours. Tu peux adapter selon ce que tu trouves.
       </p>
 
       {/* Day navigator */}
@@ -905,7 +929,7 @@ function PrinciplesScreen({ onAskCoach }: { onAskCoach: () => void }) {
         Ce qui <em style={{ fontStyle: "italic", color: "var(--brand)" }}>guide</em> le programme.
       </h2>
       <p style={{ margin: "10px 0 0", fontSize: 13.5, color: "var(--text-dim)", lineHeight: 1.6, maxWidth: "34ch" }}>
-        Pas des règles, plutôt des points d'appui. Tu les suis dans le sens qui te va, Camille adapte avec toi.
+        Pas des règles, plutôt des points d'appui. Tu les suis dans le sens qui te va, Laurent adapte avec toi.
       </p>
 
       {/* Carte Verissimo */}
@@ -977,17 +1001,17 @@ function PrinciplesScreen({ onAskCoach }: { onAskCoach: () => void }) {
           margin: 0, fontFamily: "var(--serif)", fontStyle: "italic",
           fontSize: 16, lineHeight: 1.5, color: "var(--coach)",
         }}>
-          « Une question là-dessus ? Écris-moi dans le journal, j'y réponds dans la journée. »
+          « Une question là-dessus ? Écris-moi, je te réponds dans la journée. »
         </p>
-        <p style={{ margin: "8px 0 16px", fontSize: 12, color: "var(--text-mute)" }}>— Camille</p>
+        <p style={{ margin: "8px 0 16px", fontSize: 12, color: "var(--text-mute)" }}>— Laurent</p>
         <button onClick={onAskCoach} style={{
           background: "transparent",
-          border: "1px solid rgba(92,181,81,0.35)",
+          border: "1px solid rgba(62,142,79,0.35)",
           borderRadius: 999, padding: "10px 18px",
           color: "var(--brand)", fontSize: 13, fontFamily: "var(--sans)",
           cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 8,
         }}>
-          Poser une question <span style={{ fontSize: 14 }}>→</span>
+          Écrire à Laurent <span style={{ fontSize: 14 }}>→</span>
         </button>
       </div>
     </div>
@@ -1364,13 +1388,34 @@ export default function DashboardPage() {
       setCoachNote((noteRes.data as CoachNote | null)?.coach_note ?? null)
     }
 
-    if (messagesRes.data) setMessages(messagesRes.data as JournalMessage[])
+    const loadedMessages = (messagesRes.data ?? []) as JournalMessage[]
+
+    // Message d'accueil : inséré une seule fois si le fil est vide
+    if (loadedMessages.length === 0 && profileRes.data?.prenom) {
+      const welcomeBody = WELCOME_MESSAGE(profileRes.data.prenom)
+      const { data: inserted } = await supabase.from("journal_messages").insert({
+        coachee_id: user.id,
+        author: "coach",
+        body: welcomeBody,
+        is_question: false,
+        read_by_coach: true,
+        read_by_user: false,
+      }).select().maybeSingle()
+      if (inserted) loadedMessages.push(inserted as JournalMessage)
+    }
+
+    setMessages(loadedMessages)
     if (weightsRes.data)  setWeights(weightsRes.data as WeightLog[])
 
     setLoading(false)
   }, [user, supabase])
 
   useEffect(() => { fetchAll() }, [fetchAll])
+
+  // Garde-fou : rediriger si la session expire pendant la navigation
+  useEffect(() => {
+    if (!loading && !user) window.location.replace("/")
+  }, [loading, user])
 
   // ── Realtime journal ──────────────────────────────────────────────────────
 
@@ -1392,16 +1437,28 @@ export default function DashboardPage() {
 
   // ── Send journal message ──────────────────────────────────────────────────
 
-  const handleSend = async (body: string, isQuestion: boolean) => {
+  const handleSend = async (body: string) => {
     if (!user || !profile) return
     await supabase.from("journal_messages").insert({
       coachee_id: user.id,
       author: "coachee",
       body,
-      is_question: isQuestion,
+      is_question: false,
+      read_by_coach: false,
+      read_by_user: true,
     })
-    // Realtime will add it; fallback: refetch
   }
+
+  // Marquer les messages coach comme lus quand l'onglet Coach s'ouvre
+  const markCoachMessagesRead = useCallback(async () => {
+    if (!user) return
+    await supabase
+      .from("journal_messages")
+      .update({ read_by_user: true })
+      .eq("coachee_id", user.id)
+      .eq("author", "coach")
+      .eq("read_by_user", false)
+  }, [user, supabase])
 
   // ── Trigger chapter emails on first visit per day ─────────────────────────
 
@@ -1455,6 +1512,7 @@ export default function DashboardPage() {
   const goToJournal = (prefill?: string) => {
     if (prefill) setJournalPrefill(prefill)
     setTab("journal")
+    markCoachMessagesRead()
   }
 
   const clearPrefill = () => setJournalPrefill("")
@@ -1498,6 +1556,7 @@ export default function DashboardPage() {
             onSend={handleSend}
           />
         )}
+        {/* Marquer lu à l'ouverture du tab journal via TabBar */}
         {tab === "meals" && (
           <MealsScreen currentDay={currentDay} />
         )}
@@ -1517,7 +1576,7 @@ export default function DashboardPage() {
         )}
       </div>
 
-      <TabBar active={tab} onChange={setTab} />
+      <TabBar active={tab} onChange={(t) => { setTab(t); if (t === "journal") markCoachMessagesRead() }} />
 
       {showCheckin && (
         <CheckInModal

@@ -196,7 +196,7 @@ export default function AccueilPublic() {
             }}>
               « Je réponds dans le journal tous les jours. Tu n'es jamais seul·e face à une question. »
             </p>
-            <p style={{ fontSize: 13, color: "var(--text-mute)", margin: "0 0 24px" }}>— Camille, coach Back to Energy</p>
+            <p style={{ fontSize: 13, color: "var(--text-mute)", margin: "0 0 24px" }}>— Laurent, coach Back to Energy</p>
             <Link href="/login" style={{
               display: "inline-flex", alignItems: "center", gap: 6,
               background: "transparent", color: "var(--brand)",

@@ -4,11 +4,9 @@ import type { VerissimoJour } from "@/data/verissimo"
 type Props = { jour: VerissimoJour }
 
 const MEALS = [
-  { key: "petit_dej",       icon: "🌅", label: "Petit-déjeuner",       color: "#f59e0b",              snack: false },
-  { key: "collation_matin", icon: "🍎", label: "Collation matin",      color: "rgba(255,255,255,0.3)", snack: true  },
-  { key: "dejeuner",        icon: "☀️", label: "Déjeuner",             color: "var(--green)",          snack: false },
-  { key: "collation_aprem", icon: "🍊", label: "Collation après-midi", color: "rgba(255,255,255,0.3)", snack: true  },
-  { key: "diner",           icon: "🌙", label: "Dîner",                color: "var(--accent-cyan)",    snack: false },
+  { key: "petit_dej", icon: "🌅", label: "Petit-déjeuner", color: "#C8964C" },
+  { key: "dejeuner",  icon: "☀️", label: "Déjeuner",       color: "var(--brand)" },
+  { key: "diner",     icon: "🌙", label: "Dîner",          color: "var(--forest)" },
 ] as const
 
 export default function MealsBlock({ jour }: Props) {
@@ -19,45 +17,54 @@ export default function MealsBlock({ jour }: Props) {
 
       {/* Rituel du matin */}
       <div className="rounded-2xl p-3 flex items-center gap-2.5"
-        style={{ background: "rgba(159,215,109,0.07)", border: "1px solid rgba(159,215,109,0.18)" }}>
+        style={{ background: "var(--brand-soft)", border: "1px solid var(--line)" }}>
         <span style={{ fontSize: "15px" }}>💧</span>
-        <p className="text-xs font-medium" style={{ color: "rgba(159,215,109,0.85)" }}>
+        <p className="text-xs font-medium" style={{ color: "var(--forest)" }}>
           Rituel du matin · eau tiède + ½ citron · étirements 5-10 min
         </p>
       </div>
 
-      {/* Repas */}
-      {MEALS.map(({ key, icon, label, color, snack }) => {
+      {/* 3 repas principaux */}
+      {MEALS.map(({ key, icon, label, color }) => {
         const content = jour[key] as string
         return (
           <div key={key} className="rounded-2xl p-4"
             style={{
-              background: snack ? "rgba(255,255,255,0.03)" : "rgba(4,10,22,0.6)",
-              border: `1px solid ${snack ? "rgba(255,255,255,0.07)" : color + "28"}`,
+              background: "var(--bg-surface)",
+              border: `1px solid var(--line)`,
               borderLeft: `3px solid ${color}`,
             }}>
             <div className="flex items-center gap-2 mb-1.5">
               <span style={{ fontSize: "16px" }}>{icon}</span>
               <span className="text-xs font-bold uppercase tracking-widest" style={{ color }}>
-                {label}{snack ? " · si faim" : ""}
+                {label}
               </span>
             </div>
-            <p className="text-sm leading-relaxed"
-              style={{ color: snack ? "rgba(255,255,255,0.5)" : "var(--text-secondary)" }}>
+            <p className="text-sm leading-relaxed" style={{ color: "var(--text)" }}>
               {content}
             </p>
           </div>
         )
       })}
 
+      {/* Encas optionnel — note générique ou override par jour */}
+      <div className="rounded-2xl p-3 flex items-start gap-2.5"
+        style={{ background: "var(--bg-lift)", border: "1px solid var(--line-soft)" }}>
+        <span style={{ fontSize: "14px" }}>🌿</span>
+        <p className="text-xs leading-relaxed" style={{ color: "var(--text-mute)" }}>
+          <span className="font-semibold" style={{ color: "var(--text-dim)" }}>Si petite faim · </span>
+          {jour.snack_note ?? "un fruit de saison (pomme, poire, kiwi…) ou quelques oléagineux"}
+        </p>
+      </div>
+
       {/* Astuce umami */}
       <div className="rounded-2xl p-4"
-        style={{ background: "rgba(191,125,44,0.07)", border: "1px solid rgba(191,125,44,0.22)", borderLeft: "3px solid #BF7D2C" }}>
+        style={{ background: "var(--warm-soft)", border: "1px solid rgba(200,150,76,0.25)", borderLeft: "3px solid var(--warm)" }}>
         <div className="flex items-center gap-2 mb-1.5">
           <span style={{ fontSize: "16px" }}>✨</span>
-          <span className="text-xs font-bold uppercase tracking-widest" style={{ color: "#BF7D2C" }}>Astuce umami</span>
+          <span className="text-xs font-bold uppercase tracking-widest" style={{ color: "var(--warm)" }}>Astuce umami</span>
         </div>
-        <p className="text-sm italic leading-relaxed" style={{ color: "rgba(191,125,44,0.9)" }}>
+        <p className="text-sm italic leading-relaxed" style={{ color: "var(--warm)" }}>
           {jour.umami}
         </p>
       </div>
@@ -65,12 +72,12 @@ export default function MealsBlock({ jour }: Props) {
       {/* Commentaires */}
       {jour.commentaire && jour.commentaire !== "—" && (
         <div className="rounded-2xl p-4"
-          style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderLeft: "3px solid rgba(129,140,248,0.5)" }}>
+          style={{ background: "var(--bg-lift)", border: "1px solid var(--line)", borderLeft: "3px solid var(--accent-soft)" }}>
           <div className="flex items-center gap-2 mb-1.5">
             <span style={{ fontSize: "16px" }}>💬</span>
-            <span className="text-xs font-bold uppercase tracking-widest" style={{ color: "#818cf8" }}>Commentaires & alternatives</span>
+            <span className="text-xs font-bold uppercase tracking-widest" style={{ color: "var(--text-mute)" }}>Alternatives</span>
           </div>
-          <p className="text-sm leading-relaxed" style={{ color: "rgba(255,255,255,0.5)" }}>
+          <p className="text-sm leading-relaxed" style={{ color: "var(--text-dim)" }}>
             {jour.commentaire}
           </p>
         </div>
@@ -79,9 +86,9 @@ export default function MealsBlock({ jour }: Props) {
       {/* Badge volaille */}
       {isVolaille && (
         <div className="rounded-xl px-3 py-2 flex items-center gap-2"
-          style={{ background: "rgba(191,125,44,0.1)", border: "1px solid rgba(191,125,44,0.25)" }}>
+          style={{ background: "var(--warm-soft)", border: "1px solid rgba(200,150,76,0.25)" }}>
           <span style={{ fontSize: "13px" }}>🐓</span>
-          <p className="text-xs font-semibold" style={{ color: "#BF7D2C" }}>
+          <p className="text-xs font-semibold" style={{ color: "var(--warm)" }}>
             Volaille bio au dîner · semaine 3 uniquement
           </p>
         </div>

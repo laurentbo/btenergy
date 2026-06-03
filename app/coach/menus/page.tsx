@@ -13,12 +13,11 @@ type WeekFilter = "tous" | "1" | "2" | "3"
 type ColabProfile = { id: string; prenom: string; email: string }
 
 const MEAL_FIELDS: { key: MealFieldName; label: string; icon: string }[] = [
-  { key: "petit_dejeuner",       label: "Petit-déj",     icon: "🌅" },
-  { key: "collation_matin",      label: "Collation M",   icon: "🍎" },
-  { key: "dejeuner",             label: "Déjeuner",      icon: "☀️" },
-  { key: "collation_apres_midi", label: "Collation AM",  icon: "🍊" },
-  { key: "diner",                label: "Dîner",         icon: "🌙" },
-  { key: "astuce_umami",         label: "Astuce umami",  icon: "✨" },
+  { key: "petit_dejeuner", label: "Petit-déj",    icon: "🌅" },
+  { key: "dejeuner",       label: "Déjeuner",     icon: "☀️" },
+  { key: "diner",          label: "Dîner",        icon: "🌙" },
+  { key: "snack_note",     label: "Encas (note)", icon: "🌿" },
+  { key: "astuce_umami",   label: "Astuce umami", icon: "✨" },
 ]
 
 const PREF_TYPE_LABEL: Record<string, string> = {

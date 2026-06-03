@@ -3,8 +3,6 @@ import { createClient as createAdmin } from "@supabase/supabase-js"
 import { resend, FROM } from "@/lib/resend"
 import { resetPasswordEmail } from "@/lib/email-templates"
 
-const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? "https://backtoenergy.fr"
-
 function admin() {
   return createAdmin(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -15,6 +13,7 @@ function admin() {
 
 export async function POST(request: NextRequest) {
   const { email } = await request.json()
+  const appUrl = request.nextUrl.origin
 
   if (!email) {
     return NextResponse.json({ error: "Email manquant." }, { status: 400 })
@@ -38,7 +37,7 @@ export async function POST(request: NextRequest) {
   const { data, error } = await db.auth.admin.generateLink({
     type: "recovery",
     email: email.toLowerCase(),
-    options: { redirectTo: `${SITE}/auth/callback?type=recovery` },
+    options: { redirectTo: `${appUrl}/auth/reset-password` },
   })
 
   if (error || !data?.properties?.action_link) {
@@ -46,11 +45,16 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: true }) // Ne pas exposer l'erreur
   }
 
+  const tokenHash = data.properties.hashed_token
+  const resetUrl = tokenHash
+    ? `${appUrl}/auth/reset-password?token_hash=${encodeURIComponent(tokenHash)}&type=recovery`
+    : data.properties.action_link
+
   await resend.emails.send({
     from: FROM,
     to: email.toLowerCase(),
     subject: "🔑 Réinitialisation de votre mot de passe — Backtoenergy",
-    html: resetPasswordEmail(profile.prenom ?? "", data.properties.action_link),
+    html: resetPasswordEmail(profile.prenom ?? "", resetUrl),
   })
 
   return NextResponse.json({ ok: true })

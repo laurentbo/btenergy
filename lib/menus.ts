@@ -89,8 +89,7 @@ export async function fetchResolvedDayMenu(userId: string, jour: number): Promis
   )
   const overriddenFields = (overrides ?? []).map((o) => o.field_name as MealFieldName)
   const fields: MealFieldName[] = [
-    "petit_dejeuner", "collation_matin", "dejeuner",
-    "collation_apres_midi", "diner", "astuce_umami",
+    "petit_dejeuner", "dejeuner", "diner", "astuce_umami", "snack_note",
   ]
 
   const resolved: Record<string, string | null> = {}

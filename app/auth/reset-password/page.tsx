@@ -1,5 +1,5 @@
 "use client"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { createClient } from "@/lib/supabase/client"
 
 export default function ResetPasswordPage() {
@@ -7,8 +7,47 @@ export default function ResetPasswordPage() {
   const [confirm, setConfirm]     = useState("")
   const [error, setError]         = useState("")
   const [loading, setLoading]     = useState(false)
+  const [ready, setReady]         = useState(false)
+
+  useEffect(() => {
+    async function prepareRecoverySession() {
+      const supabase = createClient()
+      const params = new URLSearchParams(window.location.search)
+      const tokenHash = params.get("token_hash")
+      const type = params.get("type")
+
+      if (tokenHash && type === "recovery") {
+        const { error: verifyError } = await supabase.auth.verifyOtp({
+          token_hash: tokenHash,
+          type: "recovery",
+        })
+
+        if (verifyError) {
+          setError("Lien de réinitialisation invalide ou expiré. Demandez un nouveau lien.")
+          setReady(false)
+          return
+        }
+
+        window.history.replaceState({}, "", "/auth/reset-password")
+        setReady(true)
+        return
+      }
+
+      const { data } = await supabase.auth.getSession()
+      if (!data.session) {
+        setError("Ouvrez cette page depuis le lien reçu par email pour réinitialiser votre mot de passe.")
+        setReady(false)
+        return
+      }
+
+      setReady(true)
+    }
+
+    void prepareRecoverySession()
+  }, [])
 
   async function handleSubmit() {
+    if (!ready) return
     if (password.length < 8) { setError("Le mot de passe doit faire au moins 8 caractères."); return }
     if (password !== confirm) { setError("Les mots de passe ne correspondent pas."); return }
     setError(""); setLoading(true)
@@ -53,9 +92,9 @@ export default function ResetPasswordPage() {
               </div>
             ))}
             {error && <p className="text-xs text-red-400">{error}</p>}
-            <button onClick={handleSubmit} disabled={!password || !confirm || loading}
+            <button onClick={handleSubmit} disabled={!ready || !password || !confirm || loading}
               className="btn-primary w-full text-sm"
-              style={{ opacity: (!password || !confirm || loading) ? 0.5 : 1 }}>
+              style={{ opacity: (!ready || !password || !confirm || loading) ? 0.5 : 1 }}>
               {loading ? "Enregistrement..." : "Accéder à mon programme →"}
             </button>
           </div>

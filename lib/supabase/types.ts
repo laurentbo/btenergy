@@ -105,6 +105,7 @@ export type Database = {
           rituel_fait: boolean
           energie: number | null
           humeur: string | null
+          mood_score: number | null
           created_at: string
           updated_at: string
         }
@@ -115,6 +116,7 @@ export type Database = {
           rituel_fait?: boolean
           energie?: number | null
           humeur?: string | null
+          mood_score?: number | null
           updated_at?: string
         }
         Update: {
@@ -122,6 +124,7 @@ export type Database = {
           rituel_fait?: boolean
           energie?: number | null
           humeur?: string | null
+          mood_score?: number | null
           updated_at?: string
         }
       }
@@ -133,11 +136,14 @@ export type Database = {
           nom_jour: string
           is_weekend: boolean
           petit_dejeuner: string | null
-          collation_matin: string | null
           dejeuner: string | null
-          collation_apres_midi: string | null
           diner: string | null
           astuce_umami: string | null
+          snack_note: string | null
+          /** @deprecated renommé lors de la migration 3-repas — données conservées */
+          collation_matin_archive: string | null
+          /** @deprecated renommé lors de la migration 3-repas — données conservées */
+          collation_apres_midi_archive: string | null
           updated_at: string
           updated_by: string | null
         }
@@ -149,7 +155,7 @@ export type Database = {
           id: string
           user_id: string
           jour: number
-          field_name: "petit_dejeuner" | "collation_matin" | "dejeuner" | "collation_apres_midi" | "diner" | "astuce_umami"
+          field_name: "petit_dejeuner" | "dejeuner" | "diner" | "astuce_umami" | "snack_note"
           override_value: string | null
           reason: string | null
           created_at: string
@@ -188,10 +194,9 @@ export type ResolvedDayMenu = {
   nom_jour: string
   is_weekend: boolean
   petit_dejeuner: string | null
-  collation_matin: string | null
   dejeuner: string | null
-  collation_apres_midi: string | null
   diner: string | null
   astuce_umami: string | null
+  snack_note: string | null
   overriddenFields: MealFieldName[]
 }
