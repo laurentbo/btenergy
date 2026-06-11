@@ -30,7 +30,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
     .from("profiles").select("*").eq("id", id).maybeSingle()
   if (!collab) return NextResponse.json(null, { status: 404 })
 
-  // Journal entries
+  // Journal entries (check-ins)
   const { data: entries } = await admin
     .from("journal_entries").select("*").eq("user_id", id).order("created_at", { ascending: false })
 
@@ -38,5 +38,19 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   const { data: overrides } = await admin
     .from("program_overrides").select("*").eq("collaborateur_id", id)
 
-  return NextResponse.json({ collab, entries: entries ?? [], overrides: overrides ?? [] })
+  // Messages coach ↔ coaché
+  const { data: messages } = await admin
+    .from("journal_messages").select("*").eq("coachee_id", id).order("created_at", { ascending: true })
+
+  // Pesées
+  const { data: weights } = await admin
+    .from("weight_logs").select("*").eq("coachee_id", id).order("day_number", { ascending: true })
+
+  return NextResponse.json({
+    collab,
+    entries: entries ?? [],
+    overrides: overrides ?? [],
+    messages: messages ?? [],
+    weights: weights ?? [],
+  })
 }

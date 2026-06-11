@@ -1,42 +1,599 @@
 "use client"
 import { useEffect, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
-import { PROGRAM, WEEK_THEMES, calcCurrentDay, type Meal } from "@/data/program"
-import MealCard from "@/components/MealCard"
-import RitualCard from "@/components/RitualCard"
-import Timeline21 from "@/components/Timeline21"
-import PrincipesSection from "@/components/PrincipesSection"
-import VitalityScore from "@/components/VitalityScore"
-import EnergyCheckin from "@/components/EnergyCheckin"
+import {
+  PROGRAM_NEW,
+  PRINCIPLES_V2,
+  PRINCIPLE_GROUPS,
+  CHAPTER_FOR_DAY,
+  calcCurrentDay,
+} from "@/data/program"
 
-type Tab = "programme" | "journal" | "progression" | "principes"
+type Tab = "today" | "journal" | "meals" | "journey" | "principles"
+
+const TABS: { id: Tab; label: string }[] = [
+  { id: "today",      label: "Aujourd'hui" },
+  { id: "journal",    label: "Coach" },
+  { id: "meals",      label: "Repas" },
+  { id: "journey",    label: "Parcours" },
+  { id: "principles", label: "Principes" },
+]
+
+type Message = {
+  id: string
+  author: "coachee" | "coach"
+  body: string | null
+  created_at: string
+}
+
+type WeightLog = {
+  id: string
+  day_number: number
+  kg: number
+  created_at: string
+}
+
+type CheckIn = {
+  id: string
+  day: number
+  energie: number | null
+  humeur: number | null
+  sommeil: number | null
+  created_at: string
+}
 
 type Override = {
   day: number
   coach_note: string | null
-  tip_override: string | null
-  intention_override: string | null
-  meal_overrides: Record<string, string[]> | null
 }
 
-type JournalEntry = {
-  id: string
-  day: number
-  created_at: string
-  energie: number
-  humeur: number
-  hydratation: number
-  sommeil: number
-  note: string | null
+function Eyebrow({ children, color }: { children: React.ReactNode; color?: string }) {
+  return (
+    <div style={{
+      fontSize: 10.5, fontWeight: 500,
+      letterSpacing: "0.16em", textTransform: "uppercase" as const,
+      color: color ?? "var(--text-mute)",
+    }}>{children}</div>
+  )
 }
 
-export default function PreviewPage() {
+function formatTime(iso: string): string {
+  return new Date(iso).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })
+}
+
+function formatDateLabel(iso: string): string {
+  const d = new Date(iso)
+  const now = new Date()
+  const isToday = d.toDateString() === now.toDateString()
+  if (isToday) return `Aujourd'hui · ${d.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric" })}`
+  return d.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })
+}
+
+function dayDate(programStart: string | null, dayNumber: number): string {
+  if (!programStart) return `j${dayNumber}`
+  const d = new Date(programStart)
+  d.setDate(d.getDate() + dayNumber - 1)
+  return d.toLocaleDateString("fr-FR", { day: "numeric", month: "short" })
+}
+
+const CHECKIN_OPTIONS: Record<string, { val: number; label: string }[]> = {
+  energie: [
+    { val: 1, label: "À plat"   },
+    { val: 3, label: "Correct"  },
+    { val: 5, label: "Au top"   },
+  ],
+  humeur: [
+    { val: 1, label: "Difficile" },
+    { val: 3, label: "Ça va"     },
+    { val: 5, label: "Légère"    },
+  ],
+  sommeil: [
+    { val: 1, label: "Agité"   },
+    { val: 3, label: "Correct" },
+    { val: 5, label: "Profond" },
+  ],
+}
+
+function checkinLabel(key: string, val: number | null): string {
+  if (!val) return "—"
+  return CHECKIN_OPTIONS[key]?.find(o => o.val === val)?.label ?? "—"
+}
+
+function ChevronLeft() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+      <path d="M15 6l-6 6 6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function ChevronRight() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+      <path d="M9 6l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+// ─── Tab content ──────────────────────────────────────────────────────────────
+
+function TodayTab({ prenom, currentDay, coachNote, checkin }: {
+  prenom: string; currentDay: number; coachNote: string | null; checkin: CheckIn | null
+}) {
+  const prog = PROGRAM_NEW[currentDay - 1] ?? PROGRAM_NEW[0]
+  const today = new Date().toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })
+
+  return (
+    <div style={{ padding: "26px 22px 30px" }}>
+      <Eyebrow>{today}</Eyebrow>
+      <h1 style={{
+        margin: "10px 0 0", fontFamily: "var(--serif)",
+        fontWeight: 400, fontSize: 36, lineHeight: 1.05,
+        letterSpacing: "-0.02em", color: "var(--text)",
+      }}>
+        Bonjour <em style={{ fontStyle: "italic", color: "var(--brand)" }}>{prenom}</em>.
+      </h1>
+
+      {coachNote && (
+        <div style={{ marginTop: 24, paddingTop: 24, borderTop: "1px solid var(--line)" }}>
+          <p style={{
+            margin: 0,
+            fontFamily: "var(--serif)", fontStyle: "italic",
+            fontSize: 19, lineHeight: 1.45, color: "var(--text)",
+            letterSpacing: "0.005em",
+          }}>« {coachNote} »</p>
+          <p style={{ margin: "6px 0 0", fontSize: 11, color: "var(--text-faint)" }}>Note coach du jour</p>
+        </div>
+      )}
+
+      <div style={{ marginTop: coachNote ? 32 : 28 }}>
+        <Eyebrow>aujourd'hui · les repas</Eyebrow>
+        <div style={{ marginTop: 14 }}>
+          {prog.meals.map((m, i) => (
+            <div key={i} style={{
+              display: "flex", gap: 16, alignItems: "baseline",
+              padding: "13px 0",
+              borderBottom: i < prog.meals.length - 1 ? "1px solid var(--line-soft)" : "none",
+            }}>
+              <div style={{
+                fontFamily: "var(--serif)", fontStyle: "italic",
+                fontSize: 13, color: "var(--text-mute)",
+                width: 32, flexShrink: 0,
+              }}>{m.time}</div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 13.5, color: "var(--text)", marginBottom: 3 }}>{m.label}</div>
+                <div style={{ fontSize: 12, color: "var(--text-dim)", lineHeight: 1.5 }}>{m.items}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Check-in du jour */}
+      {checkin && (checkin.energie || checkin.humeur || checkin.sommeil) && (
+        <div style={{
+          marginTop: 20, padding: "16px 18px",
+          background: "var(--bg-lift)", border: "1px solid var(--line)", borderRadius: 14,
+        }}>
+          <Eyebrow>check-in du matin</Eyebrow>
+          <div style={{ marginTop: 10, display: "flex", gap: 16, flexWrap: "wrap" as const }}>
+            {[
+              { k: "Énergie", key: "energie", v: checkin.energie },
+              { k: "Humeur",  key: "humeur",  v: checkin.humeur  },
+              { k: "Sommeil", key: "sommeil", v: checkin.sommeil },
+            ].filter(x => x.v).map(x => (
+              <div key={x.k}>
+                <div style={{ fontSize: 9.5, color: "var(--text-faint)", letterSpacing: "0.12em", textTransform: "uppercase" as const }}>{x.k}</div>
+                <div style={{ fontSize: 14, fontFamily: "var(--serif)", fontStyle: "italic", color: "var(--text)", marginTop: 3 }}>
+                  {checkinLabel(x.key, x.v)}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function JournalTab({ messages }: { messages: Message[] }) {
+  const grouped: Array<{ type: "separator"; label: string } | { type: "msg"; msg: Message }> = []
+  let lastDate = ""
+  for (const msg of messages) {
+    const dateKey = new Date(msg.created_at).toDateString()
+    if (dateKey !== lastDate) {
+      grouped.push({ type: "separator", label: formatDateLabel(msg.created_at) })
+      lastDate = dateKey
+    }
+    grouped.push({ type: "msg", msg })
+  }
+
+  return (
+    <div style={{ padding: "22px 18px 14px", display: "flex", flexDirection: "column", gap: 14 }}>
+      {messages.length === 0 && (
+        <p style={{ fontSize: 13, color: "var(--text-mute)", textAlign: "center", padding: "40px 0" }}>
+          Aucun message échangé pour l'instant.
+        </p>
+      )}
+      {grouped.map((item, i) => {
+        if (item.type === "separator") {
+          return (
+            <div key={`sep-${i}`} style={{ display: "flex", alignItems: "center", gap: 12, margin: "12px 0 4px" }}>
+              <div style={{ flex: 1, height: 1, background: "var(--line-soft)" }} />
+              <div style={{ fontSize: 11, color: "var(--text-mute)", fontStyle: "italic" }}>{item.label}</div>
+              <div style={{ flex: 1, height: 1, background: "var(--line-soft)" }} />
+            </div>
+          )
+        }
+        const msg = item.msg
+        const isCoach = msg.author === "coach"
+        const isMe = msg.author === "coachee"
+        return (
+          <div key={msg.id} style={{
+            display: "flex", gap: 10,
+            flexDirection: isMe ? "row-reverse" : "row",
+            alignItems: "flex-end",
+          }}>
+            {isCoach && (
+              <div style={{
+                width: 26, height: 26, borderRadius: 999, flexShrink: 0,
+                background: "var(--brand-soft)", border: "1px solid var(--line)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontFamily: "var(--heading)", fontSize: 11, fontWeight: 700,
+                color: "var(--forest)",
+              }}>L</div>
+            )}
+            <div style={{
+              maxWidth: "78%", display: "flex", flexDirection: "column", gap: 5,
+              alignItems: isMe ? "flex-end" : "flex-start",
+            }}>
+              {msg.body && (
+                <div style={{
+                  padding: "10px 14px",
+                  background: isCoach ? "var(--bg-lift)" : "var(--brand-soft)",
+                  border: isCoach ? "1px solid var(--line)" : "1px solid rgba(62,142,79,0.2)",
+                  borderRadius: 18,
+                  borderBottomLeftRadius: isCoach ? 6 : 18,
+                  borderBottomRightRadius: isMe ? 6 : 18,
+                  color: isCoach ? "var(--forest)" : "var(--text)",
+                  fontFamily: isCoach ? "var(--heading)" : "var(--sans)",
+                  fontStyle: isCoach ? "italic" : "normal",
+                  fontSize: isCoach ? 15 : 13.5,
+                  lineHeight: 1.6,
+                }}>{msg.body}</div>
+              )}
+              <div style={{ fontSize: 10.5, color: "var(--text-faint)", padding: "0 6px" }}>
+                {formatTime(msg.created_at)}
+              </div>
+            </div>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+function MealsTab({ currentDay }: { currentDay: number }) {
+  const [viewDay, setViewDay] = useState(currentDay)
+  const [openIdx, setOpenIdx] = useState<number | null>(null)
+
+  const prog = PROGRAM_NEW[viewDay - 1] ?? PROGRAM_NEW[0]
+  const chapter = CHAPTER_FOR_DAY(viewDay)
+  const isToday = viewDay === currentDay
+
+  const go = (delta: number) => {
+    setViewDay(d => Math.max(1, Math.min(21, d + delta)))
+    setOpenIdx(null)
+  }
+
+  return (
+    <div style={{ padding: "26px 22px 28px" }}>
+      <Eyebrow>repas · {chapter.sub.toLowerCase()}</Eyebrow>
+      <h2 style={{
+        margin: "10px 0 20px", fontFamily: "var(--serif)",
+        fontWeight: 400, fontSize: 28, lineHeight: 1.1,
+        letterSpacing: "-0.015em", color: "var(--text)",
+      }}>
+        Ce qui est <em style={{ fontStyle: "italic", color: "var(--brand)" }}>prévu</em>.
+      </h2>
+
+      <div style={{
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        gap: 12, padding: "10px 12px",
+        background: "var(--bg-lift)", border: "1px solid var(--line)", borderRadius: 14, marginBottom: 20,
+      }}>
+        <button onClick={() => go(-1)} disabled={viewDay <= 1} style={{
+          width: 32, height: 32, borderRadius: 999,
+          background: "transparent", border: "1px solid var(--line)",
+          color: viewDay <= 1 ? "var(--text-faint)" : "var(--text-dim)",
+          cursor: viewDay <= 1 ? "default" : "pointer",
+          display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+        }}><ChevronLeft /></button>
+        <div style={{ textAlign: "center", flex: 1 }}>
+          <div style={{
+            fontFamily: "var(--serif)", fontStyle: "italic",
+            fontSize: 17, color: isToday ? "var(--brand)" : "var(--text)", lineHeight: 1.15,
+          }}>
+            {isToday ? "Aujourd'hui · " : ""}jour {viewDay}
+          </div>
+          <div style={{ fontSize: 11, color: "var(--text-mute)", marginTop: 3 }}>{chapter.sub}</div>
+        </div>
+        <button onClick={() => go(1)} disabled={viewDay >= 21} style={{
+          width: 32, height: 32, borderRadius: 999,
+          background: "transparent", border: "1px solid var(--line)",
+          color: viewDay >= 21 ? "var(--text-faint)" : "var(--text-dim)",
+          cursor: viewDay >= 21 ? "default" : "pointer",
+          display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+        }}><ChevronRight /></button>
+      </div>
+
+      <div>
+        {prog.meals.map((m, i) => {
+          const open = openIdx === i
+          return (
+            <div key={i} style={{
+              borderTop: "1px solid var(--line)",
+              borderBottom: i === prog.meals.length - 1 ? "1px solid var(--line)" : "none",
+            }}>
+              <button onClick={() => setOpenIdx(open ? null : i)} style={{
+                width: "100%", background: "transparent", border: 0, cursor: "pointer",
+                padding: "16px 2px",
+                display: "flex", alignItems: "baseline", gap: 16, textAlign: "left",
+              }}>
+                <span style={{
+                  fontFamily: "var(--serif)", fontStyle: "italic",
+                  fontSize: 14, color: "var(--text-mute)", width: 36, flexShrink: 0,
+                }}>{m.time}</span>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 15, color: "var(--text)", marginBottom: 4 }}>{m.label}</div>
+                  <div style={{
+                    fontSize: 12.5, color: "var(--text-dim)", lineHeight: 1.5,
+                    display: "-webkit-box", WebkitLineClamp: open ? "unset" : "2",
+                    WebkitBoxOrient: "vertical" as const, overflow: "hidden",
+                  }}>{m.items}</div>
+                </div>
+                <span style={{
+                  color: "var(--text-faint)", fontSize: 11,
+                  transform: open ? "rotate(180deg)" : "rotate(0)",
+                  transition: "transform .25s ease",
+                }}>▾</span>
+              </button>
+              {open && m.alts && m.alts.length > 0 && (
+                <div style={{ padding: "0 2px 18px 54px", display: "flex", flexDirection: "column", gap: 6 }}>
+                  {m.alts.map((alt, ai) => (
+                    <p key={ai} style={{
+                      margin: 0, fontSize: 12.5,
+                      fontFamily: "var(--serif)", fontStyle: "italic",
+                      color: "var(--coach)", lineHeight: 1.55,
+                    }}>{alt}</p>
+                  ))}
+                  {m.note && (
+                    <div style={{
+                      background: "var(--bg-lift)", border: "1px solid var(--line)",
+                      borderRadius: 10, padding: "10px 12px", marginTop: 4,
+                    }}>
+                      <p style={{ margin: 0, fontSize: 12, color: "var(--text-dim)", lineHeight: 1.55 }}>{m.note}</p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+function JourneyTab({ currentDay, programStart, weights, messages }: {
+  currentDay: number
+  programStart: string | null
+  weights: WeightLog[]
+  messages: Message[]
+}) {
+  const CHAPTERS = [
+    { name: "Détox",   span: 7, hint: "On allège, on laisse le corps souffler.",       start: 1  },
+    { name: "Énergie", span: 7, hint: "Le corps retrouve son rythme, on remet du jeu.", start: 8  },
+    { name: "Ancrage", span: 7, hint: "On installe ce qui restera après.",              start: 15 },
+  ]
+
+  const first = weights[0]
+  const last  = weights[weights.length - 1]
+  const hasWeight = weights.length > 0
+  const deltaNum = hasWeight ? last.kg - first.kg : 0
+  const deltaStr = (deltaNum < 0 ? "−" : "+") + Math.abs(deltaNum).toFixed(1).replace(".", ",")
+  const isLoss = deltaNum < 0
+  const maxKg = hasWeight ? Math.max(...weights.map(w => w.kg)) : 0
+  const minKg = hasWeight ? Math.min(...weights.map(w => w.kg)) : 0
+  const range = Math.max(0.5, maxKg - minKg)
+
+  return (
+    <div style={{ padding: "26px 22px 28px" }}>
+      <Eyebrow>parcours · {currentDay} {currentDay > 1 ? "jours" : "jour"} derrière toi</Eyebrow>
+      <h2 style={{
+        margin: "10px 0 0", fontFamily: "var(--serif)",
+        fontWeight: 400, fontSize: 28, lineHeight: 1.1,
+        letterSpacing: "-0.015em", color: "var(--text)",
+      }}>
+        Tu en es <em style={{ fontStyle: "italic", color: "var(--brand)" }}>là</em>.
+      </h2>
+
+      <div style={{ marginTop: 30 }}>
+        {CHAPTERS.map((ch, ci) => (
+          <div key={ci} style={{ marginBottom: 24 }}>
+            <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 12 }}>
+              <div>
+                <div style={{ fontFamily: "var(--serif)", fontStyle: "italic", fontSize: 18, color: "var(--text)" }}>{ch.name}</div>
+                <div style={{ fontSize: 12, color: "var(--text-mute)", marginTop: 4 }}>{ch.hint}</div>
+              </div>
+              <div style={{ fontSize: 11, color: "var(--text-faint)" }}>{ch.start}–{ch.start + ch.span - 1}</div>
+            </div>
+            <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+              {Array.from({ length: ch.span }).map((_, di) => {
+                const day     = ch.start + di
+                const past    = day < currentDay
+                const current = day === currentDay
+                const future  = day > currentDay
+                return (
+                  <div key={di} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
+                    <div style={{
+                      width: current ? 14 : 8, height: current ? 14 : 8,
+                      borderRadius: 999,
+                      background: current ? "var(--brand)" : past ? "rgba(168,187,165,0.45)" : "transparent",
+                      border: future ? "1px solid var(--line)" : "none",
+                      boxShadow: current ? "0 0 0 5px var(--brand-soft)" : "none",
+                    }} />
+                    <div style={{
+                      fontSize: 8.5,
+                      color: current ? "var(--brand)" : "var(--text-faint)",
+                      whiteSpace: "nowrap" as const,
+                    }}>{dayDate(programStart, day)}</div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ paddingTop: 22, borderTop: "1px solid var(--line)" }}>
+        <Eyebrow>poids</Eyebrow>
+        {hasWeight ? (
+          <>
+            <div style={{ marginTop: 14, display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 16 }}>
+              <div style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
+                <span style={{ fontFamily: "var(--serif)", fontSize: 36, fontWeight: 400, color: "var(--text)" }}>
+                  {last.kg.toFixed(1).replace(".", ",")}
+                </span>
+                <span style={{ fontSize: 13, color: "var(--text-mute)" }}>kg</span>
+              </div>
+              <div style={{ fontFamily: "var(--serif)", fontStyle: "italic", fontSize: 13, color: isLoss ? "var(--coach)" : "var(--text-mute)" }}>
+                {deltaStr} kg depuis le départ
+              </div>
+            </div>
+            <div style={{ marginTop: 16, display: "flex", gap: 14, alignItems: "flex-end", height: 38 }}>
+              {weights.map((w, i) => {
+                const fromTop = (maxKg - w.kg) / range
+                const barH = 6 + (1 - fromTop) * 28
+                const isLast = i === weights.length - 1
+                return (
+                  <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 5 }}>
+                    <div style={{
+                      width: "100%", height: barH,
+                      background: isLast ? "var(--brand)" : "rgba(168,187,165,0.28)",
+                      borderRadius: 2,
+                    }} />
+                    <div style={{ fontSize: 8.5, color: isLast ? "var(--brand)" : "var(--text-faint)" }}>
+                      {dayDate(programStart, w.day_number)}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </>
+        ) : (
+          <p style={{ marginTop: 10, fontSize: 13, color: "var(--text-mute)" }}>Pas encore de pesée enregistrée.</p>
+        )}
+      </div>
+
+      {messages.length > 0 && (
+        <div style={{ marginTop: 16, paddingTop: 22, borderTop: "1px solid var(--line)" }}>
+          <Eyebrow>ce qui s'est dit jusqu'ici</Eyebrow>
+          <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 18 }}>
+            {messages.slice(-8).map((m, i) => (
+              <div key={i} style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
+                <div style={{
+                  fontFamily: "var(--serif)", fontStyle: "italic",
+                  fontSize: 12, color: "var(--text-mute)", width: 36, flexShrink: 0, paddingTop: 2,
+                }}>
+                  {new Date(m.created_at).toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{
+                    fontSize: m.author === "coach" ? 14 : 13,
+                    color: m.author === "coach" ? "var(--coach)" : "var(--text-dim)",
+                    fontFamily: m.author === "coach" ? "var(--serif)" : "var(--sans)",
+                    fontStyle: m.author === "coach" ? "italic" : "normal",
+                    lineHeight: 1.55,
+                  }}>{m.body}</div>
+                  <div style={{ fontSize: 10.5, color: "var(--text-faint)", marginTop: 4 }}>
+                    {m.author === "coach" ? "Coach" : "Participant"}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function PrinciplesTab() {
+  return (
+    <div style={{ padding: "26px 22px 28px" }}>
+      <Eyebrow>principes · les repères de la méthode</Eyebrow>
+      <h2 style={{
+        margin: "10px 0 0", fontFamily: "var(--serif)",
+        fontWeight: 400, fontSize: 28, lineHeight: 1.1,
+        letterSpacing: "-0.015em", color: "var(--text)",
+      }}>
+        Ce qui <em style={{ fontStyle: "italic", color: "var(--brand)" }}>guide</em> le programme.
+      </h2>
+
+      <div style={{ marginTop: 28, display: "flex", flexDirection: "column", gap: 32 }}>
+        {PRINCIPLE_GROUPS.map((group, gi) => (
+          <section key={group.name} style={{
+            paddingTop: gi > 0 ? 28 : 0,
+            borderTop: gi > 0 ? "1px solid var(--line-soft)" : "none",
+          }}>
+            <div style={{ marginBottom: 18 }}>
+              <Eyebrow>{group.name}</Eyebrow>
+              <div style={{ fontFamily: "var(--serif)", fontStyle: "italic", fontSize: 14.5, color: "var(--text-dim)", marginTop: 6 }}>
+                {group.hint}
+              </div>
+            </div>
+            <div>
+              {group.principleIds.map((id, idx) => {
+                const p = PRINCIPLES_V2.find(x => x.n === id)
+                if (!p) return null
+                return (
+                  <div key={p.n} style={{
+                    display: "flex", gap: 18, alignItems: "flex-start",
+                    padding: "18px 0",
+                    borderBottom: idx < group.principleIds.length - 1 ? "1px solid var(--line-soft)" : "none",
+                  }}>
+                    <div style={{
+                      fontFamily: "var(--serif)", fontStyle: "italic",
+                      fontSize: 22, color: "var(--text-faint)",
+                      width: 28, flexShrink: 0, lineHeight: 1, paddingTop: 4,
+                    }}>{p.n}</div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 14.5, fontWeight: 500, marginBottom: 6, color: "rgb(210,236,212)" }}>{p.title}</div>
+                      <p style={{ margin: 0, fontSize: 13, color: "var(--text-dim)", lineHeight: 1.65 }}>{p.body}</p>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </section>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+// ─── Main ─────────────────────────────────────────────────────────────────────
+
+export default function CoachPreviewPage() {
   const { id } = useParams<{ id: string }>()
   const router = useRouter()
-  const [activeTab, setActiveTab] = useState<Tab>("programme")
+  const [tab, setTab] = useState<Tab>("today")
   const [collab, setCollab] = useState<any>(null)
   const [overrides, setOverrides] = useState<Override[]>([])
-  const [entries, setEntries] = useState<JournalEntry[]>([])
+  const [entries, setEntries] = useState<CheckIn[]>([])
+  const [messages, setMessages] = useState<Message[]>([])
+  const [weights, setWeights] = useState<WeightLog[]>([])
   const [loading, setLoading] = useState(true)
   const [currentDay, setCurrentDay] = useState(1)
 
@@ -46,8 +603,10 @@ export default function PreviewPage() {
       .then(data => {
         if (!data) { router.push("/coach"); return }
         setCollab(data.collab)
-        setOverrides(data.overrides)
-        setEntries(data.entries)
+        setOverrides(data.overrides ?? [])
+        setEntries(data.entries ?? [])
+        setMessages(data.messages ?? [])
+        setWeights(data.weights ?? [])
         setCurrentDay(calcCurrentDay(data.collab.program_start))
         setLoading(false)
       })
@@ -55,235 +614,103 @@ export default function PreviewPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: "var(--bg-primary)" }}>
-        <div className="w-6 h-6 rounded-full border-2 animate-spin"
-          style={{ borderColor: "var(--green)", borderTopColor: "transparent" }} />
+      <div style={{
+        height: "100dvh", display: "flex", alignItems: "center", justifyContent: "center",
+        background: "var(--bg)", color: "var(--text-mute)", fontFamily: "var(--sans)", fontSize: 13,
+      }}>
+        Chargement…
       </div>
     )
   }
 
-  const day = PROGRAM[currentDay - 1]
-  const weekInfo = WEEK_THEMES[day.week]
-  const override = overrides.find(o => o.day === currentDay) ?? null
-  const completedDays = entries
-    .map(e => e.day)
-    .filter((v, i, a) => a.indexOf(v) === i)
+  const prenom = collab?.prenom ?? ""
+  const todayOverride = overrides.find(o => o.day === currentDay) ?? null
+  const todayCheckin = entries.find(e => e.day === currentDay) ?? null
 
   return (
-    <div className="min-h-screen" style={{ background: "var(--bg-primary)" }}>
+    <div style={{
+      display: "flex", flexDirection: "column", height: "100dvh",
+      background: "var(--bg)", fontFamily: "var(--sans)",
+    }}>
 
       {/* Bannière coach */}
-      <div className="px-4 py-2 text-center text-xs font-semibold"
-        style={{ background: "rgba(76,201,240,0.12)", borderBottom: "1px solid rgba(76,201,240,0.25)", color: "var(--green)" }}>
-        👁 Aperçu coach — espace de {collab?.prenom}
-        <button onClick={() => router.push("/coach")}
-          className="ml-4 px-2 py-0.5 rounded text-xs"
-          style={{ background: "rgba(76,201,240,0.15)", border: "1px solid rgba(76,201,240,0.3)" }}>
+      <div style={{
+        padding: "8px 16px",
+        background: "rgba(62,142,79,0.08)",
+        borderBottom: "1px solid rgba(62,142,79,0.18)",
+        display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12,
+        flexShrink: 0,
+      }}>
+        <span style={{ fontSize: 12, color: "var(--forest)", fontWeight: 500 }}>
+          👁 Vue coach — espace de {prenom} · jour {currentDay}/21
+        </span>
+        <button onClick={() => router.push("/coach")} style={{
+          background: "transparent", border: "1px solid rgba(62,142,79,0.3)",
+          borderRadius: 999, padding: "4px 12px",
+          fontSize: 11.5, color: "var(--brand)", fontFamily: "var(--sans)", cursor: "pointer",
+        }}>
           ← Retour
         </button>
       </div>
 
-      {/* Header */}
-      <header className="sticky top-0 z-50 px-4 py-3"
-        style={{ background: "rgba(7,13,15,0.92)", backdropFilter: "blur(16px)", borderBottom: "1px solid var(--border)" }}>
-        <div className="max-w-2xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg flex items-center justify-center text-sm font-black"
-              style={{ background: "linear-gradient(135deg, var(--green-dim), var(--blue-dim))", color: "#070d0f" }}>B</div>
-            <span className="font-black text-sm gradient-text">Backtoenergy</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="tag" style={{ borderColor: weekInfo.color + "40", color: weekInfo.color }}>S{day.week}</div>
-            <div className="tag">J{currentDay}/21</div>
-          </div>
-        </div>
-      </header>
+      {/* Contenu scrollable */}
+      <div style={{ flex: 1, overflowY: "auto" }}>
+        {tab === "today" && (
+          <TodayTab
+            prenom={prenom}
+            currentDay={currentDay}
+            coachNote={todayOverride?.coach_note ?? null}
+            checkin={todayCheckin}
+          />
+        )}
+        {tab === "journal" && <JournalTab messages={messages} />}
+        {tab === "meals" && <MealsTab currentDay={currentDay} />}
+        {tab === "journey" && (
+          <JourneyTab
+            currentDay={currentDay}
+            programStart={collab?.program_start ?? null}
+            weights={weights}
+            messages={messages}
+          />
+        )}
+        {tab === "principles" && <PrinciplesTab />}
+      </div>
 
-      <main className="max-w-2xl mx-auto px-4 pb-28 pt-5">
-
-        {/* Sélecteur de jour */}
-        <div className="flex items-center gap-2 mb-4">
-          <button onClick={() => setCurrentDay(d => Math.max(1, d - 1))}
-            className="tag cursor-pointer">‹</button>
-          <span className="flex-1 text-center text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
-            Jour {currentDay} — {day.theme}
-          </span>
-          <button onClick={() => setCurrentDay(d => Math.min(21, d + 1))}
-            className="tag cursor-pointer">›</button>
-        </div>
-
-        {/* Hero */}
-        <div className="card glow-green p-5 mb-4 fade-up"
-          style={{ background: "linear-gradient(135deg, #0f1e22 0%, #0a191e 100%)", borderColor: weekInfo.color + "30" }}>
-          <p className="text-xs uppercase tracking-widest mb-0.5" style={{ color: weekInfo.color, opacity: 0.8 }}>
-            {weekInfo.title}
-          </p>
-          <p className="text-xs uppercase tracking-widest mb-2" style={{ color: "var(--text-muted)" }}>
-            Jour {day.day} · {day.theme}
-          </p>
-          <h1 className="text-xl font-bold mb-1" style={{ color: "var(--text-primary)" }}>
-            Bonjour, {collab?.prenom} 👋
-          </h1>
-          <p className="text-sm italic" style={{ color: weekInfo.color }}>
-            &ldquo;{override?.intention_override || day.intention}&rdquo;
-          </p>
-          <div className="progress-bar mt-4">
-            <div className="progress-fill" style={{ width: `${(currentDay / 21) * 100}%` }} />
-          </div>
-          <div className="flex gap-2 mt-3">
-            <div className="flex-1 p-3 rounded-xl flex items-center gap-2"
-              style={{ background: "rgba(76,201,240,0.06)", border: "1px solid rgba(76,201,240,0.12)" }}>
-              <span>💧</span>
-              <span className="text-xs" style={{ color: "var(--text-secondary)" }}>{day.hydration}</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Tip */}
-        <div className="rounded-xl p-3.5 mb-4 flex items-start gap-3 fade-up"
-          style={{ background: "rgba(56,196,232,0.05)", border: "1px solid rgba(56,196,232,0.15)" }}>
-          <span className="text-base flex-shrink-0">✨</span>
-          <p className="text-xs" style={{ color: "var(--text-secondary)", lineHeight: "1.7" }}>
-            {override?.tip_override || day.tip}
-          </p>
-        </div>
-
-        {/* Tabs */}
-        <div className="flex gap-1 mb-5 p-1 rounded-xl" style={{ background: "var(--bg-card)", border: "1px solid var(--border)" }}>
-          {([
-            { key: "programme",   label: "Programme" },
-            { key: "journal",     label: "Journal" },
-            { key: "progression", label: "Progression" },
-          ] as const).map(({ key, label }) => (
-            <button key={key} onClick={() => setActiveTab(key)}
-              className="flex-1 py-2 rounded-lg text-xs font-semibold transition-all"
-              style={{
-                background: activeTab === key ? "linear-gradient(135deg, var(--green-dim), var(--blue-dim))" : "transparent",
-                color: activeTab === key ? "#070d0f" : "var(--text-muted)",
+      {/* Tab bar */}
+      <div style={{
+        flexShrink: 0,
+        padding: "10px 8px env(safe-area-inset-bottom, 12px)",
+        borderTop: "1px solid var(--line-soft)",
+        background: "color-mix(in oklab, var(--bg) 92%, transparent)",
+        backdropFilter: "blur(20px)",
+        WebkitBackdropFilter: "blur(20px)",
+      }}>
+        <div style={{ display: "flex" }}>
+          {TABS.map(t => {
+            const on = tab === t.id
+            return (
+              <button key={t.id} onClick={() => setTab(t.id)} style={{
+                flex: 1, background: "transparent", border: 0, cursor: "pointer",
+                padding: "10px 2px",
+                fontFamily: "var(--sans)",
+                fontSize: 11.5, fontWeight: on ? 500 : 400,
+                color: on ? "var(--text)" : "var(--text-mute)",
+                position: "relative",
+                transition: "color .25s ease",
               }}>
-              {label}
-            </button>
-          ))}
+                {t.label}
+                <span style={{
+                  position: "absolute", left: "50%", transform: "translateX(-50%)",
+                  bottom: 0, width: on ? 16 : 0, height: 1,
+                  background: "var(--brand)", opacity: on ? 0.85 : 0,
+                  transition: "width .3s ease, opacity .3s ease",
+                  display: "block",
+                }} />
+              </button>
+            )
+          })}
         </div>
-
-        {/* Programme */}
-        {activeTab === "programme" && (
-          <div className="space-y-4">
-            {override?.coach_note && (
-              <div className="rounded-xl p-4 fade-up flex gap-3"
-                style={{ background: "rgba(76,201,240,0.07)", border: "1px solid rgba(76,201,240,0.25)" }}>
-                <span className="text-lg flex-shrink-0">💬</span>
-                <div>
-                  <p className="text-xs font-bold mb-1" style={{ color: "var(--green)" }}>Message de votre coach</p>
-                  <p className="text-sm" style={{ color: "var(--text-secondary)", lineHeight: "1.7" }}>{override.coach_note}</p>
-                </div>
-              </div>
-            )}
-            <VitalityScore score={72} trend={0} />
-            <EnergyCheckin currentDay={currentDay} onCheckin={() => {}} />
-            <div className="space-y-3">
-              {day.meals.map((meal, i) => {
-                const overrideMeals = override?.meal_overrides?.[meal.moment]
-                if (overrideMeals && overrideMeals.length > 0) {
-                  const customMeal: Meal = { ...meal, items: overrideMeals }
-                  return <MealCard key={i} meal={customMeal} isCustomized />
-                }
-                return <MealCard key={i} meal={meal} />
-              })}
-            </div>
-            <RitualCard matin={day.ritual.matin} soir={day.ritual.soir} />
-          </div>
-        )}
-
-        {/* Journal (lecture seule) */}
-        {activeTab === "journal" && (
-          <div className="space-y-3">
-            {entries.length === 0 ? (
-              <div className="card p-8 text-center">
-                <p className="text-lg mb-2">📓</p>
-                <p className="font-semibold mb-1" style={{ color: "var(--text-primary)" }}>Aucune entrée</p>
-                <p className="text-sm" style={{ color: "var(--text-secondary)" }}>{collab?.prenom} n&apos;a pas encore rempli de journal.</p>
-              </div>
-            ) : entries.map(e => (
-              <div key={e.id} className="card p-4">
-                <p className="text-xs mb-3 font-semibold" style={{ color: "var(--text-muted)" }}>
-                  {new Date(e.created_at).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })}
-                </p>
-                <div className="grid grid-cols-4 gap-2 text-center mb-3">
-                  {[
-                    { l: "Énergie", v: e.energie },
-                    { l: "Humeur",  v: e.humeur },
-                    { l: "Hydrat.", v: e.hydratation },
-                    { l: "Sommeil", v: e.sommeil },
-                  ].map(({ l, v }) => (
-                    <div key={l}>
-                      <div className="font-black text-sm gradient-text">{v}/10</div>
-                      <div className="text-xs" style={{ color: "var(--text-muted)" }}>{l}</div>
-                    </div>
-                  ))}
-                </div>
-                {e.note && (
-                  <p className="text-xs italic pt-2" style={{ color: "var(--text-secondary)", borderTop: "1px solid var(--border)" }}>
-                    &ldquo;{e.note}&rdquo;
-                  </p>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Progression */}
-        {activeTab === "progression" && (
-          <div className="space-y-4">
-            <Timeline21 totalDays={21} currentDay={currentDay} completedDays={completedDays} />
-            <div className="space-y-3">
-              {([1, 2, 3] as const).map(w => {
-                const wInfo = WEEK_THEMES[w]
-                const wDays = PROGRAM.filter(d => d.week === w)
-                const done = wDays.filter(d => completedDays.includes(d.day)).length
-                return (
-                  <div key={w} className="card p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <div>
-                        <span className="text-xs uppercase tracking-widest font-semibold" style={{ color: wInfo.color }}>Semaine {w}</span>
-                        <p className="font-bold text-sm mt-0.5" style={{ color: "var(--text-primary)" }}>{wInfo.title}</p>
-                      </div>
-                      <span className="tag">{done}/7</span>
-                    </div>
-                    <div className="progress-bar">
-                      <div className="progress-fill" style={{ width: `${(done / 7) * 100}%`, background: `linear-gradient(90deg, ${wInfo.color}, ${wInfo.color}88)` }} />
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-        )}
-
-        {/* Principes */}
-        {activeTab === "principes" && <PrincipesSection />}
-
-      </main>
-
-      {/* Bottom nav */}
-      <nav className="fixed bottom-0 left-0 right-0 px-4"
-        style={{ background: "rgba(7,13,15,0.96)", backdropFilter: "blur(16px)", borderTop: "1px solid var(--border)" }}>
-        <div className="max-w-2xl mx-auto flex items-center justify-around py-2.5">
-          {([
-            { icon: "🏠", label: "Programme", tab: "programme" },
-            { icon: "📓", label: "Journal",   tab: "journal" },
-            { icon: "📈", label: "Progrès",   tab: "progression" },
-            { icon: "💡", label: "Principes", tab: "principes" },
-          ] as const).map(({ icon, label, tab }) => (
-            <button key={tab} onClick={() => setActiveTab(tab)}
-              className="flex flex-col items-center gap-0.5 px-2"
-              style={{ color: activeTab === tab ? "var(--green)" : "var(--text-muted)" }}>
-              <span className="text-lg leading-none">{icon}</span>
-              <span className="text-xs font-medium">{label}</span>
-            </button>
-          ))}
-        </div>
-      </nav>
+      </div>
     </div>
   )
 }

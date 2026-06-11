@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next"
-import { Baloo_2, Hanken_Grotesk } from "next/font/google"
+import { Baloo_2, Hanken_Grotesk, Space_Grotesk } from "next/font/google"
 import { AuthProvider } from "@/lib/auth-context"
 import "./globals.css"
 
@@ -12,13 +12,20 @@ const baloo = Baloo_2({
 
 const hanken = Hanken_Grotesk({
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
+  weight: ["400", "500", "600", "700", "800"],
   variable: "--font-sans",
   display: "swap",
 })
 
+const spaceGrotesk = Space_Grotesk({
+  subsets: ["latin"],
+  weight: ["400", "500", "700"],
+  variable: "--font-label",
+  display: "swap",
+})
+
 export const viewport: Viewport = {
-  themeColor: "#EDFAF4",
+  themeColor: "#EFE6CF",
 }
 
 export const metadata: Metadata = {
@@ -38,7 +45,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="fr" className={`h-full ${baloo.variable} ${hanken.variable}`}>
+    <html lang="fr" className={`h-full ${baloo.variable} ${hanken.variable} ${spaceGrotesk.variable}`}>
       <body className="min-h-full flex flex-col" style={{ background: "var(--bg)" }}>
         <AuthProvider>{children}</AuthProvider>
       </body>

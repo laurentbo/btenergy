@@ -1,43 +1,60 @@
 @import "tailwindcss";
 
-/* ── Design tokens — Menthe fraîche ──────────────────────────────────────── */
+/* ── Design tokens — Édito tonique (papier sable) ───────────────────────── */
 :root {
-  /* Backgrounds */
-  --bg:          #EDFAF4;
-  --bg-lift:     #DCF5E8;
-  --bg-surface:  #FFFFFF;
-  --bg-elev:     #CCF0DC;
+  /* Surfaces */
+  --chassis:     #1C160C;    /* châssis extérieur mobile */
+  --bg:          #EFE6CF;    /* fond app — papier sable */
+  --bg-lift:     #EAE0C7;    /* fond légèrement relevé */
+  --bg-surface:  #FBF6EA;    /* cartes — papier crème */
+  --bg-elev:     #F5EFD8;    /* éléments élevés */
 
-  /* Lines */
-  --line:        rgba(12,110,58,0.12);
-  --line-soft:   rgba(12,110,58,0.07);
+  /* Lignes */
+  --line:        #E2D4B5;
+  --line-soft:   rgba(226,212,181,0.55);
 
-  /* Text */
-  --text:        #0D2B1A;
-  --text-dim:    rgba(13,43,26,0.65);
-  --text-mute:   rgba(13,43,26,0.40);
-  --text-faint:  rgba(13,43,26,0.20);
+  /* Encre */
+  --text:        #1E1B14;
+  --text-dim:    #857A61;
+  --text-mute:   rgba(30,27,20,0.45);
+  --text-faint:  rgba(30,27,20,0.22);
 
-  /* Vert primaire frais */
-  --accent:      #1DB864;
-  --accent-soft: rgba(29,184,100,0.10);
-  --coach:       #0C6E3A;
+  /* Accents */
+  --leaf:        #4E7A3C;    /* vert feuille */
+  --leaf-soft:   rgba(78,122,60,0.10);
+  --terra:       #E8622A;    /* terracotta — CTA, onglet actif */
+  --terra-soft:  rgba(232,98,42,0.10);
+  --terra-ink:   #C2552A;    /* encre terracotta */
+  --amber:       #F2B431;    /* ambre pop */
+  --amber-soft:  rgba(242,180,49,0.14);
+  --amber-ink:   #A9742A;    /* encre ambre */
 
-  /* Brand vert frais — CTA, états actifs */
-  --brand:       #1DB864;
-  --brand-soft:  rgba(29,184,100,0.12);
-  --forest:      #0C6E3A;
+  /* Accents par semaine (progression/contexte uniquement) */
+  --week1:       #4E7A3C;    /* S1 — Détox & Purification */
+  --week2:       #E2A21E;    /* S2 — Énergie & Vitalité */
+  --week3:       #C2552A;    /* S3 — Ancrage & Performance */
 
-  /* Accent menthe moyen — encarts secondaires */
-  --warm:        #5CC8A0;
-  --warm-soft:   rgba(92,200,160,0.12);
+  /* Types de recettes */
+  --type-jus:     #4E7A3C;
+  --type-poisson: #2F7E90;
+  --type-viande:  #C2552A;
+  --type-vege:    #6E8F28;
 
-  /* Type stacks — alimentés par next/font via les variables CSS */
-  --sans:    var(--font-sans, system-ui, sans-serif);
-  --heading: var(--font-heading, system-ui, sans-serif);
-  --serif:   var(--heading); /* alias — utilisé par les composants existants */
+  /* Typographie */
+  --sans:    var(--font-sans,    system-ui, sans-serif);  /* Hanken Grotesk */
+  --heading: var(--font-heading, system-ui, sans-serif);  /* Baloo 2 */
+  --label:   var(--font-label,   system-ui, sans-serif);  /* Space Grotesk */
+  --serif:   var(--heading);
 
   /* ── Aliases de compatibilité ────────────────────────────────────────────── */
+  --accent:       var(--leaf);
+  --accent-soft:  var(--leaf-soft);
+  --brand:        var(--leaf);
+  --brand-soft:   var(--leaf-soft);
+  --coach:        var(--leaf);
+  --forest:       var(--leaf);
+  --warm:         var(--terra);
+  --warm-soft:    var(--terra-soft);
   --bg-primary:   var(--bg);
   --bg-secondary: var(--bg-lift);
   --bg-card:      var(--bg-surface);
@@ -47,16 +64,16 @@
   --text-muted:     var(--text-mute);
   --border:         var(--line);
   --border-accent:  var(--line-soft);
-  --glass:          rgba(62,142,79,0.05);
-  --glass-border:   rgba(62,142,79,0.10);
-  --accent-lime:  var(--brand);
-  --accent-mint:  var(--accent);
-  --accent-cyan:  var(--accent);
-  --green-dim:    var(--brand);
-  --blue-dim:     var(--forest);
-  --blue:         var(--forest);
-  --blue-mid:     var(--forest);
-  --green:        var(--brand);
+  --glass:          rgba(78,122,60,0.05);
+  --glass-border:   rgba(78,122,60,0.10);
+  --accent-lime:  var(--leaf);
+  --accent-mint:  var(--leaf);
+  --accent-cyan:  var(--leaf);
+  --green-dim:    var(--leaf);
+  --blue-dim:     var(--leaf);
+  --blue:         var(--leaf);
+  --blue-mid:     var(--leaf);
+  --green:        var(--leaf);
 }
 
 /* ── Thème sombre — espace coach (routes /coach et /admin) ───────────────── */
@@ -122,7 +139,7 @@ html, body {
 
 ::-webkit-scrollbar { width: 3px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(35,82,54,0.18); border-radius: 2px; }
+::-webkit-scrollbar-thumb { background: rgba(30,27,20,0.18); border-radius: 2px; }
 
 /* ── App shell — container queries ────────────────────────────────────────── */
 .app-root {
@@ -219,3 +236,15 @@ html, body {
   to   { opacity: 1; }
 }
 .fade-in { animation: fadeIn 0.25s ease forwards; }
+
+/* Bottom-sheet slide-up (écrans utilisateur) */
+@keyframes bteUp {
+  from { transform: translateY(100%); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+/* Détail recette slide-in */
+@keyframes bteSlide {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
+}

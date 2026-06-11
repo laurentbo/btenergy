@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Palette — Menthe fraîche</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Hanken+Grotesk:wght@400;500;600&display=swap');
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body { font-family: 'Hanken Grotesk', sans-serif; display: flex; gap: 0; min-height: 100vh; }
+
+  /* ── Colonne A : Actuel (Plein jour chaud) ── */
+  .col { flex: 1; padding: 32px 24px; display: flex; flex-direction: column; gap: 16px; }
+
+  .label-col {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.14em;
+    text-transform: uppercase; margin-bottom: 8px;
+  }
+
+  /* ─── Thème A : Plein jour actuel ─── */
+  .a { background: #FBFCF7; color: #1A2E1D; border-right: 1px solid #e0e0d4; }
+  .a .badge { background: #3E8E4F; color: #fff; }
+  .a .card  { background: #F3F5EE; border: 1px solid rgba(35,82,54,0.10); }
+  .a .btn   { background: #3E8E4F; color: #fff; }
+  .a .chip  { background: rgba(62,142,79,0.10); color: #235236; border: 1px solid rgba(62,142,79,0.20); }
+  .a .warm  { background: rgba(200,150,76,0.12); border: 1px solid rgba(200,150,76,0.25); color: #C8964C; }
+  .a .mute  { color: rgba(26,46,29,0.45); }
+  .a .heading { font-family: 'Baloo 2', sans-serif; color: #235236; }
+  .a .bubble-me    { background: rgba(62,142,79,0.10); border: 1px solid rgba(62,142,79,0.20); color: #1A2E1D; }
+  .a .bubble-coach { background: #fff; border: 1px solid rgba(35,82,54,0.12); color: #235236; font-style: italic; }
+
+  /* ─── Thème B : Menthe fraîche ─── */
+  .b { background: #EDFAF4; color: #0D2B1A; }
+  .b .badge { background: #1DB864; color: #fff; }
+  .b .card  { background: #fff; border: 1px solid rgba(12,110,58,0.12); }
+  .b .btn   { background: #1DB864; color: #fff; }
+  .b .chip  { background: rgba(29,184,100,0.10); color: #0C6E3A; border: 1px solid rgba(29,184,100,0.22); }
+  .b .warm  { background: rgba(92,200,160,0.12); border: 1px solid rgba(92,200,160,0.28); color: #0C8055; }
+  .b .mute  { color: rgba(13,43,26,0.45); }
+  .b .heading { font-family: 'Baloo 2', sans-serif; color: #0C6E3A; }
+  .b .bubble-me    { background: rgba(29,184,100,0.12); border: 1px solid rgba(29,184,100,0.22); color: #0D2B1A; }
+  .b .bubble-coach { background: #fff; border: 1px solid rgba(12,110,58,0.14); color: #0C6E3A; font-style: italic; }
+
+  /* ── Composants communs ── */
+  .col-title { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; padding-bottom: 16px; border-bottom: 1px solid currentColor; opacity: 0.3; }
+
+  .card { border-radius: 16px; padding: 16px; }
+  .badge { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 10px; border-radius: 999px; }
+  .btn { border: none; border-radius: 999px; padding: 11px 22px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: 'Hanken Grotesk', sans-serif; }
+  .chip { display: inline-block; font-size: 11px; font-weight: 600; padding: 4px 12px; border-radius: 999px; }
+  .warm { border-radius: 12px; padding: 12px 14px; font-size: 12px; font-style: italic; }
+  .heading { font-size: 22px; font-weight: 800; line-height: 1.2; }
+  .sub { font-size: 13px; line-height: 1.6; }
+  .mute { font-size: 12px; }
+
+  .chat { display: flex; flex-direction: column; gap: 10px; }
+  .bubble { padding: 10px 14px; border-radius: 16px; font-size: 13px; line-height: 1.5; max-width: 85%; }
+  .bubble-me    { align-self: flex-end; border-bottom-right-radius: 4px; }
+  .bubble-coach { align-self: flex-start; border-bottom-left-radius: 4px; }
+
+  .mood-row { display: flex; gap: 8px; }
+  .mood-chip {
+    flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px;
+    padding: 10px 4px; border-radius: 14px; font-size: 10.5px; font-weight: 600;
+  }
+  .a .mood-chip { background: #fff; border: 1.5px solid rgba(35,82,54,0.14); color: rgba(26,46,29,0.55); }
+  .a .mood-chip.sel { border-color: #3E8E4F; background: rgba(62,142,79,0.08); color: #235236; }
+  .b .mood-chip { background: #fff; border: 1.5px solid rgba(12,110,58,0.14); color: rgba(13,43,26,0.5); }
+  .b .mood-chip.sel { border-color: #1DB864; background: rgba(29,184,100,0.10); color: #0C6E3A; }
+
+  .divider { height: 1px; opacity: 0.15; background: currentColor; }
+</style>
+</head>
+<body>
+
+<!-- ── A : Actuel ── -->
+<div class="col a">
+  <div class="col-title">A — Actuel · Plein jour</div>
+
+  <div>
+    <div class="badge">S1 · Détox</div>
+  </div>
+
+  <div class="heading">Premier engagement</div>
+  <div class="sub mute">Poser les bases alimentaires, ressentir l'effet des premières heures.</div>
+
+  <div class="divider"></div>
+
+  <div class="card">
+    <div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px;" class="mute">Petit-déjeuner</div>
+    <div class="sub">2 kiwis + 1 orange + une poignée de noix</div>
+    <button class="chip" style="margin-top:10px;">Marquer comme fait</button>
+  </div>
+
+  <div class="warm">✨ <strong>Astuce umami</strong> — Le tamari apporte un umami profond. Ajoutez-le hors du feu.</div>
+
+  <div class="divider"></div>
+
+  <div class="sub" style="font-weight:600;margin-bottom:6px;">Comment tu te sens aujourd'hui ?</div>
+  <div class="mood-row">
+    <div class="mood-chip">☁ À plat</div>
+    <div class="mood-chip">◯ Ça va</div>
+    <div class="mood-chip sel">🌿 Léger</div>
+    <div class="mood-chip">✦ Plein d'énergie</div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="chat">
+    <div class="bubble bubble-coach">Bonjour, je suis présent tout au long de ces 21 jours.</div>
+    <div class="bubble bubble-me">Merci ! J'ai une question sur le tamari…</div>
+  </div>
+
+  <button class="btn" style="margin-top:4px;">Sauvegarder →</button>
+</div>
+
+<!-- ── B : Menthe fraîche ── -->
+<div class="col b">
+  <div class="col-title">B — Menthe fraîche</div>
+
+  <div>
+    <div class="badge">S1 · Détox</div>
+  </div>
+
+  <div class="heading">Premier engagement</div>
+  <div class="sub mute">Poser les bases alimentaires, ressentir l'effet des premières heures.</div>
+
+  <div class="divider"></div>
+
+  <div class="card">
+    <div style="font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px;" class="mute">Petit-déjeuner</div>
+    <div class="sub">2 kiwis + 1 orange + une poignée de noix</div>
+    <button class="chip" style="margin-top:10px;">Marquer comme fait</button>
+  </div>
+
+  <div class="warm">✨ <strong>Astuce umami</strong> — Le tamari apporte un umami profond. Ajoutez-le hors du feu.</div>
+
+  <div class="divider"></div>
+
+  <div class="sub" style="font-weight:600;margin-bottom:6px;">Comment tu te sens aujourd'hui ?</div>
+  <div class="mood-row">
+    <div class="mood-chip">☁ À plat</div>
+    <div class="mood-chip">◯ Ça va</div>
+    <div class="mood-chip sel">🌿 Léger</div>
+    <div class="mood-chip">✦ Plein d'énergie</div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="chat">
+    <div class="bubble bubble-coach">Bonjour, je suis présent tout au long de ces 21 jours.</div>
+    <div class="bubble bubble-me">Merci ! J'ai une question sur le tamari…</div>
+  </div>
+
+  <button class="btn" style="margin-top:4px;">Sauvegarder →</button>
+</div>
+
+</body>
+</html>

@@ -394,8 +394,8 @@ function JournalScreen({
   onSend: (body: string) => Promise<void>
 }) {
   const [draft, setDraft] = useState("")
-  const scrollRef = useRef<HTMLDivElement>(null)
-  const inputRef  = useRef<HTMLInputElement>(null)
+  const scrollRef    = useRef<HTMLDivElement>(null)
+  const textareaRef  = useRef<HTMLTextAreaElement>(null)
   const [sending, setSending] = useState(false)
 
   useEffect(() => {
@@ -405,7 +405,7 @@ function JournalScreen({
   useEffect(() => {
     if (prefill) {
       setDraft(prefill)
-      inputRef.current?.focus()
+      textareaRef.current?.focus()
       onPrefillConsumed()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -431,46 +431,54 @@ function JournalScreen({
     grouped.push({ type: "msg", msg })
   }
 
+  const lastFromMe = messages.length > 0 && messages[messages.length - 1].author === "coachee"
+
   return (
     <>
+      {/* En-tête coach */}
+      <div style={{
+        flexShrink: 0,
+        borderBottom: "1.5px solid var(--line)",
+        padding: "14px 18px",
+        display: "flex", alignItems: "center", gap: 13,
+        background: "var(--bg)",
+      }}>
+        <div style={{
+          flex: "0 0 auto", width: 46, height: 46, borderRadius: 999,
+          background: "var(--leaf)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          fontFamily: "var(--heading)", fontWeight: 700, fontSize: 22,
+          color: "#fff",
+        }}>L</div>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontFamily: "var(--heading)", fontWeight: 700, fontSize: 20, color: "var(--text)", letterSpacing: "-0.01em", lineHeight: 1.05 }}>
+            Laurent
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 5, marginTop: 3, fontFamily: "var(--label)", fontSize: 11.5, color: "var(--text-dim)", fontWeight: 500 }}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--leaf)" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="8" /><path d="M12 8v4l2.5 2" />
+            </svg>
+            Écris-moi, je te réponds rapidement
+          </div>
+        </div>
+      </div>
+
+      {/* Fil de messages */}
       <div ref={scrollRef} className="scroll" style={{
         flex: 1, overflowY: "auto",
-        padding: "22px 18px 14px",
-        display: "flex", flexDirection: "column", gap: 14,
+        padding: "16px 16px 8px",
+        display: "flex", flexDirection: "column", gap: 12,
       }}>
-        {/* En-tête coach */}
-        <div style={{ marginBottom: 4 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
-            <div style={{
-              width: 44, height: 44, borderRadius: 999, flexShrink: 0,
-              background: "var(--brand-soft)",
-              border: "1.5px solid var(--line)",
-              display: "flex", alignItems: "center", justifyContent: "center",
-              fontFamily: "var(--heading)", fontSize: 18, fontWeight: 700,
-              color: "var(--forest)",
-            }}>L</div>
-            <div>
-              <div style={{ fontSize: 15, fontWeight: 600, color: "var(--text)", fontFamily: "var(--heading)" }}>
-                Laurent
-              </div>
-              <div style={{ fontSize: 12, color: "var(--text-mute)", marginTop: 2 }}>
-                Ton coach · répond dans la journée
-              </div>
-            </div>
-          </div>
-
-          {/* Bandeau d'intro fixe */}
-          <div style={{
-            padding: "12px 14px",
-            background: "var(--bg-lift)",
-            border: "1px solid var(--line)",
-            borderRadius: 12,
-            fontSize: 13, lineHeight: 1.6,
-            color: "var(--text-dim)",
-            fontStyle: "italic",
-          }}>
-            Je t'accompagne tout au long de ton parcours. Une question, une interrogation ? Dis-moi. Je suis à ton écoute.
-          </div>
+        {/* Note d'intro */}
+        <div style={{
+          background: "rgba(78,122,60,0.10)",
+          border: "1.5px solid rgba(78,122,60,0.30)",
+          borderRadius: 14,
+          padding: "11px 14px",
+          fontSize: 12.5, color: "var(--leaf)", fontWeight: 600, lineHeight: 1.45,
+          textAlign: "center",
+        }}>
+          Ici c&apos;est moi, Laurent — pas un robot. Écris-moi comme à un ami.
         </div>
 
         {grouped.map((item, i) => {
@@ -478,54 +486,66 @@ function JournalScreen({
             return (
               <div key={`sep-${i}`} style={{
                 display: "flex", alignItems: "center", gap: 12,
-                margin: "12px 0 4px",
+                margin: "8px 0 4px",
               }}>
-                <div style={{ flex: 1, height: 1, background: "var(--line-soft)" }} />
-                <div style={{
-                  fontSize: 11, color: "var(--text-mute)", fontStyle: "italic",
-                }}>{item.label}</div>
-                <div style={{ flex: 1, height: 1, background: "var(--line-soft)" }} />
+                <div style={{ flex: 1, height: 1, background: "var(--line)" }} />
+                <span style={{ fontFamily: "var(--label)", fontSize: 10.5, fontWeight: 700, color: "var(--text-dim)", letterSpacing: "0.08em", textTransform: "uppercase" as const }}>
+                  {item.label}
+                </span>
+                <div style={{ flex: 1, height: 1, background: "var(--line)" }} />
               </div>
             )
           }
           return <JournalBubble key={item.msg.id} msg={item.msg} />
         })}
+
+        {lastFromMe && (
+          <div style={{ textAlign: "center", fontFamily: "var(--label)", fontSize: 11, color: "var(--text-dim)", fontWeight: 500, padding: "2px 0 6px" }}>
+            Envoyé · Laurent te répond rapidement
+          </div>
+        )}
       </div>
 
+      {/* Compositeur */}
       <div className="journal-composer" style={{
         flexShrink: 0,
-        padding: "10px 14px 12px",
-        borderTop: "1px solid var(--line-soft)",
-        display: "flex", alignItems: "flex-end", gap: 8,
+        padding: "10px 14px",
+        borderTop: "1.5px solid var(--line)",
+        display: "flex", alignItems: "flex-end", gap: 10,
       }}>
-        <div style={{
-          flex: 1,
-          background: "var(--bg-lift)",
-          border: "1px solid var(--line)",
-          borderRadius: 22,
-          padding: "10px 14px",
-          display: "flex", alignItems: "center",
-        }}>
-          <input
-            ref={inputRef}
-            value={draft}
-            onChange={e => setDraft(e.target.value)}
-            onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend() } }}
-            placeholder="Écris à Laurent…"
-            style={{
-              flex: 1, background: "transparent", border: 0, outline: "none",
-              color: "var(--text)", fontFamily: "var(--sans)", fontSize: 14,
-            }}
-          />
-        </div>
-        <IconBtn
-          disabled={!draft.trim() || sending}
+        <textarea
+          ref={textareaRef}
+          value={draft}
+          onChange={e => setDraft(e.target.value)}
+          onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend() } }}
+          rows={1}
+          placeholder="Écris à Laurent…"
+          style={{
+            flex: 1, resize: "none",
+            border: "1.5px solid var(--line)",
+            background: "var(--bg-surface)",
+            borderRadius: 22,
+            padding: "12px 16px",
+            fontFamily: "var(--sans)", fontSize: 15, color: "var(--text)",
+            outline: "none", lineHeight: 1.4, maxHeight: 120,
+          }}
+        />
+        <button
           onClick={handleSend}
-          accent
           aria-label="Envoyer"
+          disabled={!draft.trim() || sending}
+          style={{
+            flexShrink: 0, width: 46, height: 46, borderRadius: 999,
+            border: draft.trim() ? "none" : "1.5px solid var(--line)",
+            background: draft.trim() ? "var(--leaf)" : "var(--bg-surface)",
+            color: draft.trim() ? "#fff" : "var(--text-dim)",
+            cursor: draft.trim() ? "pointer" : "default",
+            display: "inline-flex", alignItems: "center", justifyContent: "center",
+            transition: "all .15s",
+          }}
         >
-          <ArrowUpIcon />
-        </IconBtn>
+          <SendIcon />
+        </button>
       </div>
     </>
   )
@@ -536,44 +556,41 @@ function JournalBubble({ msg }: { msg: JournalMessage }) {
   const isMe    = msg.author === "coachee"
   return (
     <div style={{
-      display: "flex", gap: 10,
-      flexDirection: isMe ? "row-reverse" : "row",
+      display: "flex", gap: 9,
+      justifyContent: isMe ? "flex-end" : "flex-start",
       alignItems: "flex-end",
     }}>
       {isCoach && (
         <div style={{
-          width: 26, height: 26, borderRadius: 999, flexShrink: 0,
-          background: "var(--brand-soft)",
-          border: "1px solid var(--line)",
+          flex: "0 0 auto", width: 30, height: 30, borderRadius: 999,
+          background: "var(--leaf)",
           display: "flex", alignItems: "center", justifyContent: "center",
-          fontFamily: "var(--heading)", fontSize: 11, fontWeight: 700,
-          color: "var(--forest)",
+          fontFamily: "var(--heading)", fontWeight: 700, fontSize: 14,
+          color: "#fff", alignSelf: "flex-end",
         }}>L</div>
       )}
       <div style={{
-        maxWidth: "78%", display: "flex", flexDirection: "column", gap: 5,
-        alignItems: isMe ? "flex-end" : "flex-start",
+        maxWidth: "76%", display: "flex", flexDirection: "column",
+        alignItems: isMe ? "flex-end" : "flex-start", gap: 3,
       }}>
         {msg.body && (
           <div style={{
-            padding: "10px 14px",
-            background: isCoach ? "var(--bg-lift)" : "var(--brand-soft)",
-            border: isCoach ? "1px solid var(--line)" : "1px solid rgba(62,142,79,0.2)",
-            borderRadius: 18,
-            borderBottomLeftRadius: isCoach ? 6 : 18,
-            borderBottomRightRadius: isMe ? 6 : 18,
-            color: isCoach ? "var(--forest)" : "var(--text)",
-            fontFamily: isCoach ? "var(--heading)" : "var(--sans)",
-            fontStyle: isCoach ? "italic" : "normal",
-            fontSize: isCoach ? 15 : 13.5,
-            lineHeight: 1.6,
+            background: isMe ? "var(--leaf)" : "var(--bg-surface)",
+            color: isMe ? "#fff" : "var(--text)",
+            border: isMe ? "none" : "1.5px solid var(--line)",
+            borderRadius: isMe ? "18px 18px 6px 18px" : "18px 18px 18px 6px",
+            padding: "11px 14px",
+            fontSize: 14.5, lineHeight: 1.45,
+            boxShadow: isMe
+              ? "0 10px 20px -14px rgba(78,122,60,0.8)"
+              : "0 8px 16px -14px rgba(28,22,12,0.5)",
           }}>
             {msg.body}
           </div>
         )}
-        <div style={{ fontSize: 10.5, color: "var(--text-faint)", padding: "0 6px" }}>
+        <span style={{ fontFamily: "var(--label)", fontSize: 10.5, color: "var(--text-dim)", fontWeight: 500, padding: "0 4px" }}>
           {formatTime(msg.created_at)}
-        </div>
+        </span>
       </div>
     </div>
   )
@@ -1251,6 +1268,14 @@ function ArrowUpIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
       <path d="M12 19V5M5 12l7-7 7 7" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+function SendIcon() {
+  return (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M5 12l14-7-5 16-3.5-6.5z" />
+      <path d="M10.5 14.5L19 5" />
     </svg>
   )
 }
