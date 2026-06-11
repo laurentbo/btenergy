@@ -13,11 +13,11 @@ const SEMAINES: Record<number, { label: string; phase: string }> = {
   3: { label: "Semaine 3", phase: "Ancrage & Performance" },
 }
 
-// Photos generiques par slot (design "Édito tonique")
-const MEAL_PHOTO: Record<string, string> = {
-  petit_dej: "/repas/petit-dej.png",
-  dejeuner:  "/repas/dejeuner.jpg",
-  diner:     "/repas/diner.jpg",
+// Fallback photos (fichiers statiques)
+const MEAL_PHOTO_FALLBACK: Record<string, string> = {
+  "petit-dej": "/repas/petit-dej.png",
+  dejeuner:    "/repas/dejeuner.jpg",
+  diner:       "/repas/diner.jpg",
 }
 
 // Design tokens (miroir globals.css)
@@ -220,6 +220,7 @@ export default function ProgrammeJour({ params }: { params: Promise<{ jour: stri
   const jourActuel = Math.min(21, Math.max(1, parseInt(jourParam, 10) || 1))
 
   const [prenom, setPrenom] = useState("")
+  const [mealPhotos, setMealPhotos] = useState(MEAL_PHOTO_FALLBACK)
   const supabase = useMemo(() => createClient(), [])
   const router = useRouter()
 
@@ -229,6 +230,17 @@ export default function ProgrammeJour({ params }: { params: Promise<{ jour: stri
       const { data } = await supabase.from("profiles").select("prenom").eq("id", user.id).maybeSingle()
       setPrenom(data?.prenom ?? "")
     })
+    fetch("/api/admin/repas-photo")
+      .then((r) => r.json())
+      .then((urls: Record<string, string | null>) => {
+        setMealPhotos((prev) => ({
+          ...prev,
+          ...(urls["petit-dej"] ? { "petit-dej": urls["petit-dej"]! } : {}),
+          ...(urls["dejeuner"]  ? { dejeuner:    urls["dejeuner"]!  } : {}),
+          ...(urls["diner"]     ? { diner:       urls["diner"]!     } : {}),
+        }))
+      })
+      .catch(() => {}) // silently keep fallback on error
   }, []) // eslint-disable-line
 
   const jour = VERISSIMO_PROGRAM[jourActuel - 1] as VerissimoJour
@@ -329,19 +341,19 @@ export default function ProgrammeJour({ params }: { params: Promise<{ jour: stri
             slot="Petit-déjeuner" index={0}
             label={jour.petit_dej}
             content={`Manger lentement, sans écran. Ce repas donne le ton de la journée.`}
-            photo={MEAL_PHOTO.petit_dej}
+            photo={mealPhotos["petit-dej"]}
           />
           <MealCard
             slot="Déjeuner" index={1}
             label={jour.dejeuner}
             content={jour.commentaire ?? `Prendre le temps de mâcher. Coudées — tu peux t'arrêter avant d'être rassasié.`}
-            photo={MEAL_PHOTO.dejeuner}
+            photo={mealPhotos["dejeuner"]}
           />
           <MealCard
             slot="Dîner" index={2}
             label={jour.diner}
             content={jour.umami ? `${jour.umami}` : `Repas léger, en conscience. Arrête-toi dès que tu te sens rassasié.`}
-            photo={MEAL_PHOTO.diner}
+            photo={mealPhotos["diner"]}
           />
         </div>
 

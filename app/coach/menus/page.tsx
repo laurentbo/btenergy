@@ -8,7 +8,7 @@ import {
 } from "@/lib/menus"
 import type { MealPlan, MealFieldName, FoodPreference } from "@/lib/supabase/types"
 
-type Tab = "plan" | "adaptations"
+type Tab = "plan" | "adaptations" | "photos"
 type WeekFilter = "tous" | "1" | "2" | "3"
 type ColabProfile = { id: string; prenom: string; email: string }
 
@@ -186,6 +186,96 @@ function OverrideModal({
   )
 }
 
+// ── Photos des repas ─────────────────────────────────────────────────────────
+const PHOTO_SLOTS = [
+  { slot: "petit-dej", label: "Petit-déjeuner", icon: "🌅" },
+  { slot: "dejeuner",  label: "Déjeuner",       icon: "☀️" },
+  { slot: "diner",     label: "Dîner",           icon: "🌙" },
+] as const
+
+function PhotosTab({ onToast }: { onToast: (msg: string) => void }) {
+  const [urls, setUrls] = useState<Record<string, string | null>>({})
+  const [uploading, setUploading] = useState<string | null>(null)
+
+  useEffect(() => {
+    fetch("/api/admin/repas-photo")
+      .then((r) => r.json())
+      .then(setUrls)
+  }, [])
+
+  async function handleUpload(slot: string, file: File) {
+    setUploading(slot)
+    try {
+      const fd = new FormData()
+      fd.append("slot", slot)
+      fd.append("file", file)
+      const res = await fetch("/api/admin/repas-photo", { method: "POST", body: fd })
+      const data = await res.json()
+      if (data.url) {
+        setUrls((prev) => ({ ...prev, [slot]: data.url + "?t=" + Date.now() }))
+        onToast("Photo mise à jour ✓")
+      } else {
+        onToast("Erreur : " + (data.error ?? "inconnue"))
+      }
+    } finally {
+      setUploading(null)
+    }
+  }
+
+  return (
+    <div className="max-w-2xl">
+      <p className="text-sm mb-6" style={{ color: "rgba(255,255,255,0.45)" }}>
+        Ces photos s&apos;affichent sur l&apos;écran programme de chaque participant. Formats acceptés : JPG, PNG, WEBP · 5 Mo max.
+      </p>
+      <div className="flex flex-col gap-5">
+        {PHOTO_SLOTS.map(({ slot, label, icon }) => {
+          const url = urls[slot]
+          const busy = uploading === slot
+          return (
+            <div key={slot} className="rounded-2xl p-5 flex gap-5 items-center"
+              style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
+              {/* Preview */}
+              <div className="shrink-0 w-28 h-20 rounded-xl overflow-hidden flex items-center justify-center"
+                style={{ background: "rgba(255,255,255,0.06)" }}>
+                {url
+                  ? <img src={url} alt={label} className="w-full h-full object-cover" />
+                  : <span style={{ fontSize: 28 }}>{icon}</span>
+                }
+              </div>
+              {/* Info + upload */}
+              <div className="flex-1 min-w-0">
+                <div className="font-bold text-sm mb-1" style={{ color: "#fff" }}>{icon} {label}</div>
+                <div className="text-xs mb-3 truncate" style={{ color: "rgba(255,255,255,0.3)" }}>
+                  {url ? url.split("/").pop()?.split("?")[0] : "Aucune photo"}
+                </div>
+                <label className="inline-flex items-center gap-2 cursor-pointer rounded-xl px-4 py-2 text-xs font-bold"
+                  style={{
+                    background: busy ? "rgba(255,255,255,0.05)" : "var(--green)",
+                    color: busy ? "rgba(255,255,255,0.4)" : "#060e12",
+                    pointerEvents: busy ? "none" : "auto",
+                  }}>
+                  {busy ? "Envoi…" : url ? "Remplacer" : "Choisir une photo"}
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                    className="sr-only"
+                    disabled={busy}
+                    onChange={(e) => {
+                      const f = e.target.files?.[0]
+                      if (f) handleUpload(slot, f)
+                      e.target.value = ""
+                    }}
+                  />
+                </label>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
 // ── Main page ─────────────────────────────────────────────────────────────────
 export default function CoachMenusPage() {
   const [tab, setTab] = useState<Tab>("plan")
@@ -323,7 +413,7 @@ export default function CoachMenusPage() {
         {/* Tabs */}
         <div className="flex gap-1 mb-6 p-1.5 rounded-2xl w-fit"
           style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}>
-          {(["plan", "adaptations"] as Tab[]).map((t) => (
+          {(["plan", "adaptations", "photos"] as Tab[]).map((t) => (
             <button key={t} onClick={() => setTab(t)}
               className="px-5 py-2.5 rounded-xl font-semibold transition-all text-sm"
               style={{
@@ -331,7 +421,7 @@ export default function CoachMenusPage() {
                 color: tab === t ? "#fff" : "rgba(255,255,255,0.4)",
                 borderBottom: tab === t ? "2px solid var(--green)" : "2px solid transparent",
               }}>
-              {t === "plan" ? "Plan global" : "Adaptations utilisateurs"}
+              {t === "plan" ? "Plan global" : t === "adaptations" ? "Adaptations utilisateurs" : "📸 Photos"}
             </button>
           ))}
         </div>
@@ -569,6 +659,11 @@ export default function CoachMenusPage() {
             )}
           </div>
         )}
+        {/* ── Photos des repas ── */}
+        {tab === "photos" && (
+          <PhotosTab onToast={showToast} />
+        )}
+
       </main>
 
       {/* Override modal */}
