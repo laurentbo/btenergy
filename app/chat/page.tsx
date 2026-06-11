@@ -128,7 +128,11 @@ export default function ChatPage() {
     setDraft("")
     const optimistic: Message = { id: crypto.randomUUID(), author: "coachee", body: txt, created_at: new Date().toISOString() }
     setMessages(m => [...m, optimistic])
-    await supabase.from("journal_messages").insert({ coachee_id: userId, author: "coachee", body: txt })
+    await fetch("/api/chat/send", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ body: txt }),
+    })
   }
 
   const feed = useMemo(() => buildFeed(messages), [messages])
