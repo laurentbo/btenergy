@@ -185,10 +185,10 @@ function MealCard({ slot, label, content, photo, index }: {
 function BottomTabs({ activeJour }: { activeJour: number }) {
   const tabs = [
     { id: "jour",     label: "Jour",     href: `/programme/${activeJour}` },
-    { id: "courses",  label: "Courses",  href: "/dashboard" },
-    { id: "recettes", label: "Recettes", href: "/dashboard" },
-    { id: "methode",  label: "Méthode",  href: "/dashboard" },
-    { id: "coach",    label: "Coach",    href: "/dashboard" },
+    { id: "courses",  label: "Courses",  href: "/courses" },
+    { id: "recettes", label: "Recettes", href: "/recettes" },
+    { id: "methode",  label: "Méthode",  href: "/methode" },
+    { id: "coach",    label: "Coach",    href: "/chat" },
   ]
   return (
     <div style={{
@@ -241,7 +241,7 @@ export default function ProgrammeJour({ params }: { params: Promise<{ jour: stri
     <div style={{ background: C.bg, minHeight: "100dvh", display: "flex", flexDirection: "column", maxWidth: 480, margin: "0 auto" }}>
       <div style={{ flex: 1, overflow: "auto", padding: "26px 22px 24px" }}>
 
-        {/* ── Row 1 : badge + progress circle ── */}
+        {/* ── Row 1 : badge + progress circle + avatar ── */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
           <span style={{
             fontFamily: "var(--label)", fontWeight: 700, fontSize: 12,
@@ -250,7 +250,18 @@ export default function ProgrammeJour({ params }: { params: Promise<{ jour: stri
           }}>
             JOUR {String(jourActuel).padStart(2, "0")}<span style={{ color: C.amber }}> / 21</span>
           </span>
-          <ProgressCircle jour={jourActuel} />
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <ProgressCircle jour={jourActuel} />
+            <Link href="/profil" aria-label="Mon profil" style={{
+              flexShrink: 0, width: 34, height: 34, borderRadius: 999,
+              background: C.terra, color: "#fff",
+              fontFamily: "var(--heading)", fontWeight: 700, fontSize: 15,
+              display: "inline-flex", alignItems: "center", justifyContent: "center",
+              textDecoration: "none",
+            }}>
+              {prenom ? prenom[0].toUpperCase() : "?"}
+            </Link>
+          </div>
         </div>
 
         {/* ── Titre ── */}
