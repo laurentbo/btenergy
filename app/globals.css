@@ -76,31 +76,31 @@
   --green:        var(--leaf);
 }
 
-/* ── Thème sombre — espace coach (routes /coach et /admin) ───────────────── */
+/* ── Thème clair — espace coach (routes /coach et /admin) ────────────────── */
 .theme-coach {
-  --bg:          #15130E;
-  --bg-lift:     #1C1A14;
-  --bg-surface:  #211E17;
-  --bg-elev:     #27241C;
+  --bg:          #F0EBE0;
+  --bg-lift:     #E9E3D6;
+  --bg-surface:  #FAF7F1;
+  --bg-elev:     #F5F0E6;
 
-  --line:        rgba(247,234,205,0.07);
-  --line-soft:   rgba(247,234,205,0.04);
+  --line:        #DDD4BC;
+  --line-soft:   rgba(200,188,165,0.50);
 
-  --text:        #ECE4D2;
-  --text-dim:    rgba(236,228,210,0.62);
-  --text-mute:   rgba(236,228,210,0.34);
-  --text-faint:  rgba(236,228,210,0.18);
+  --text:        #1E1B14;
+  --text-dim:    #6B6050;
+  --text-mute:   rgba(30,27,20,0.45);
+  --text-faint:  rgba(30,27,20,0.22);
 
-  --accent:      #A8BBA5;
-  --accent-soft: rgba(168,187,165,0.14);
-  --coach:       #A8BBA5;
+  --accent:      #4E7A3C;
+  --accent-soft: rgba(78,122,60,0.12);
+  --coach:       #4E7A3C;
 
-  --brand:       #5CB551;
-  --brand-soft:  rgba(92,181,81,0.14);
-  --forest:      #5CB551;
+  --brand:       #4E7A3C;
+  --brand-soft:  rgba(78,122,60,0.12);
+  --forest:      #4E7A3C;
 
-  --warm:        #BF7D2C;
-  --warm-soft:   rgba(191,125,44,0.12);
+  --warm:        #E8622A;
+  --warm-soft:   rgba(232,98,42,0.10);
 
   /* aliases */
   --bg-primary:   var(--bg);
