@@ -106,7 +106,7 @@ export async function POST(request: NextRequest) {
     .eq("id", user.id)
     .maybeSingle()
 
-  if (!coachProfile || coachProfile.role !== "coach") {
+  if (!coachProfile || (coachProfile.role !== "coach" && coachProfile.role !== "admin")) {
     return NextResponse.json({ error: "Accès refusé." }, { status: 403 })
   }
 
@@ -130,15 +130,18 @@ export async function POST(request: NextRequest) {
   let userId: string
 
   if (createError) {
-    // Si l'utilisateur existe déjà, on met à jour son mot de passe
+    // Si l'utilisateur existe déjà, on le retrouve via la table profiles
     if (createError.message.includes("already been registered") || createError.message.includes("already exists")) {
-      const { data: list } = await db.auth.admin.listUsers()
-      const existing = list?.users.find(u => u.email === emailLower)
-      if (!existing) {
+      const { data: existingProfile } = await db
+        .from("profiles")
+        .select("id")
+        .eq("email", emailLower)
+        .maybeSingle()
+      if (!existingProfile) {
         return NextResponse.json({ error: "Impossible de créer ou retrouver l'utilisateur." }, { status: 500 })
       }
-      await db.auth.admin.updateUserById(existing.id, { password: tempPassword })
-      userId = existing.id
+      await db.auth.admin.updateUserById(existingProfile.id, { password: tempPassword })
+      userId = existingProfile.id
     } else {
       console.error("[invite] createUser error:", createError)
       return NextResponse.json({ error: createError.message }, { status: 500 })
@@ -147,13 +150,15 @@ export async function POST(request: NextRequest) {
     userId = created.user.id
   }
 
-  // Upsert profil
+  // Upsert profil — program_start remis à null pour que l'utilisateur reparte du Jour 0
   const { error: profileError } = await db.from("profiles").upsert({
     id: userId,
     email: emailLower,
     prenom: prenom.trim(),
     role: "collaborateur",
     coach_id: user.id,
+    current_day: 1,
+    program_start: null,
   }, { onConflict: "id" })
 
   if (profileError) {

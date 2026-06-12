@@ -38,6 +38,20 @@ export default function CoachDashboard() {
   const [inviteLoading, setInviteLoading] = useState(false)
   const [inviteResult, setInviteResult]   = useState<{ ok: boolean; message: string } | null>(null)
 
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
+  const [deleteLoading, setDeleteLoading] = useState(false)
+
+  const deleteCollab = async (collabId: string) => {
+    setDeleteLoading(true)
+    const res = await fetch(`/api/coach/delete-collab?id=${collabId}`, { method: "DELETE" })
+    setDeleteLoading(false)
+    setDeleteConfirm(null)
+    if (res.ok) {
+      setCollabs(prev => prev.filter(c => c.id !== collabId))
+      setSelected(null)
+    }
+  }
+
   const sendInvite = async () => {
     setInviteLoading(true)
     setInviteResult(null)
@@ -419,6 +433,34 @@ export default function CoachDashboard() {
                           style={{ padding: "8px", background: "var(--bg-secondary)", border: "1px solid var(--border)", color: "var(--text-secondary)" }}>
                           👁 Voir l&apos;espace
                         </button>
+                      </div>
+
+                      {/* Suppression */}
+                      <div className="mt-2">
+                        {deleteConfirm === c.id ? (
+                          <div className="flex gap-2">
+                            <button
+                              onClick={e => { e.stopPropagation(); deleteCollab(c.id) }}
+                              disabled={deleteLoading}
+                              className="flex-1 text-xs rounded-xl font-semibold"
+                              style={{ padding: "8px", background: "rgba(239,68,68,0.15)", border: "1px solid rgba(239,68,68,0.4)", color: "#f87171" }}>
+                              {deleteLoading ? "Suppression…" : "Confirmer la suppression"}
+                            </button>
+                            <button
+                              onClick={e => { e.stopPropagation(); setDeleteConfirm(null) }}
+                              className="text-xs rounded-xl font-semibold px-3"
+                              style={{ background: "var(--bg-secondary)", border: "1px solid var(--border)", color: "var(--text-muted)" }}>
+                              Annuler
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={e => { e.stopPropagation(); setDeleteConfirm(c.id) }}
+                            className="w-full text-xs rounded-xl font-semibold transition-all"
+                            style={{ padding: "8px", background: "transparent", border: "1px solid rgba(239,68,68,0.25)", color: "rgba(239,68,68,0.7)" }}>
+                            🗑 Supprimer ce profil
+                          </button>
+                        )}
                       </div>
                     </div>
                   )}
