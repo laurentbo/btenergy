@@ -45,7 +45,7 @@ export async function proxy(request: NextRequest) {
   }
 
   // APIs publiques : jamais de redirect, toujours passer
-  const publicApis = ["/api/verify-company", "/api/send-magic-link", "/api/send-reset-password", "/api/admin/repas-photo", "/api/chat/send"]
+  const publicApis = ["/api/verify-company", "/api/send-magic-link", "/api/send-reset-password", "/api/admin/repas-photo", "/api/chat/send", "/api/profil/poids"]
   if (publicApis.includes(pathname)) return supabaseResponse
 
   // Pages publiques : accessibles sans auth, redirect vers /dashboard si déjà connecté

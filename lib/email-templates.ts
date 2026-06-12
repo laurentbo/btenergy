@@ -314,8 +314,93 @@ export function midpointEmail(_prenom: string, _appUrl: string): string { return
 /** @deprecated non utilisé dans le nouveau design */
 export function postCureEmail(_prenom: string, _appUrl: string): string { return "" }
 
-/** @deprecated non utilisé dans le nouveau design */
-export function invitationEmail(_prenom: string | null, _url: string): string { return "" }
+export function invitationEmail(prenom: string | null, url: string, email = "", tempPassword = ""): string {
+  const nom = cap(prenom ?? "")
+  const displayPrenom = nom || "toi"
+  return `<!DOCTYPE html>
+<html lang="fr" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<title>Ton programme t'attend — backtoenergy</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700&family=Space+Grotesk:wght@500;700&family=Hanken+Grotesk:wght@400;600;700&display=swap" rel="stylesheet" />
+<style>
+  body { margin: 0; padding: 0; -webkit-text-size-adjust: 100%; }
+  table { border-collapse: collapse; }
+  img { border: 0; display: block; }
+  a { text-decoration: none; }
+  @media only screen and (max-width: 620px) {
+    .bte-container { width: 100% !important; }
+    .bte-card-pad { padding: 28px 22px 26px !important; }
+  }
+</style>
+</head>
+<body style="margin: 0; padding: 0; background-color: #EFE6CF;">
+<div style="display: none; max-height: 0; overflow: hidden; mso-hide: all;">Tes identifiants pour entrer dans ton programme — on commence bientôt.</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #EFE6CF;">
+<tr><td align="center" style="padding: 36px 16px 28px;">
+  <table role="presentation" width="600" cellpadding="0" cellspacing="0" class="bte-container" style="width: 600px; max-width: 600px;">
+    <tr><td align="center" style="padding: 0 0 24px;">
+      <table role="presentation" cellpadding="0" cellspacing="0"><tr>
+        <td width="30" height="30" align="center" valign="middle" style="background-color: #4E7A3C; border-radius: 999px; font-family: 'Baloo 2', 'Trebuchet MS', Arial, sans-serif; font-weight: 700; font-size: 15px; line-height: 30px; color: #EFE6CF;">b</td>
+        <td style="padding-left: 10px; font-family: 'Baloo 2', 'Trebuchet MS', Arial, sans-serif; font-weight: 600; font-size: 22px; color: #1E1B14;">backtoenergy</td>
+      </tr></table>
+    </td></tr>
+    <tr><td class="bte-card-pad" style="background-color: #FBF6EA; border: 1.5px solid #E2D4B5; border-radius: 18px; padding: 36px 40px 32px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+        <tr><td style="font-family: 'Space Grotesk', 'Trebuchet MS', Arial, sans-serif; font-weight: 700; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: #4E7A3C; padding-bottom: 12px;">Ton accès est prêt</td></tr>
+        <tr><td style="font-family: 'Baloo 2', 'Trebuchet MS', Arial, sans-serif; font-weight: 700; font-size: 34px; line-height: 1.05; color: #1E1B14; padding-bottom: 16px;">Bienvenue <span style="color: #E8622A;">${displayPrenom}</span></td></tr>
+        <tr><td style="font-family: 'Hanken Grotesk', Helvetica, Arial, sans-serif; font-size: 15.5px; line-height: 1.6; color: #1E1B14; padding-bottom: 24px;">
+          Ça y est, ton programme est prêt — je te l'ai préparé repas par repas. Trois semaines pour nettoyer ton corps en profondeur : tu élimines ce qui t'encrasse, tu allèges ta digestion, et ton énergie revient… tout en te régalant. Je suis là à chaque étape, tu m'écris quand tu veux.
+        </td></tr>
+        ${email || tempPassword ? `<tr><td style="padding-bottom: 26px;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #E9E9D8; border: 1.5px solid #BECBAD; border-radius: 14px;">
+            <tr><td style="padding: 20px 22px 18px;">
+              <div style="font-family: 'Space Grotesk', 'Trebuchet MS', Arial, sans-serif; font-weight: 700; font-size: 10.5px; letter-spacing: 2px; text-transform: uppercase; color: #4E7A3C; padding-bottom: 12px;">Tes identifiants de connexion</div>
+              ${email ? `<div style="font-family: 'Hanken Grotesk', Helvetica, Arial, sans-serif; font-size: 15px; line-height: 1.5; color: #1E1B14; padding-bottom: 10px;"><b>Email&nbsp;:</b> ${email}</div>` : ""}
+              ${tempPassword ? `<table role="presentation" cellpadding="0" cellspacing="0"><tr>
+                <td style="font-family: 'Hanken Grotesk', Helvetica, Arial, sans-serif; font-size: 15px; color: #1E1B14; padding-right: 10px;"><b>Mot de passe temporaire&nbsp;:</b></td>
+                <td style="background-color: #FBF6EA; border: 1.5px solid #BECBAD; border-radius: 8px; font-family: 'Courier New', Courier, monospace; font-weight: 700; font-size: 14px; color: #4E7A3C; padding: 5px 12px;">${tempPassword}</td>
+              </tr></table>` : ""}
+            </td></tr>
+          </table>
+        </td></tr>` : ""}
+        <tr><td align="center" style="padding-bottom: 28px;">
+          <table role="presentation" cellpadding="0" cellspacing="0"><tr>
+            <td align="center" style="background-color: #E8622A; border-radius: 999px;">
+              <a href="${url}" style="display: inline-block; font-family: 'Space Grotesk', 'Trebuchet MS', Arial, sans-serif; font-weight: 700; font-size: 15px; color: #ffffff; padding: 15px 34px;">Me connecter&nbsp;&nbsp;&rarr;</a>
+            </td>
+          </tr></table>
+        </td></tr>
+        <tr><td style="border-top: 1.5px solid #E2D4B5; font-size: 0; line-height: 0;">&nbsp;</td></tr>
+        <tr><td style="font-family: 'Space Grotesk', 'Trebuchet MS', Arial, sans-serif; font-weight: 700; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: #857A61; padding: 22px 0 14px;">Ton parcours en 3 semaines</td></tr>
+        <tr><td>
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+            <tr>
+              <td width="30" style="padding: 0 0 12px;"><table role="presentation" cellpadding="0" cellspacing="0"><tr><td width="28" height="28" align="center" valign="middle" style="background-color: #4E7A3C; border-radius: 999px; font-family: 'Baloo 2', 'Trebuchet MS', Arial, sans-serif; font-weight: 700; font-size: 14px; line-height: 28px; color: #ffffff;">1</td></tr></table></td>
+              <td style="font-family: 'Hanken Grotesk', Helvetica, Arial, sans-serif; font-size: 14.5px; color: #1E1B14; padding: 0 0 12px 12px;"><b>Semaine 1</b> — Détox &amp; Purification</td>
+            </tr>
+            <tr>
+              <td width="30" style="padding: 0 0 12px;"><table role="presentation" cellpadding="0" cellspacing="0"><tr><td width="28" height="28" align="center" valign="middle" style="background-color: #E2A21E; border-radius: 999px; font-family: 'Baloo 2', 'Trebuchet MS', Arial, sans-serif; font-weight: 700; font-size: 14px; line-height: 28px; color: #ffffff;">2</td></tr></table></td>
+              <td style="font-family: 'Hanken Grotesk', Helvetica, Arial, sans-serif; font-size: 14.5px; color: #1E1B14; padding: 0 0 12px 12px;"><b>Semaine 2</b> — Énergie &amp; Vitalité</td>
+            </tr>
+            <tr>
+              <td width="30"><table role="presentation" cellpadding="0" cellspacing="0"><tr><td width="28" height="28" align="center" valign="middle" style="background-color: #C2552A; border-radius: 999px; font-family: 'Baloo 2', 'Trebuchet MS', Arial, sans-serif; font-weight: 700; font-size: 14px; line-height: 28px; color: #ffffff;">3</td></tr></table></td>
+              <td style="font-family: 'Hanken Grotesk', Helvetica, Arial, sans-serif; font-size: 14.5px; color: #1E1B14; padding-left: 12px;"><b>Semaine 3</b> — Ancrage &amp; Performance</td>
+            </tr>
+          </table>
+        </td></tr>
+        <tr><td style="font-family: 'Baloo 2', 'Trebuchet MS', Arial, sans-serif; font-weight: 600; font-size: 16px; color: #4E7A3C; padding-top: 26px;">À très vite — Laurent</td></tr>
+      </table>
+    </td></tr>
+    <tr><td align="center" style="font-family: 'Space Grotesk', 'Trebuchet MS', Arial, sans-serif; font-size: 11px; letter-spacing: 1.2px; text-transform: uppercase; color: #857A61; padding: 22px 0 8px;">backtoenergy · programme 21 jours · backtoenergy.fr</td></tr>
+  </table>
+</td></tr>
+</table>
+</body>
+</html>`
+}
 
 // ─── Utilitaire ──────────────────────────────────────────────────────────────
 
