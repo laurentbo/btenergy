@@ -125,6 +125,7 @@ export async function POST(request: NextRequest) {
     email: emailLower,
     password: tempPassword,
     email_confirm: true,
+    user_metadata: { skip_profile_trigger: true },
   })
 
   let userId: string
