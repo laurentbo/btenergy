@@ -98,11 +98,11 @@ export type TabId = "jour" | "courses" | "recettes" | "methode" | "coach"
 
 export function BottomTabs({ active, currentDay = 1 }: { active: TabId; currentDay?: number }) {
   const tabs: { id: TabId; label: string; href: string }[] = [
-    { id: "jour",     label: "Jour",     href: `/programme/${currentDay}` },
+    { id: "jour",     label: "Jour",     href: "/jour" },
     { id: "courses",  label: "Courses",  href: "/courses" },
     { id: "recettes", label: "Recettes", href: "/recettes" },
     { id: "methode",  label: "Méthode",  href: "/methode" },
-    { id: "coach",    label: "Coach",    href: "/chat" },
+    { id: "coach",    label: "Coach",    href: "/coach" },
   ]
   return (
     <div style={{

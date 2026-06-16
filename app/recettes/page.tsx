@@ -184,25 +184,27 @@ function RecipeDetail({ r, onClose }: { r: Recipe; onClose: () => void }) {
 function RecipeCard({ r, onOpen }: { r: Recipe; onOpen: (r: Recipe) => void }) {
   const t = TYPES[r.type]
   return (
-    <button onClick={() => onOpen(r)} style={{ width: "100%", textAlign: "left", cursor: "pointer", border: `1.5px solid ${C.line}`, background: C.surface, borderRadius: 18, padding: 10, display: "flex", gap: 13, alignItems: "stretch" }}>
-      <div style={{ flexShrink: 0, width: 92, height: 92, borderRadius: 14, background: C.bg, position: "relative" }}>
-        <span style={{ position: "absolute", top: 6, left: 6, width: 9, height: 9, borderRadius: 999, background: t.color, boxShadow: `0 0 0 2px ${rgba(C.surface, 0.9)}` }} />
+    <button onClick={() => onOpen(r)} style={{ width: "100%", textAlign: "left", cursor: "pointer", border: `1.5px solid ${C.line}`, background: C.surface, borderRadius: 18, padding: 0, overflow: "hidden", display: "flex", flexDirection: "column" }}>
+      {/* Photo pleine largeur */}
+      <div style={{ width: "100%", height: 160, background: C.line, position: "relative", flexShrink: 0 }}>
+        <span style={{ position: "absolute", top: 10, left: 10, width: 10, height: 10, borderRadius: 999, background: t.color, boxShadow: `0 0 0 2.5px ${rgba(C.surface, 0.9)}` }} />
       </div>
-      <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", justifyContent: "center", gap: 5, paddingRight: 4 }}>
+      {/* Infos */}
+      <div style={{ padding: "12px 14px 14px", display: "flex", flexDirection: "column", gap: 6 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" as const }}>
           <span style={{ fontFamily: "var(--label)", fontSize: 10.5, fontWeight: 700, color: t.color, background: rgba(t.color, 0.13), padding: "2px 8px", borderRadius: 999 }}>{t.label}</span>
           <span style={{ fontFamily: "var(--label)", fontSize: 10.5, fontWeight: 700, color: C.soft, background: C.bg, border: `1px solid ${C.line}`, padding: "2px 8px", borderRadius: 999 }}>Sem. {r.week}</span>
           {r.time && <span style={{ fontFamily: "var(--label)", fontSize: 10.5, fontWeight: 700, color: C.soft, display: "inline-flex", alignItems: "center", gap: 3 }}><Ic name="clock" col={C.soft} sw={1.8} s={12} />{r.time}</span>}
         </div>
-        <div style={{ fontFamily: "var(--heading)", fontWeight: 600, fontSize: 17.5, color: C.ink, letterSpacing: "-0.01em", lineHeight: 1.1 }}>{r.title}</div>
-        <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12.5, color: C.soft }}>
-          <Ic name="swap" col={C.terraInk} sw={1.9} s={14} />
-          <span style={{ color: C.terraInk, fontWeight: 600 }}>{r.alt}</span>
+        <div style={{ fontFamily: "var(--heading)", fontWeight: 600, fontSize: 18, color: C.ink, letterSpacing: "-0.01em", lineHeight: 1.1 }}>{r.title}</div>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12.5, color: C.soft }}>
+            <Ic name="swap" col={C.terraInk} sw={1.9} s={14} />
+            <span style={{ color: C.terraInk, fontWeight: 600 }}>{r.alt}</span>
+          </div>
+          <span style={{ transform: "rotate(-90deg)", flexShrink: 0, display: "inline-flex" }}><Ic name="chevron" col={C.soft} sw={2} s={18} /></span>
         </div>
       </div>
-      <span style={{ flexShrink: 0, alignSelf: "center", color: C.soft, transform: "rotate(-90deg)" }}>
-        <Ic name="chevron" col={C.soft} sw={2} s={20} />
-      </span>
     </button>
   )
 }

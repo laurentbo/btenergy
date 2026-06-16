@@ -159,7 +159,7 @@ export default function MethodePage() {
           </div>
 
           {/* Piliers 2×2 */}
-          <div style={{ fontFamily: "var(--label)", fontSize: 10.5, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase" as const, color: C.soft, marginBottom: 12 }}>Les piliers de la cure</div>
+          <div style={{ fontFamily: "var(--label)", fontSize: 10.5, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase" as const, color: C.soft, marginBottom: 12 }}>Les piliers de la méthode</div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 11, marginBottom: 26, alignItems: "start" }}>
             {PILLARS.map(p => {
               const isOpen = openPillar === p.key

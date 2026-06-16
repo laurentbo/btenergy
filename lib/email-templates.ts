@@ -367,11 +367,15 @@ export function invitationEmail(prenom: string | null, url: string, email = "", 
           </table>
         </td></tr>` : ""}
         <tr><td align="center" style="padding-bottom: 28px;">
-          <table role="presentation" cellpadding="0" cellspacing="0"><tr>
-            <td align="center" style="background-color: #E8622A; border-radius: 999px;">
-              <a href="${url}" style="display: inline-block; font-family: 'Space Grotesk', 'Trebuchet MS', Arial, sans-serif; font-weight: 700; font-size: 15px; color: #ffffff; padding: 15px 34px;">Me connecter&nbsp;&nbsp;&rarr;</a>
-            </td>
-          </tr></table>
+          <!--[if mso]>
+          <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="${url}" style="height:50px;v-text-anchor:middle;width:206px;" arcsize="50%" fillcolor="#E8622A" stroke="f">
+            <w:anchorlock/>
+            <center style="color:#ffffff;font-family:'Trebuchet MS',Arial,sans-serif;font-size:15px;font-weight:bold;">Me connecter &rarr;</center>
+          </v:roundrect>
+          <![endif]-->
+          <!--[if !mso]><!-->
+          <a href="${url}" style="display: inline-block; background-color: #E8622A; border-radius: 999px; font-family: 'Space Grotesk', 'Trebuchet MS', Arial, sans-serif; font-weight: 700; font-size: 15px; color: #ffffff; padding: 15px 34px; white-space: nowrap;">Me connecter&nbsp;&nbsp;&rarr;</a>
+          <!--<![endif]-->
         </td></tr>
         <tr><td style="border-top: 1.5px solid #E2D4B5; font-size: 0; line-height: 0;">&nbsp;</td></tr>
         <tr><td style="font-family: 'Space Grotesk', 'Trebuchet MS', Arial, sans-serif; font-weight: 700; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: #857A61; padding: 22px 0 14px;">Ton parcours en 3 semaines</td></tr>
@@ -398,6 +402,183 @@ export function invitationEmail(prenom: string | null, url: string, email = "", 
   </table>
 </td></tr>
 </table>
+</body>
+</html>`
+}
+
+// ─── EMAIL QUOTIDIEN — matin, chaque jour du programme (1 → 21) ─────────────
+// Variation A « La carte du matin ». Voir design_handoff/email-templates/VARIABLES.md
+
+export type DailyMeal = { slot: string; title: string }
+
+export type DailyEmailPayload = {
+  prenom: string
+  jour: number               // 1–21, sans zéro
+  semaineNum: 1 | 2 | 3
+  semaineNom: string
+  accent: string              // hex — couleur de semaine, jamais le CTA
+  photoUrl?: string | null    // null/absent → en-tête typographique
+  motDuJour: string           // sans guillemets, le gabarit les ajoute
+  meals: DailyMeal[]          // Petit-déjeuner / Déjeuner / Dîner — titres seulement
+  ajuste: boolean             // true → chip « Ajusté pour toi »
+  urlApp: string
+  urlPrefs: string
+  preheader: string
+}
+
+export function dailyEmail(p: DailyEmailPayload): string {
+  const nom = cap(p.prenom)
+  const jourPad = String(p.jour).padStart(2, "0")
+  const salutation = p.jour === 1 ? "Ça commence ce matin" : "Ta journée est prête"
+  const salutationEmoji = p.jour === 1 ? "🙂" : ""
+
+  const jourBadge = `<td style="background-color: ${p.accent}; border-radius: 999px; font-family: 'Space Grotesk', 'Trebuchet MS', Arial, sans-serif; font-weight: 700; font-size: 11.5px; color: #ffffff; padding: 5px 13px; white-space: nowrap;">JOUR ${jourPad}&nbsp;/&nbsp;21</td>`
+
+  const heroOrFallback = p.photoUrl
+    ? `<tr><td style="padding: 0;">
+          <img src="${p.photoUrl}" alt="Le plat du jour" width="600" class="bte-hero" style="width: 100%; height: 240px; object-fit: cover; border-radius: 17px 17px 0 0;" />
+        </td></tr>`
+    : `<tr><td style="padding: 26px 28px 0;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
+            <td align="left" valign="middle">
+              <table role="presentation" cellpadding="0" cellspacing="0"><tr>${jourBadge}</tr></table>
+            </td>
+            <td align="right" valign="middle" style="font-family: 'Baloo 2', 'Trebuchet MS', Arial, sans-serif; font-weight: 700; font-size: 42px; line-height: 0.9; color: ${p.accent};">${jourPad}</td>
+          </tr></table>
+        </td></tr>`
+
+  const weekRow = p.photoUrl
+    ? `${jourBadge}
+        <td style="padding-left: 12px; font-family: 'Space Grotesk', 'Trebuchet MS', Arial, sans-serif; font-weight: 700; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: ${p.accent}; white-space: nowrap;">Semaine ${p.semaineNum} · ${p.semaineNom}</td>`
+    : `<td style="font-family: 'Space Grotesk', 'Trebuchet MS', Arial, sans-serif; font-weight: 700; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: ${p.accent}; white-space: nowrap;">Semaine ${p.semaineNum} · ${p.semaineNom}</td>`
+
+  const ajusteChip = p.ajuste
+    ? `<td style="padding-left: 10px;">
+          <table role="presentation" cellpadding="0" cellspacing="0"><tr>
+            <td style="background-color: #E9E9D8; border: 1.5px solid #BECBAD; border-radius: 999px; font-family: 'Space Grotesk', 'Trebuchet MS', Arial, sans-serif; font-weight: 700; font-size: 9.5px; letter-spacing: 1.5px; text-transform: uppercase; color: #4E7A3C; padding: 3px 10px; white-space: nowrap;">Ajusté pour toi</td>
+          </tr></table>
+        </td>`
+    : ""
+
+  const mealsHtml = p.meals.map((m, i) => `
+        <tr><td style="padding: 12px 0;${i < p.meals.length - 1 ? " border-bottom: 1px solid #E2D4B5;" : ""}">
+          <div style="font-family: 'Space Grotesk', 'Trebuchet MS', Arial, sans-serif; font-weight: 700; font-size: 9.5px; letter-spacing: 1.8px; text-transform: uppercase; color: ${p.accent}; padding-bottom: 3px;">${m.slot}</div>
+          <div style="font-family: 'Baloo 2', 'Trebuchet MS', Arial, sans-serif; font-weight: 600; font-size: 17.5px; line-height: 1.2; color: #1E1B14;">${m.title}</div>
+        </td></tr>`).join("")
+
+  return `<!DOCTYPE html>
+<html lang="fr" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="color-scheme" content="light only" />
+<meta name="supported-color-schemes" content="light only" />
+<title>Jour ${p.jour} sur 21 — backtoenergy</title>
+<!--[if mso]>
+<noscript><xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml></noscript>
+<![endif]-->
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700&family=Space+Grotesk:wght@500;700&family=Hanken+Grotesk:wght@400;600;700&display=swap" rel="stylesheet" />
+<style>
+  body { margin: 0; padding: 0; -webkit-text-size-adjust: 100%; -ms-text-size-adjust: 100%; }
+  table { border-collapse: collapse; mso-table-lspace: 0; mso-table-rspace: 0; }
+  img { border: 0; outline: none; line-height: 100%; -ms-interpolation-mode: bicubic; display: block; }
+  a { text-decoration: none; }
+  @media only screen and (max-width: 620px) {
+    .bte-container { width: 100% !important; }
+    .bte-card-pad { padding: 22px 20px 24px !important; }
+    .bte-hero { height: 200px !important; }
+  }
+</style>
+</head>
+<body style="margin: 0; padding: 0; background-color: #EFE6CF;">
+
+<div style="display: none; max-height: 0; overflow: hidden; mso-hide: all;">${p.preheader}</div>
+<div style="display: none; max-height: 0; overflow: hidden; mso-hide: all;">&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;&#847;&zwnj;&nbsp;</div>
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #EFE6CF;">
+<tr><td align="center" style="padding: 30px 16px 24px;">
+
+  <table role="presentation" width="600" cellpadding="0" cellspacing="0" class="bte-container" style="width: 600px; max-width: 600px;">
+
+    <tr><td align="center" style="padding: 0 0 20px;">
+      <table role="presentation" cellpadding="0" cellspacing="0"><tr>
+        <td width="30" height="30" align="center" valign="middle" style="background-color: #4E7A3C; border-radius: 999px; font-family: 'Baloo 2', 'Trebuchet MS', Arial, sans-serif; font-weight: 700; font-size: 15px; line-height: 30px; color: #EFE6CF;">b</td>
+        <td style="padding-left: 10px; font-family: 'Baloo 2', 'Trebuchet MS', Arial, sans-serif; font-weight: 600; font-size: 22px; color: #1E1B14;">backtoenergy</td>
+      </tr></table>
+    </td></tr>
+
+    <tr><td style="background-color: #FBF6EA; border: 1.5px solid #E2D4B5; border-radius: 18px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+
+        ${heroOrFallback}
+
+        <tr><td class="bte-card-pad" style="padding: 22px 28px 26px;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+
+            <tr><td style="padding-bottom: 12px;">
+              <table role="presentation" cellpadding="0" cellspacing="0"><tr>
+                ${weekRow}
+                ${ajusteChip}
+              </tr></table>
+            </td></tr>
+
+            <tr><td style="font-family: 'Baloo 2', 'Trebuchet MS', Arial, sans-serif; font-weight: 700; font-size: 28px; line-height: 1.08; color: #1E1B14; padding-bottom: 16px;">${salutation}, <span style="color: #E8622A;">${nom}</span>${salutationEmoji ? `&nbsp;${salutationEmoji}` : ""}</td></tr>
+
+            <tr><td style="padding-bottom: 22px;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #1E1B14; border-radius: 14px;">
+                <tr><td style="padding: 15px 16px;">
+                  <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
+                    <td width="36" valign="top">
+                      <table role="presentation" cellpadding="0" cellspacing="0"><tr>
+                        <td width="36" height="36" align="center" valign="middle" style="background-color: #F2B431; border-radius: 999px; font-family: 'Baloo 2', 'Trebuchet MS', Arial, sans-serif; font-weight: 700; font-size: 17px; line-height: 36px; color: #1E1B14;">L</td>
+                      </tr></table>
+                    </td>
+                    <td style="padding-left: 12px;">
+                      <div style="font-family: 'Space Grotesk', 'Trebuchet MS', Arial, sans-serif; font-weight: 700; font-size: 9.5px; letter-spacing: 2px; text-transform: uppercase; color: rgba(251,246,234,0.55); padding-bottom: 4px;">Le mot de Laurent</div>
+                      <div style="font-family: 'Baloo 2', 'Trebuchet MS', Arial, sans-serif; font-weight: 600; font-size: 14.5px; line-height: 1.45; color: #FBF6EA;">«&nbsp;${p.motDuJour}&nbsp;»</div>
+                    </td>
+                  </tr></table>
+                </td></tr>
+              </table>
+            </td></tr>
+
+            <tr><td style="font-family: 'Space Grotesk', 'Trebuchet MS', Arial, sans-serif; font-weight: 700; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: #857A61; padding-bottom: 2px;">Au menu aujourd'hui</td></tr>
+            <tr><td>
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                ${mealsHtml}
+              </table>
+            </td></tr>
+
+            <tr><td align="center" style="padding: 20px 0 0;">
+              <!--[if mso]>
+              <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="${p.urlApp}" style="height:50px;v-text-anchor:middle;width:248px;" arcsize="50%" fillcolor="#E8622A" stroke="f">
+                <w:anchorlock/>
+                <center style="color:#ffffff;font-family:'Trebuchet MS',Arial,sans-serif;font-size:15px;font-weight:bold;">Ouvrir ma journée &rarr;</center>
+              </v:roundrect>
+              <![endif]-->
+              <!--[if !mso]><!-->
+              <a href="${p.urlApp}" style="display: inline-block; background-color: #E8622A; border-radius: 999px; font-family: 'Space Grotesk', 'Trebuchet MS', Arial, sans-serif; font-weight: 700; font-size: 15px; color: #ffffff; padding: 15px 34px; white-space: nowrap;">Ouvrir ma journée&nbsp;&nbsp;&rarr;</a>
+              <!--<![endif]-->
+            </td></tr>
+            <tr><td align="center" style="font-family: 'Hanken Grotesk', Helvetica, Arial, sans-serif; font-size: 12.5px; line-height: 1.45; color: #857A61; padding-top: 12px;">Recettes, échanges possibles et le «&nbsp;pourquoi&nbsp;» de chaque assiette — tout est dans l'appli.</td></tr>
+
+          </table>
+        </td></tr>
+
+      </table>
+    </td></tr>
+
+    <tr><td align="center" style="font-family: 'Space Grotesk', 'Trebuchet MS', Arial, sans-serif; font-size: 11px; letter-spacing: 1.2px; text-transform: uppercase; color: #857A61; padding: 20px 0 8px; line-height: 2;">
+      backtoenergy · jour ${p.jour} sur 21<br />
+      <a href="${p.urlPrefs}" style="color: #857A61; text-decoration: underline; text-underline-offset: 2px;">gérer mes emails</a>
+    </td></tr>
+
+  </table>
+
+</td></tr>
+</table>
+
 </body>
 </html>`
 }

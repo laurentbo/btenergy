@@ -84,8 +84,15 @@ export default function CoachDashboard() {
   useEffect(() => {
     async function load() {
       const meRes = await fetch("/api/me")
-      if (!meRes.ok) return
+      if (!meRes.ok) {
+        window.location.href = "/login/coach"
+        return
+      }
       const me = await meRes.json()
+      if (me.role !== "coach" && me.role !== "admin") {
+        window.location.href = "/login/coach"
+        return
+      }
       setCoachProfile({ id: me.id, prenom: me.prenom, role: me.role })
 
       const collabRes = await fetch("/api/collabs")
@@ -218,6 +225,7 @@ export default function CoachDashboard() {
           </div>
           <div className="flex items-center gap-2">
             <span className="text-xs" style={{ color: "var(--text-muted)" }}>{coachProfile?.prenom}</span>
+            <a href="/coach/menus" className="tag" style={{ textDecoration: "none", cursor: "pointer" }}>🍽 Menus</a>
             <a href="/admin/cockpit" className="tag" style={{ textDecoration: "none", cursor: "pointer" }}>Cockpit</a>
             <button onClick={signOut} className="tag cursor-pointer">Déconnexion</button>
           </div>
