@@ -102,7 +102,7 @@ export function BottomTabs({ active, currentDay = 1 }: { active: TabId; currentD
     { id: "courses",  label: "Courses",  href: "/courses" },
     { id: "recettes", label: "Recettes", href: "/recettes" },
     { id: "methode",  label: "Méthode",  href: "/methode" },
-    { id: "coach",    label: "Coach",    href: "/coach" },
+    { id: "coach",    label: "Coach",    href: "/chat" },
   ]
   return (
     <div style={{

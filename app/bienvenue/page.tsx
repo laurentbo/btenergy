@@ -37,7 +37,7 @@ const TABS = [
   { icon: "courses",  label: "Courses",  href: "/courses",  desc: "À ta dispo : une liste de courses, avec un fond de placard." },
   { icon: "recettes", label: "Recettes", href: "/recettes", desc: "Le carnet des 21 jours, à parcourir et chercher quand tu veux." },
   { icon: "methode",  label: "Méthode",  href: "/methode",  desc: "La notion du jour en 2 min, pour comprendre ce que tu fais." },
-  { icon: "coach",    label: "Coach",    href: "/coach",    desc: "Moi, Laurent, en vrai — je te réponds personnellement." },
+  { icon: "coach",    label: "Coach",    href: "/chat",     desc: "Moi, Laurent, en vrai — je te réponds personnellement." },
 ]
 
 const PRINCIPLES = [

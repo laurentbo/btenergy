@@ -465,7 +465,6 @@ export function CockpitClient({ data }: { data: CockpitData }) {
                       const totalMood = data.moodDistribution.reduce((s, m) => s + m.count, 0)
                       return data.moodDistribution.map((m: MoodItem) => (
                         <div key={m.score} style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                          <span style={{ fontSize: 16, lineHeight: 1, minWidth: 24 }}>{m.emoji}</span>
                           <div style={{ minWidth: 80 }}>
                             <span style={{ fontSize: 11, color: TEXT }}>{m.label}</span>
                           </div>
@@ -562,14 +561,13 @@ export function CockpitClient({ data }: { data: CockpitData }) {
                               <ScorePill value={e.energie * 10} />
                             </td>
                             <td style={{ ...td, textAlign: "center", fontSize: 13 }}>
-                              {e.humeur}
-                              <span style={{ fontSize: 9, color: FAINT, display: "block" }}>/10</span>
+                              {e.humeur <= 3 ? "Difficile" : e.humeur <= 6 ? "Correct" : e.humeur <= 8 ? "Bien" : "Excellent"}
                             </td>
                             <td style={{ ...td, textAlign: "center" }}>
-                              <span style={{ color: MUTE }}>{e.hydratation}/10</span>
+                              <span style={{ color: MUTE }}>{e.hydratation <= 3 ? "Insuffisant" : e.hydratation <= 6 ? "Moyen" : "Bon"}</span>
                             </td>
                             <td style={{ ...td, textAlign: "center" }}>
-                              <span style={{ color: MUTE }}>{e.sommeil}/10</span>
+                              <span style={{ color: MUTE }}>{e.sommeil <= 3 ? "Mauvais" : e.sommeil <= 6 ? "Moyen" : "Bon"}</span>
                             </td>
                             <td style={td}>
                               <span style={{ fontSize: 11, color: MUTE }}>{fmtDatetime(e.created_at)}</span>
@@ -663,16 +661,16 @@ export function CockpitClient({ data }: { data: CockpitData }) {
                         {/* Scores pills */}
                         <div style={{ display: "flex", gap: 6, flex: 1 }}>
                           <span style={{ fontSize: 10, color: MUTE, background: "rgba(236,228,210,0.05)", padding: "2px 7px", borderRadius: 20 }}>
-                            ⚡ {e.energie * 10}
+                            Énergie {e.energie * 10}
                           </span>
                           <span style={{ fontSize: 10, color: MUTE, background: "rgba(236,228,210,0.05)", padding: "2px 7px", borderRadius: 20 }}>
-                            😊 {e.humeur}/10
+                            Humeur {e.humeur <= 3 ? "–" : e.humeur <= 6 ? "·" : "+"}
                           </span>
                           <span style={{ fontSize: 10, color: MUTE, background: "rgba(236,228,210,0.05)", padding: "2px 7px", borderRadius: 20 }}>
-                            💧 {e.hydratation}/10
+                            Hydrat. {e.hydratation <= 3 ? "–" : e.hydratation <= 6 ? "·" : "+"}
                           </span>
                           <span style={{ fontSize: 10, color: MUTE, background: "rgba(236,228,210,0.05)", padding: "2px 7px", borderRadius: 20 }}>
-                            🌙 {e.sommeil}/10
+                            Sommeil {e.sommeil <= 3 ? "–" : e.sommeil <= 6 ? "·" : "+"}
                           </span>
                         </div>
 

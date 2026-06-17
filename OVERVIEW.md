@@ -26,27 +26,37 @@
 ### Pages publiques
 | Route | Fichier | Description |
 |---|---|---|
-| `/` | `app/page.tsx` | Accueil public — landing page |
-| `/login` | `app/login/page.tsx` | Connexion collaborateur (magic link) |
+| `/` | `app/page.tsx` | Redirige vers `/login` |
+| `/login` | `app/login/page.tsx` | Connexion participant (magic link) |
 | `/login/coach` | `app/login/coach/page.tsx` | Connexion coach (email + mot de passe) |
 | `/auth/callback` | `app/auth/callback/` | Callback Supabase Auth |
 | `/auth/reset-password` | `app/auth/reset-password/page.tsx` | Réinitialisation mot de passe |
 
-### Parcours collaborateur
+### Parcours participant (5 écrans, nav basse)
 | Route | Fichier | Description |
 |---|---|---|
-| `/onboarding` | `app/onboarding/page.tsx` | Redirection post-inscription |
-| `/welcome` | `app/welcome/page.tsx` | Écran d'accueil première connexion |
-| `/dashboard` | `app/dashboard/page.tsx` | Dashboard principal (repas, journal, progression) |
-| `/programme` | `app/programme/page.tsx` | Redirige vers `/dashboard` |
-| `/programme/[jour]` | `app/programme/[jour]/page.tsx` | Détail d'un jour du programme |
+| `/bienvenue` | `app/bienvenue/page.tsx` | Écran d'accueil — présentation des 5 écrans |
+| `/jour` | `app/jour/page.tsx` | Écran principal — repas du jour J1–J21 |
+| `/courses` | `app/courses/page.tsx` | Liste de courses par semaine |
+| `/recettes` | `app/recettes/page.tsx` | Bibliothèque de recettes |
+| `/methode` | `app/methode/page.tsx` | Les 7 principes du programme |
+| `/chat` | `app/chat/page.tsx` | Coach — messagerie avec Laurent |
+| `/profil` | `app/profil/page.tsx` | Profil et paramètres du participant |
+
+### Redirections legacy
+| Route | Cible |
+|---|---|
+| `/dashboard` | → `/jour` |
+| `/programme` | → `/jour` |
+| `/welcome` | → `/bienvenue` |
 
 ### Espace coach
 | Route | Fichier | Description |
 |---|---|---|
-| `/coach` | `app/coach/page.tsx` | Dashboard coach — liste des collaborateurs |
+| `/coach` | `app/coach/page.tsx` | Dashboard coach — liste des participants |
 | `/coach/menus` | `app/coach/menus/page.tsx` | Éditeur de menus (meal_plans) |
-| `/coach/preview/[id]` | `app/coach/preview/[id]/page.tsx` | Prévisualisation du programme d'un collab |
+| `/coach/preview/[id]` | `app/coach/preview/[id]/page.tsx` | Prévisualisation du programme d'un participant |
+| `/admin/cockpit` | `app/admin/cockpit/` | Cockpit analytics coach (thème sombre) |
 | `/admin/exclusions` | `app/admin/exclusions/page.tsx` | Gestion des exclusions alimentaires |
 
 ### Pages utilitaires
@@ -224,6 +234,7 @@ Dossier `supabase/migrations/` — appliquées dans l'ordre :
 
 | Fichier | Contenu |
 |---|---|
+| `bte-days.ts` | 21 jours complets — repas typés `BteMeal` avec ingrédients, swaps, sensation, étapes |
 | `program.ts` | Programme 21 jours — structure des jours, thèmes des semaines, calcul du jour courant |
 | `verissimo.ts` | Données du programme Verissimo (menus détaillés) |
 | `equivalences.ts` | Équivalences alimentaires (substitutions) |
@@ -246,7 +257,7 @@ Dossier `supabase/migrations/` — appliquées dans l'ordre :
 
 ## Concept produit
 
-**Back to Energy** est une application web B2B de bien-être pour entreprises. Un coach supervise des groupes de collaborateurs qui suivent un **programme détox de 21 jours** basé sur la méthode Verissimo.
+**Back to Energy** est une application web B2B de bien-être pour entreprises. Un coach supervise des groupes de participants qui suivent un **programme de 21 jours** basé sur la méthode Verissimo.
 
 ### Les 3 semaines
 | Semaine | Thème |
@@ -278,26 +289,34 @@ Dossier `supabase/migrations/` — appliquées dans l'ordre :
 
 ## Design system
 
-Tokens définis dans `app/globals.css` (variables CSS, pas de Tailwind hardcodé).
+Thème **Édito tonique** — papier sable chaud, typographie éditoriale, accents naturels.
+Constantes centralisées dans `components/bte-ui.tsx` (objet `C`), pas de variables CSS Tailwind.
 
-**Palette dark** :
-| Token | Valeur | Usage |
+**Palette Édito tonique** :
+| Constante | Valeur | Usage |
 |---|---|---|
-| `--bg` | `#15130E` | Fond principal |
-| `--bg-lift` | `#1C1A14` | Fond légèrement relevé |
-| `--bg-surface` | `#211E17` | Cards, surfaces |
-| `--bg-elev` | `#27241C` | Éléments élevés |
-| `--text` | `#ECE4D2` | Texte principal |
-| `--text-dim` | `rgba(236,228,210,0.62)` | Texte secondaire |
-| `--brand` | `#5CB551` | Vert logo / CTA |
-| `--coach` | `#A8BBA5` | Voix du coach (sage) |
-| `--line` | `rgba(247,234,205,0.07)` | Séparateurs |
+| `C.bg` | `#EFE6CF` | Fond principal (papier sable) |
+| `C.surface` | `#FBF6EA` | Cards, surfaces |
+| `C.line` | `#E2D4B5` | Séparateurs |
+| `C.ink` | `#1E1B14` | Texte principal |
+| `C.soft` | `#857A61` | Texte secondaire |
+| `C.leaf` | `#4E7A3C` | Vert — semaine 1, CTA primaire |
+| `C.terra` | `#E8622A` | Terracotta — onglet actif, accents |
+| `C.amber` | `#F2B431` | Ambre — semaine 2 |
+| `C.week[0]` | `#4E7A3C` | Accent S1 (J1–J7) |
+| `C.week[1]` | `#E2A21E` | Accent S2 (J8–J14) |
+| `C.week[2]` | `#C2552A` | Accent S3 (J15–J21) |
 
-**Typographie** : Geist (sans) + Instrument Serif (serif), via `--sans` et `--serif`.
+**Typographie** (via `next/font/google`, CSS variables) :
+- `--font-heading` → Baloo 2 (titres, scores)
+- `--font-label` → Space Grotesk (labels, nav)
+- `--font-sans` → Hanken Grotesk (corps de texte)
 
-**Emails** (crème, intentionnellement différent) : fond `#EEE7D6`, carte `#FBF6E8`, CTA `#2A2520`.
+**Composant BottomTabs** : dans `components/bte-ui.tsx`, utilisé sur les 5 écrans participant. Onglet actif en `C.terra`.
 
-**Composants UI** : cartes avec `backdrop-filter: blur`, barre de navigation bottom fixe sur mobile, barre d'onglets top sur desktop.
+**Cockpit coach** (`/admin/cockpit`) : thème sombre séparé, variables CSS locales — ne pas mélanger avec le thème Édito tonique des écrans participant.
+
+**Emails** : fond `#EEE7D6`, carte `#FBF6E8`, CTA `#2A2520` (intentionnellement différent des écrans).
 
 ---
 

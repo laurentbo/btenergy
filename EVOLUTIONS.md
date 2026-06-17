@@ -11,8 +11,6 @@ Labels : `design` · `fonctionnalité` · `texte` · `programme` · `bug` · `ur
 
 <!-- Ajoute tes idées ici -->
 
-- [ ] [texte] Page d'accueil — affiner le wording hero et les sections
-
 ---
 
 ## En cours
@@ -25,10 +23,10 @@ Labels : `design` · `fonctionnalité` · `texte` · `programme` · `bug` · `ur
 
 <!-- Déplacé ici une fois livré -->
 
-- [x] Nouveau design charbon chaud (tokens CSS, Instrument Serif + Geist)
-- [x] Dashboard v2 — 5 onglets responsive mobile/desktop
-- [x] Journal thread coaché ↔ coach + Realtime
+- [x] **V11 — Migration design Édito tonique** : thème papier sable, Baloo 2 / Space Grotesk / Hanken Grotesk, accents leaf/terra/amber, 5 écrans participant (Jour, Courses, Recettes, Méthode, Coach), nav basse terracotta, données 21 jours typées
+- [x] Écran Jour — accordéons repas, bottom-sheets Cuisine & Pourquoi, sélecteur J1–J21, moodpicker localStorage
+- [x] Cockpit coach — nettoyage emojis et scores numériques d'humeur
+- [x] Emails redesignés crème chaud (6 templates)
 - [x] Check-in du matin — 3 choix par dimension (énergie, humeur, sommeil)
 - [x] Suivi poids avec dates réelles
-- [x] Emails redesignés crème chaud (6 templates)
-- [x] Page d'accueil refonte design charbon
+- [x] Journal thread coaché ↔ coach + Realtime

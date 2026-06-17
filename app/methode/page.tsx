@@ -189,7 +189,7 @@ export default function MethodePage() {
                 <Ic name="pause" col={C.soft} sw={1.7} s={21} />
               </span>
               <div style={{ fontSize: 14, color: C.ink, lineHeight: 1.5 }}>
-                <span style={{ fontFamily: "var(--heading)", fontWeight: 600 }}>Rien de définitif.</span> Juste ce qui alourdit, mis en pause le temps de la cure pour laisser le corps respirer.
+                <span style={{ fontFamily: "var(--heading)", fontWeight: 600 }}>Rien de définitif.</span> Juste ce qui alourdit, mis en pause le temps du programme pour laisser le corps respirer.
               </div>
             </div>
             <div>

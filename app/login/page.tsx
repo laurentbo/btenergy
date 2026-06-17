@@ -70,7 +70,7 @@ export default function LoginPage() {
       setLoading(false)
       return
     }
-    window.location.href = "/programme"
+    window.location.href = "/jour"
   }
 
   const inner = (
