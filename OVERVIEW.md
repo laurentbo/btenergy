@@ -251,7 +251,7 @@ Dossier `supabase/migrations/` — appliquées dans l'ordre :
 | Invitation | Coach invite un collaborateur |
 | Étape J1 | Début du programme |
 | Mi-parcours J8 / J15 | Jalons automatiques |
-| Post-cure | Fin des 21 jours |
+| Post-programme | Fin des 21 jours |
 
 ---
 

@@ -109,9 +109,6 @@ export default function CoachDashboard() {
     return true
   })
 
-  const avgEnergie = collabs.filter(c => c.avg_energie).length
-    ? Math.round(collabs.reduce((s, c) => s + (c.avg_energie ?? 0), 0) / collabs.filter(c => c.avg_energie).length * 10) / 10
-    : null
 
   const selectCollab = async (c: CollabWithJournal) => {
     const isDeselect = selected?.id === c.id
@@ -237,13 +234,12 @@ export default function CoachDashboard() {
         {/* Stats globales */}
         <div className="grid grid-cols-2 gap-3 mb-6 sm:grid-cols-4">
           {[
-            { label: "Collaborateurs", value: collabs.length.toString(), icon: "👥", color: "var(--green)" },
-            { label: "En cours",       value: collabs.filter(c => { const d = calcCurrentDay(c.program_start); return d > 0 && d < 21 }).length.toString(), icon: "🔥", color: "var(--blue)" },
-            { label: "Terminés",       value: collabs.filter(c => calcCurrentDay(c.program_start) >= 21).length.toString(), icon: "🎯", color: "#818cf8" },
-            { label: "Énergie moy.",   value: avgEnergie ? `${avgEnergie}/10` : "—", icon: "⚡", color: "#f59e0b" },
-          ].map(({ label, value, icon, color }) => (
+            { label: "Participants",   value: collabs.length.toString(), color: "var(--green)" },
+            { label: "En cours",       value: collabs.filter(c => { const d = calcCurrentDay(c.program_start); return d > 0 && d < 21 }).length.toString(), color: "var(--blue)" },
+            { label: "Terminés",       value: collabs.filter(c => calcCurrentDay(c.program_start) >= 21).length.toString(), color: "#818cf8" },
+            { label: "Actifs ce mois", value: collabs.filter(c => c.program_start != null).length.toString(), color: "#f59e0b" },
+          ].map(({ label, value, color }) => (
             <div key={label} className="card p-4 text-center">
-              <div className="text-xl mb-1">{icon}</div>
               <div className="text-xl font-black" style={{ color }}>{value}</div>
               <div className="text-xs mt-0.5" style={{ color: "var(--text-muted)" }}>{label}</div>
             </div>
@@ -270,22 +266,21 @@ export default function CoachDashboard() {
             onClick={() => setShowInvite(true)}
             className="btn-primary text-xs flex items-center gap-1.5"
             style={{ padding: "6px 14px" }}>
-            + Inviter un collaborateur
+            + Inviter
           </button>
         </div>
 
-        {/* Liste collaborateurs */}
+        {/* Liste participants */}
         {loading ? (
           <div className="text-center py-12" style={{ color: "var(--text-muted)" }}>Chargement...</div>
         ) : filtered.length === 0 ? (
           <div className="card p-8 text-center">
-            <p className="text-lg mb-2">👥</p>
-            <p className="font-semibold mb-1" style={{ color: "var(--text-primary)" }}>Aucun collaborateur</p>
+            <p className="font-semibold mb-1" style={{ color: "var(--text-primary)" }}>Aucun participant</p>
             <p className="text-sm mb-4" style={{ color: "var(--text-secondary)" }}>
-              Invite tes amis pour qu&apos;ils rejoignent le programme.
+              Invite les participants pour qu&apos;ils rejoignent le programme.
             </p>
             <button onClick={() => setShowInvite(true)} className="btn-primary text-sm">
-              + Inviter un collaborateur
+              + Inviter
             </button>
           </div>
         ) : (
@@ -332,15 +327,12 @@ export default function CoachDashboard() {
                     <div className="mt-4 pt-4 space-y-3 fade-up" style={{ borderTop: "1px solid var(--border)" }}>
                       <div className="grid grid-cols-2 gap-3">
                         {[
-                          { label: "Dernier journal", value: lastSeen, icon: "📓" },
-                          { label: "Énergie moy.", value: c.avg_energie ? `${c.avg_energie}/10` : "—", icon: "⚡" },
-                          { label: "Genre", value: c.genre ?? "—", icon: "👤" },
-                          { label: "Âge / Poids", value: c.age && c.poids ? `${c.age} ans · ${c.poids} kg` : "—", icon: "📋" },
-                        ].map(({ label, value, icon }) => (
+                          { label: "Dernier journal", value: lastSeen },
+                          { label: "Genre", value: c.genre ?? "—" },
+                        ].map(({ label, value }) => (
                           <div key={label} className="rounded-xl p-3"
                             style={{ background: "var(--bg-secondary)", border: "1px solid var(--border)" }}>
                             <div className="flex items-center gap-1.5 mb-1">
-                              <span className="text-sm">{icon}</span>
                               <span className="text-xs" style={{ color: "var(--text-muted)" }}>{label}</span>
                             </div>
                             <p className="font-semibold text-sm" style={{ color: "var(--text-primary)" }}>{value}</p>
@@ -359,7 +351,9 @@ export default function CoachDashboard() {
                               { l: "Sommeil", v: c.last_entry.sommeil },
                             ].map(({ l, v }) => (
                               <div key={l}>
-                                <div className="font-black text-sm gradient-text">{v}/10</div>
+                                <div className="font-black text-sm gradient-text">
+                                  {v == null ? "—" : v <= 3 ? "Bas" : v <= 6 ? "Moyen" : v <= 8 ? "Bien" : "Top"}
+                                </div>
                                 <div className="text-xs" style={{ color: "var(--text-muted)" }}>{l}</div>
                               </div>
                             ))}

@@ -151,7 +151,7 @@ export default function LearnTab() {
                   </div>
                 ))}
                 <div className="rounded-xl p-3" style={{ background: "rgba(248,113,113,0.06)", border: "1px solid rgba(248,113,113,0.15)" }}>
-                  <p className="text-xs font-bold mb-1" style={{ color: "#f87171" }}>Pendant la cure</p>
+                  <p className="text-xs font-bold mb-1" style={{ color: "#f87171" }}>Pendant le programme</p>
                   <p className="text-xs" style={{ color: "var(--text-secondary)" }}>Zéro sucre raffiné. Uniquement miel brut, dattes et fruits entiers.</p>
                 </div>
               </div>
@@ -210,7 +210,7 @@ export default function LearnTab() {
                 </div>
                 <div className="rounded-xl p-3 mt-4" style={{ background: "rgba(248,113,113,0.06)", border: "1px solid rgba(248,113,113,0.15)" }}>
                   <p className="text-xs" style={{ color: "var(--text-secondary)", lineHeight: "1.7" }}>
-                    <strong style={{ color: "#f87171" }}>Alternatives pendant et après la cure :</strong> Épeautre, kamut, sarrasin, riz thaï, quinoa, millet. Ces grains sont naturellement moins modifiés et mieux tolérés.
+                    <strong style={{ color: "#f87171" }}>Alternatives pendant et après le programme :</strong> Épeautre, kamut, sarrasin, riz thaï, quinoa, millet. Ces grains sont naturellement moins modifiés et mieux tolérés.
                   </p>
                 </div>
               </div>

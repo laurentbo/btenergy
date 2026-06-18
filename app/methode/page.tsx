@@ -78,8 +78,8 @@ function WeekArc({ currentDay }: { currentDay: number }) {
 function NotionSheet({ open, onClose, currentDay }: { open: boolean; onClose: () => void; currentDay: number }) {
   if (!open) return null
   return (
-    <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 60, background: rgba(C.ink, 0.55), display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
-      <div onClick={e => e.stopPropagation()} style={{ width: "100%", maxWidth: 440, maxHeight: "86vh", overflowY: "auto", background: C.bg, borderRadius: "26px 26px 0 0", padding: "10px 22px 30px", border: `1.5px solid ${C.line}`, borderBottom: "none" }}>
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 60, background: rgba(C.ink, 0.55), display: "flex", alignItems: "flex-end", justifyContent: "center", animation: "fadeIn .2s ease" }}>
+      <div onClick={e => e.stopPropagation()} style={{ width: "100%", maxWidth: 440, maxHeight: "86vh", overflowY: "auto", background: C.bg, borderRadius: "26px 26px 0 0", padding: "10px 22px 30px", border: `1.5px solid ${C.line}`, borderBottom: "none", animation: "bteUp .26s cubic-bezier(.2,.8,.2,1)" }}>
         <div style={{ width: 42, height: 5, borderRadius: 999, background: C.line, margin: "0 auto 18px" }} />
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
           <span style={{ fontFamily: "var(--label)", fontSize: 11, fontWeight: 700, color: C.leaf, letterSpacing: "0.08em", textTransform: "uppercase" as const }}>Jour {currentDay} · La notion du jour</span>

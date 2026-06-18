@@ -87,8 +87,8 @@ const FILTERS = [["all","Tout"],["jus","Jus"],["poisson","Poisson"],["viande","V
 function WhySheet({ recipe, onClose }: { recipe: Recipe | null; onClose: () => void }) {
   if (!recipe) return null
   return (
-    <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 60, background: rgba(C.ink, 0.55), display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
-      <div onClick={e => e.stopPropagation()} style={{ width: "100%", maxWidth: 440, background: C.bg, borderRadius: "26px 26px 0 0", padding: "10px 20px 26px", border: `1.5px solid ${C.line}`, borderBottom: "none" }}>
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 60, background: rgba(C.ink, 0.55), display: "flex", alignItems: "flex-end", justifyContent: "center", animation: "fadeIn .2s ease" }}>
+      <div onClick={e => e.stopPropagation()} style={{ width: "100%", maxWidth: 440, background: C.bg, borderRadius: "26px 26px 0 0", padding: "10px 20px 26px", border: `1.5px solid ${C.line}`, borderBottom: "none", animation: "bteUp .26s cubic-bezier(.2,.8,.2,1)" }}>
         <div style={{ width: 42, height: 5, borderRadius: 999, background: C.line, margin: "0 auto 16px" }} />
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
@@ -116,7 +116,7 @@ function RecipeDetail({ r, onClose }: { r: Recipe; onClose: () => void }) {
   const [why, setWhy] = useState<Recipe | null>(null)
   const t = TYPES[r.type]
   return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 40, background: C.bg, display: "flex", justifyContent: "center" }}>
+    <div style={{ position: "fixed", inset: 0, zIndex: 40, background: C.bg, display: "flex", justifyContent: "center", animation: "bteSlide .28s cubic-bezier(.2,.8,.2,1)" }}>
       <div style={{ width: "100%", maxWidth: 440, height: "100%", overflowY: "auto", background: C.bg }}>
         {/* Top bar */}
         <div style={{ position: "sticky", top: 0, zIndex: 5, background: rgba(C.bg, 0.92), backdropFilter: "blur(8px)", display: "flex", alignItems: "center", gap: 12, padding: "12px 16px", borderBottom: `1px solid ${C.line}` }}>
