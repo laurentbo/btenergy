@@ -26,24 +26,38 @@ export type UserProfile = {
   start_date?: string  // ISO date YYYY-MM-DD
 }
 
+// "Aujourd'hui" en Europe/Paris au format YYYY-MM-DD
+function todayParis(): string {
+  return new Date().toLocaleDateString('en-CA', { timeZone: 'Europe/Paris' })
+}
+
+// Lendemain en Europe/Paris au format YYYY-MM-DD
+export function tomorrowParis(): string {
+  const d = new Date()
+  d.setDate(d.getDate() + 1)
+  return d.toLocaleDateString('en-CA', { timeZone: 'Europe/Paris' })
+}
+
+// true si aujourd'hui (Europe/Paris) >= startDate
+export function hasProgramStarted(startDate: string | null | undefined): boolean {
+  if (!startDate) return false
+  return todayParis() >= startDate.slice(0, 10)
+}
+
 export function calcCurrentDay(startDate: string | null | undefined): number {
   if (!startDate) return 1
-  const start = new Date(startDate)
-  const today = new Date()
-  start.setHours(0, 0, 0, 0)
-  today.setHours(0, 0, 0, 0)
-  const diff = Math.floor((today.getTime() - start.getTime()) / (1000 * 60 * 60 * 24))
+  const today = todayParis()
+  const start = startDate.slice(0, 10)
+  const diff = Math.floor((new Date(today).getTime() - new Date(start).getTime()) / (1000 * 60 * 60 * 24))
   return Math.min(21, Math.max(1, diff + 1))
 }
 
-// Comme calcCurrentDay mais sans plafonner à 21 — utilisé pour l'envoi de l'email post-cure (j22)
+// Comme calcCurrentDay mais sans plafonner à 21 — utilisé pour l'envoi de l'email post-programme (j22)
 export function calcRawDay(startDate: string | null | undefined): number {
   if (!startDate) return 1
-  const start = new Date(startDate)
-  const today = new Date()
-  start.setHours(0, 0, 0, 0)
-  today.setHours(0, 0, 0, 0)
-  const diff = Math.floor((today.getTime() - start.getTime()) / (1000 * 60 * 60 * 24))
+  const today = todayParis()
+  const start = startDate.slice(0, 10)
+  const diff = Math.floor((new Date(today).getTime() - new Date(start).getTime()) / (1000 * 60 * 60 * 24))
   return Math.max(1, diff + 1)
 }
 

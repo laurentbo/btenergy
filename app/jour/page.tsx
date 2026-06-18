@@ -2,6 +2,8 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { BTE_DAYS, type BteMeal } from "@/data/bte-days"
+import { createClient } from "@/lib/supabase/client"
+import { calcCurrentDay } from "@/data/program"
 
 // ── Couleurs ──────────────────────────────────────────────────────────────────
 const C = {
@@ -270,8 +272,23 @@ export default function JourPage() {
   const [cook, setCook] = useState<BteMeal | null>(null)
 
   useEffect(() => {
-    const saved = parseInt(localStorage.getItem("bte-day") || "1", 10)
-    if (saved >= 1 && saved <= 21) setDayState(saved)
+    async function initDay() {
+      try {
+        const supabase = createClient()
+        const { data: { user } } = await supabase.auth.getUser()
+        if (user) {
+          const { data: profile } = await supabase
+            .from("profiles").select("program_start").eq("id", user.id).maybeSingle()
+          if (profile?.program_start) {
+            setDayState(calcCurrentDay(profile.program_start))
+            return
+          }
+        }
+      } catch { /* non authentifié ou hors ligne */ }
+      const saved = parseInt(localStorage.getItem("bte-day") || "1", 10)
+      if (saved >= 1 && saved <= 21) setDayState(saved)
+    }
+    void initDay()
   }, [])
 
   const setDay = (n: number) => {
