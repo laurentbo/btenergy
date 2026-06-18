@@ -137,7 +137,7 @@ export const PRINCIPES: PrincipalKey[] = [
 export const preparationPhase = {
   title: "Prépare ton terrain",
   subtitle: "3 jours avant le démarrage",
-  description: "La cure Verissimo commence avant le J1. Ces 3 jours préparent ton organisme et garantissent des résultats optimaux dès le premier jour.",
+  description: "Le programme Verissimo commence avant le J1. Ces 3 jours préparent ton organisme et garantissent des résultats optimaux dès le premier jour.",
   days: [
     {
       offset: -3,
@@ -146,7 +146,7 @@ export const preparationPhase = {
       objective: "Réduire les toxiques pour ne pas être en manque brutal au J1",
       actions: [
         "Café : maximum 1 tasse le matin, plus rien après",
-        "Alcool : zéro aujourd'hui et jusqu'à la fin de la cure",
+        "Alcool : zéro aujourd'hui et jusqu'à la fin du programme",
         "Viande rouge et charcuterie : dernière fois ce soir si besoin",
         "Sucre raffiné et produits industriels : commencer à les écarter",
         "Augmente ton eau : vise 1,5 L minimum aujourd'hui",
@@ -255,7 +255,7 @@ export const preparationPhase = {
         "La première nuit peut être agitée : c'est normal, c'est l'élimination",
       ],
       warning:
-        "La purge au chlorure de magnésium est essentielle pour la réussite de ta cure. Elle vide le colon et permet dès J1 une assimilation maximale des nutriments.",
+        "La purge au chlorure de magnésium est essentielle pour la réussite de ton programme. Elle vide le colon et permet dès J1 une assimilation maximale des nutriments.",
       coachNote:
         "Demain matin, tu te lèveras différent. Le corps se souvient de ce qu'on lui donne quand on lui en laisse l'opportunité.",
     },
@@ -267,7 +267,7 @@ export const preparationPhase = {
       actions: [
         "Confirme que ta liste de courses est prête",
         "Prépare ta gourde pour demain matin",
-        "Dors tôt — la cure commence avec ton réveil",
+        "Dors tôt — le programme commence avec ton réveil",
         "Demain : jus de citron dans eau tiède au réveil, puis le programme de la Semaine 1 s'ouvre",
       ],
       coachNote:
@@ -414,7 +414,7 @@ const WEEK2: DayProgram[] = [
     day: 9, week: 2,
     theme: "Équilibre",
     intention: "Renforcer les éliminations, soutenir le foie et les reins",
-    coachWord: "La betterave crue est l'un des aliments les plus détoxifiants de la cure. Râpée en crudité ou mixée en soupe — profites-en.",
+    coachWord: "La betterave crue est l'un des aliments les plus détoxifiants du programme. Râpée en crudité ou mixée en soupe — profites-en.",
     morningRitual: "Eau tiède + jus d'½ citron · étirements doux 5-10 min",
     meals: [
       { moment: "matin", items: ["2 clémentines", "Grenade (graines)", "Noix de Grenoble", "1 c.c. miel brut"], conseil: "Collation si faim : 1 kiwi" },
@@ -562,7 +562,7 @@ const WEEK3: DayProgram[] = [
     day: 18, week: 3,
     theme: "Ancrage",
     intention: "Explorer les combinaisons sucré-salé, ancrer le plaisir dans l'alimentation saine",
-    coachWord: "L'association poire-cannelle sur la volaille est une découverte — note-la dans ton carnet de recettes pour après la cure.",
+    coachWord: "L'association poire-cannelle sur la volaille est une découverte — note-la dans ton carnet de recettes pour après le programme.",
     morningRitual: "Eau tiède + jus d'½ citron · étirements doux 5-10 min",
     meals: [
       { moment: "matin", items: ["2 kiwis", "1 banane", "Noisettes", "1 c.c. miel brut", "1 pruneau"], conseil: "Collation si faim : 1 clémentine" },
@@ -577,7 +577,7 @@ const WEEK3: DayProgram[] = [
   {
     day: 19, week: 3,
     theme: "Ancrage",
-    intention: "Ancrer les nouvelles habitudes alimentaires, préparer la sortie de cure",
+    intention: "Ancrer les nouvelles habitudes alimentaires, préparer la sortie du programme",
     coachWord: "La marinade tamari-citron-gingembre peut s'utiliser sur toutes les viandes blanches. Garde-la dans tes réflexes.",
     morningRitual: "Eau tiède + jus d'½ citron · étirements doux 5-10 min",
     meals: [
@@ -593,8 +593,8 @@ const WEEK3: DayProgram[] = [
   {
     day: 20, week: 3,
     theme: "Ancrage",
-    intention: "Célébrer les 20 jours accomplis, ancrer les recettes de l'après-cure",
-    coachWord: "La sauce crème de champignons-cajou est une base versatile pour l'après-cure. Retiens la recette.",
+    intention: "Célébrer les 20 jours accomplis, ancrer les recettes de l'après-programme",
+    coachWord: "La sauce crème de champignons-cajou est une base versatile pour l'après-programme. Retiens la recette.",
     morningRitual: "Eau tiède + jus d'½ citron · étirements doux 5-10 min",
     meals: [
       { moment: "matin", items: ["2 clémentines", "1 pomme", "Amandes effilées", "1 c.c. miel brut", "Filet de citron"], conseil: "Collation si faim : 1 orange" },
