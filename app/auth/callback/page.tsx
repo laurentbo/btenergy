@@ -34,16 +34,16 @@ export default function AuthCallbackPage() {
         if (!user) { window.location.replace("/"); return }
 
         const { data: profile } = await supabase
-          .from("profiles").select("program_start, role").eq("id", user.id).maybeSingle()
+          .from("profiles").select("start_date, role").eq("id", user.id).maybeSingle()
 
         if (profile?.role === "coach" || profile?.role === "admin") {
           window.location.replace("/coach"); return
         }
 
-        let startDate = profile?.program_start ?? null
+        let startDate = profile?.start_date ?? null
         if (!startDate) {
           startDate = tomorrowParis()
-          await supabase.from("profiles").update({ program_start: startDate }).eq("id", user.id)
+          await supabase.from("profiles").update({ start_date: startDate }).eq("id", user.id)
         }
 
         window.location.replace(hasProgramStarted(startDate) ? "/jour" : "/bienvenue")

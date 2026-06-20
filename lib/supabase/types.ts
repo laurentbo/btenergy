@@ -17,6 +17,7 @@ export type Database = {
           coach_id: string | null
           current_day: number
           program_start: string | null
+          start_date: string | null
           created_at: string
         }
         Insert: Omit<Database["public"]["Tables"]["profiles"]["Row"], "created_at">

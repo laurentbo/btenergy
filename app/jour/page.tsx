@@ -276,17 +276,13 @@ export default function JourPage() {
       try {
         const supabase = createClient()
         const { data: { user } } = await supabase.auth.getUser()
-        if (user) {
-          const { data: profile } = await supabase
-            .from("profiles").select("program_start").eq("id", user.id).maybeSingle()
-          if (profile?.program_start) {
-            setDayState(calcCurrentDay(profile.program_start))
-            return
-          }
-        }
-      } catch { /* non authentifié ou hors ligne */ }
-      const saved = parseInt(localStorage.getItem("bte-day") || "1", 10)
-      if (saved >= 1 && saved <= 21) setDayState(saved)
+        if (!user) { window.location.replace("/bienvenue"); return }
+        const { data: profile } = await supabase
+          .from("profiles").select("start_date").eq("id", user.id).maybeSingle()
+        if (!profile?.start_date) { window.location.replace("/bienvenue"); return }
+        // dayIndex > 21 clampé à 21 — écran "programme terminé" à créer (TODO)
+        setDayState(calcCurrentDay(profile.start_date))
+      } catch { window.location.replace("/bienvenue") }
     }
     void initDay()
   }, [])
@@ -294,7 +290,6 @@ export default function JourPage() {
   const setDay = (n: number) => {
     setDayState(n)
     setOpenId(null)
-    localStorage.setItem("bte-day", String(n))
     window.scrollTo(0, 0)
   }
 
@@ -328,13 +323,13 @@ export default function JourPage() {
                 <div style={{ fontFamily: SER, fontWeight: 600, fontSize: 30, color: C.ink, letterSpacing: "-0.01em", lineHeight: 1.0, marginTop: 12 }}>Bonjour</div>
                 <div style={{ fontFamily: SER, fontSize: 14.5, color: C.green, lineHeight: 1.35, marginTop: 5 }}>{wk.sub}</div>
               </div>
-              <div style={{ flex: "0 0 auto", position: "relative", width: 54, height: 54 }}>
+              <Link href="/profil" aria-label="Mon profil" style={{ flex: "0 0 auto", position: "relative", width: 54, height: 54, display: "block", textDecoration: "none" }}>
                 <svg width="54" height="54" viewBox="0 0 54 54">
                   <circle cx="27" cy="27" r="22" fill="none" stroke={C.line} strokeWidth="5" />
                   <circle cx="27" cy="27" r="22" fill="none" stroke={acc} strokeWidth="5" strokeLinecap="round" strokeDasharray={`${pct / 100 * 138} 138`} transform="rotate(-90 27 27)" />
                 </svg>
                 <span style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: SER, fontWeight: 700, fontSize: 13, color: acc }}>{pct}%</span>
-              </div>
+              </Link>
             </div>
 
             {/* Sélecteur de jour */}
