@@ -160,13 +160,15 @@ function J0Mobile({ prenom }: { prenom: string }) {
           Bienvenue <span style={{ color: C.terra }}>{prenom}</span>
         </div>
 
-        {/* bandeau terracotta */}
-        <div style={{ background: C.terra, borderRadius: 14, padding: "14px 16px", marginBottom: 22, display: "flex", alignItems: "center", gap: 13 }}>
-          <span style={{ flexShrink: 0 }}><Ic name="spark" col="#fff" sw={1.9} s={26} /></span>
-          <div style={{ width: 1, height: 30, background: "rgba(255,255,255,0.4)", flexShrink: 0 }} />
-          <div style={{ color: "#fff", fontSize: 13.5, fontWeight: 600, lineHeight: 1.35 }}>
-            Salut {prenom} ! Voilà ton programme pour relancer le moteur — une cuisine gourmande, avec un max de bio : on désintoxique, pas question de se remplir de pesticides. Si tu es OK pour lancer demain, ça se passe tout en bas :)
-          </div>
+        {/* texte d'accueil */}
+        <div style={{ fontFamily: "var(--heading)", fontWeight: 500, fontSize: 14, lineHeight: 1.5, color: C.ink, marginBottom: 16 }}>
+          Salut {prenom} ! Pendant 21 jours, tu offres à ton corps un vrai nettoyage en douceur. Une alimentation vivante et bien associée, choisie pour calmer ce qui fatigue ton organisme et relancer ton énergie. Tu fais simple, gourmand, jamais violent — des assiettes pensées pour bien fonctionner ensemble. C'est toi qui vas vivre l'expérience : tu gardes le plaisir, tu mets juste quelques aliments de côté.
+        </div>
+        <div style={{ borderLeft: `3px solid ${C.terra}`, padding: "2px 0 2px 12px", marginBottom: 16, fontFamily: "var(--heading)", fontWeight: 500, fontSize: 13.5, lineHeight: 1.5, color: C.terra }}>
+          Prends un instant pour lire les quelques lignes ci-dessous : tu y comprendras la méthode et le fonctionnement de l'appli.
+        </div>
+        <div style={{ fontFamily: "var(--heading)", fontWeight: 600, fontSize: 15, color: C.leaf, marginBottom: 22 }}>
+          Quand tu veux, ça démarre en bas.
         </div>
 
         {/* parcours 3 semaines */}
@@ -308,11 +310,15 @@ function J0Desktop({ prenom }: { prenom: string }) {
             <div style={{ fontFamily: "var(--heading)", fontWeight: 600, fontSize: 62, lineHeight: 0.98, letterSpacing: "-0.025em", marginBottom: 22 }}>
               Bienvenue <span style={{ color: C.terra }}>{prenom}</span>
             </div>
-            <div style={{ background: C.terra, borderRadius: 14, padding: "16px 18px", display: "flex", alignItems: "center", gap: 14, maxWidth: 520 }}>
-              <span style={{ flexShrink: 0 }}><Ic name="spark" col="#fff" sw={1.9} s={28} /></span>
-              <div style={{ width: 1, height: 32, background: "rgba(255,255,255,0.4)", flexShrink: 0 }} />
-              <div style={{ color: "#fff", fontSize: 14.5, fontWeight: 600, lineHeight: 1.35 }}>
-                Salut {prenom} ! Voilà ton programme pour relancer le moteur — une cuisine gourmande, avec un max de bio : on désintoxique, pas question de se remplir de pesticides. Si tu es OK pour lancer demain, ça se passe tout en bas :)
+            <div style={{ maxWidth: 520 }}>
+              <div style={{ fontFamily: "var(--heading)", fontWeight: 500, fontSize: 15, lineHeight: 1.55, color: C.ink, marginBottom: 16 }}>
+                Salut {prenom} ! Pendant 21 jours, tu offres à ton corps un vrai nettoyage en douceur. Une alimentation vivante et bien associée, choisie pour calmer ce qui fatigue ton organisme et relancer ton énergie. Tu fais simple, gourmand, jamais violent — des assiettes pensées pour bien fonctionner ensemble. C'est toi qui vas vivre l'expérience : tu gardes le plaisir, tu mets juste quelques aliments de côté.
+              </div>
+              <div style={{ borderLeft: `3px solid ${C.terra}`, padding: "2px 0 2px 14px", marginBottom: 16, fontFamily: "var(--heading)", fontWeight: 500, fontSize: 14, lineHeight: 1.5, color: C.terra }}>
+                Prends un instant pour lire les quelques lignes ci-dessous : tu y comprendras la méthode et le fonctionnement de l'appli.
+              </div>
+              <div style={{ fontFamily: "var(--heading)", fontWeight: 600, fontSize: 16, color: C.leaf }}>
+                Quand tu veux, ça démarre en bas.
               </div>
             </div>
           </div>
