@@ -3,7 +3,7 @@ import { useState, useEffect } from "react"
 import Link from "next/link"
 import { BTE_DAYS, type BteMeal } from "@/data/bte-days"
 import { createClient } from "@/lib/supabase/client"
-import { calcCurrentDay } from "@/data/program"
+import { calcCurrentDay, hasProgramStarted } from "@/data/program"
 
 // ── Couleurs ──────────────────────────────────────────────────────────────────
 const C = {
@@ -267,6 +267,7 @@ function MoodPicker({ day }: { day: number }) {
 // ── Page principale ───────────────────────────────────────────────────────────
 export default function JourPage() {
   const [day, setDayState] = useState(1)
+  const [prenom, setPrenom] = useState<string | null>(null)
   const [openId, setOpenId] = useState<string | null>(null)
   const [why, setWhy] = useState<BteMeal | null>(null)
   const [cook, setCook] = useState<BteMeal | null>(null)
@@ -278,10 +279,12 @@ export default function JourPage() {
         const { data: { user } } = await supabase.auth.getUser()
         if (!user) { window.location.replace("/bienvenue"); return }
         const { data: profile } = await supabase
-          .from("profiles").select("start_date").eq("id", user.id).maybeSingle()
-        if (!profile?.start_date) { window.location.replace("/bienvenue"); return }
+          .from("profiles").select("prenom, start_date").eq("id", user.id).maybeSingle()
+        if (!hasProgramStarted(profile?.start_date)) { window.location.replace("/bienvenue"); return }
+        const p = profile?.prenom
+        setPrenom(p ? p.charAt(0).toUpperCase() + p.slice(1).toLowerCase() : null)
         // dayIndex > 21 clampé à 21 — écran "programme terminé" à créer (TODO)
-        setDayState(calcCurrentDay(profile.start_date))
+        setDayState(calcCurrentDay(profile?.start_date))
       } catch { window.location.replace("/bienvenue") }
     }
     void initDay()
@@ -320,15 +323,18 @@ export default function JourPage() {
                 <span style={{ fontFamily: GRO, fontWeight: 700, fontSize: 12, color: "#fff", background: acc, padding: "5px 12px", borderRadius: 999, whiteSpace: "nowrap" as const }}>
                   JOUR {day}<span style={{ opacity: 0.7 }}> / {TOTAL}</span>
                 </span>
-                <div style={{ fontFamily: SER, fontWeight: 600, fontSize: 30, color: C.ink, letterSpacing: "-0.01em", lineHeight: 1.0, marginTop: 12 }}>Bonjour</div>
+                <div style={{ fontFamily: SER, fontWeight: 600, fontSize: 30, color: C.ink, letterSpacing: "-0.01em", lineHeight: 1.0, marginTop: 12 }}>Bonjour{prenom ? ` ${prenom}` : ""}</div>
                 <div style={{ fontFamily: SER, fontSize: 14.5, color: C.green, lineHeight: 1.35, marginTop: 5 }}>{wk.sub}</div>
               </div>
-              <Link href="/profil" aria-label="Mon profil" style={{ flex: "0 0 auto", position: "relative", width: 54, height: 54, display: "block", textDecoration: "none" }}>
-                <svg width="54" height="54" viewBox="0 0 54 54">
-                  <circle cx="27" cy="27" r="22" fill="none" stroke={C.line} strokeWidth="5" />
-                  <circle cx="27" cy="27" r="22" fill="none" stroke={acc} strokeWidth="5" strokeLinecap="round" strokeDasharray={`${pct / 100 * 138} 138`} transform="rotate(-90 27 27)" />
-                </svg>
-                <span style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: SER, fontWeight: 700, fontSize: 13, color: acc }}>{pct}%</span>
+              <Link href="/profil" aria-label="Mon profil" style={{ flex: "0 0 auto", display: "flex", flexDirection: "column", alignItems: "center", gap: 3, textDecoration: "none" }}>
+                <span style={{ position: "relative", width: 54, height: 54, display: "block" }}>
+                  <svg width="54" height="54" viewBox="0 0 54 54">
+                    <circle cx="27" cy="27" r="22" fill="none" stroke={C.line} strokeWidth="5" />
+                    <circle cx="27" cy="27" r="22" fill="none" stroke={acc} strokeWidth="5" strokeLinecap="round" strokeDasharray={`${pct / 100 * 138} 138`} transform="rotate(-90 27 27)" />
+                  </svg>
+                  <span style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: SER, fontWeight: 700, fontSize: 13, color: acc }}>{pct}%</span>
+                </span>
+                <span style={{ fontFamily: GRO, fontSize: 9.5, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase" as const, color: C.soft }}>Profil</span>
               </Link>
             </div>
 
