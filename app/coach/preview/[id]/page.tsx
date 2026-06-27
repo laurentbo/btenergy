@@ -2,12 +2,13 @@
 import { useEffect, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
 import {
-  PROGRAM_NEW,
   PRINCIPLES_V2,
   PRINCIPLE_GROUPS,
   CHAPTER_FOR_DAY,
   calcCurrentDay,
 } from "@/data/program"
+import { BTE_DAYS, type BteMeal } from "@/data/bte-days"
+import { MealCard, WhySheet, CookSheet, C as BC, SER as BSER, GRO as BGRO } from "@/components/BteMealCard"
 
 type Tab = "today" | "journal" | "meals" | "journey" | "principles"
 
@@ -120,71 +121,58 @@ function ChevronRight() {
 function TodayTab({ prenom, currentDay, coachNote, checkin }: {
   prenom: string; currentDay: number; coachNote: string | null; checkin: CheckIn | null
 }) {
-  const prog = PROGRAM_NEW[currentDay - 1] ?? PROGRAM_NEW[0]
+  const meals = BTE_DAYS[currentDay - 1]?.meals ?? BTE_DAYS[0].meals
   const today = new Date().toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })
+  const [openId, setOpenId] = useState<string | null>(null)
+  const [why, setWhy]       = useState<BteMeal | null>(null)
+  const [cook, setCook]     = useState<BteMeal | null>(null)
 
   return (
-    <div style={{ padding: "26px 22px 30px" }}>
+    <>
+    <div style={{ padding: "26px 22px 30px", background: BC.bg, minHeight: "100%" }}>
       <Eyebrow>{today}</Eyebrow>
       <h1 style={{
-        margin: "10px 0 0", fontFamily: "var(--serif)",
-        fontWeight: 400, fontSize: 36, lineHeight: 1.05,
-        letterSpacing: "-0.02em", color: "var(--text)",
+        margin: "10px 0 0", fontFamily: BSER,
+        fontWeight: 600, fontSize: 30, lineHeight: 1.05,
+        letterSpacing: "-0.01em", color: BC.ink,
       }}>
-        Bonjour <em style={{ fontStyle: "italic", color: "var(--brand)" }}>{prenom}</em>.
+        Bonjour <em style={{ fontStyle: "italic", color: BC.green }}>{prenom}</em>.
       </h1>
 
       {coachNote && (
-        <div style={{ marginTop: 24, paddingTop: 24, borderTop: "1px solid var(--line)" }}>
-          <p style={{
-            margin: 0,
-            fontFamily: "var(--serif)", fontStyle: "italic",
-            fontSize: 19, lineHeight: 1.45, color: "var(--text)",
-            letterSpacing: "0.005em",
-          }}>« {coachNote} »</p>
-          <p style={{ margin: "6px 0 0", fontSize: 11, color: "var(--text-faint)" }}>Note coach du jour</p>
+        <div style={{ marginTop: 20, padding: "14px 15px", background: `rgba(78,122,60,0.08)`, border: `1.5px solid rgba(78,122,60,0.25)`, borderRadius: 16 }}>
+          <p style={{ margin: 0, fontFamily: BSER, fontStyle: "italic", fontSize: 17, lineHeight: 1.45, color: BC.ink }}>
+            « {coachNote} »
+          </p>
+          <p style={{ margin: "6px 0 0", fontSize: 11, color: BC.soft }}>Note coach du jour</p>
         </div>
       )}
 
-      <div style={{ marginTop: coachNote ? 32 : 28 }}>
-        <Eyebrow>aujourd'hui · les repas</Eyebrow>
-        <div style={{ marginTop: 14 }}>
-          {prog.meals.map((m, i) => (
-            <div key={i} style={{
-              display: "flex", gap: 16, alignItems: "baseline",
-              padding: "13px 0",
-              borderBottom: i < prog.meals.length - 1 ? "1px solid var(--line-soft)" : "none",
-            }}>
-              <div style={{
-                fontFamily: "var(--serif)", fontStyle: "italic",
-                fontSize: 13, color: "var(--text-mute)",
-                width: 32, flexShrink: 0,
-              }}>{m.time}</div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 13.5, color: "var(--text)", marginBottom: 3 }}>{m.label}</div>
-                <div style={{ fontSize: 12, color: "var(--text-dim)", lineHeight: 1.5 }}>{m.items}</div>
-              </div>
-            </div>
-          ))}
+      <div style={{ marginTop: coachNote ? 24 : 20 }}>
+        <div style={{ fontFamily: BGRO, fontSize: 10.5, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase" as const, color: BC.soft, marginBottom: 10 }}>
+          Tes repas du jour
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          {meals.map(m =>
+            <MealCard key={m.key} m={m} open={openId === m.key}
+              onToggle={() => setOpenId(cur => cur === m.key ? null : m.key)}
+              onWhy={setWhy} onCook={setCook} />
+          )}
         </div>
       </div>
 
-      {/* Check-in du jour */}
       {checkin && (checkin.energie || checkin.humeur || checkin.sommeil) && (
-        <div style={{
-          marginTop: 20, padding: "16px 18px",
-          background: "var(--bg-lift)", border: "1px solid var(--line)", borderRadius: 14,
-        }}>
-          <Eyebrow>check-in du matin</Eyebrow>
-          <div style={{ marginTop: 10, display: "flex", gap: 16, flexWrap: "wrap" as const }}>
+        <div style={{ marginTop: 16, padding: "14px 15px", background: BC.paper2, border: `1.5px solid ${BC.line}`, borderRadius: 14 }}>
+          <div style={{ fontFamily: BGRO, fontSize: 10.5, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase" as const, color: BC.soft, marginBottom: 10 }}>Check-in du matin</div>
+          <div style={{ display: "flex", gap: 16, flexWrap: "wrap" as const }}>
             {[
               { k: "Énergie", key: "energie", v: checkin.energie },
               { k: "Humeur",  key: "humeur",  v: checkin.humeur  },
               { k: "Sommeil", key: "sommeil", v: checkin.sommeil },
             ].filter(x => x.v).map(x => (
               <div key={x.k}>
-                <div style={{ fontSize: 9.5, color: "var(--text-faint)", letterSpacing: "0.12em", textTransform: "uppercase" as const }}>{x.k}</div>
-                <div style={{ fontSize: 14, fontFamily: "var(--serif)", fontStyle: "italic", color: "var(--text)", marginTop: 3 }}>
+                <div style={{ fontSize: 9.5, color: BC.soft, letterSpacing: "0.12em", textTransform: "uppercase" as const }}>{x.k}</div>
+                <div style={{ fontSize: 14, fontFamily: BSER, fontStyle: "italic", color: BC.ink, marginTop: 3 }}>
                   {checkinLabel(x.key, x.v)}
                 </div>
               </div>
@@ -193,6 +181,9 @@ function TodayTab({ prenom, currentDay, coachNote, checkin }: {
         </div>
       )}
     </div>
+    <WhySheet  meal={why}  onClose={() => setWhy(null)} />
+    <CookSheet meal={cook} onClose={() => setCook(null)} />
+    </>
   )
 }
 
@@ -275,113 +266,67 @@ function JournalTab({ messages }: { messages: Message[] }) {
 
 function MealsTab({ currentDay }: { currentDay: number }) {
   const [viewDay, setViewDay] = useState(currentDay)
-  const [openIdx, setOpenIdx] = useState<number | null>(null)
+  const [openId, setOpenId]   = useState<string | null>(null)
+  const [why, setWhy]         = useState<BteMeal | null>(null)
+  const [cook, setCook]       = useState<BteMeal | null>(null)
 
-  const prog = PROGRAM_NEW[viewDay - 1] ?? PROGRAM_NEW[0]
+  const meals   = BTE_DAYS[viewDay - 1]?.meals ?? BTE_DAYS[0].meals
   const chapter = CHAPTER_FOR_DAY(viewDay)
   const isToday = viewDay === currentDay
 
   const go = (delta: number) => {
     setViewDay(d => Math.max(1, Math.min(21, d + delta)))
-    setOpenIdx(null)
+    setOpenId(null)
   }
 
   return (
-    <div style={{ padding: "26px 22px 28px" }}>
-      <Eyebrow>repas · {chapter.sub.toLowerCase()}</Eyebrow>
-      <h2 style={{
-        margin: "10px 0 20px", fontFamily: "var(--serif)",
-        fontWeight: 400, fontSize: 28, lineHeight: 1.1,
-        letterSpacing: "-0.015em", color: "var(--text)",
-      }}>
-        Ce qui est <em style={{ fontStyle: "italic", color: "var(--brand)" }}>prévu</em>.
+    <>
+    <div style={{ padding: "26px 22px 28px", background: BC.bg, minHeight: "100%" }}>
+      <div style={{ fontFamily: BGRO, fontSize: 10.5, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase" as const, color: BC.soft, marginBottom: 4 }}>
+        repas · {chapter.sub.toLowerCase()}
+      </div>
+      <h2 style={{ margin: "8px 0 20px", fontFamily: BSER, fontWeight: 600, fontSize: 28, lineHeight: 1.1, letterSpacing: "-0.015em", color: BC.ink }}>
+        Ce qui est <em style={{ fontStyle: "italic", color: BC.green }}>prévu</em>.
       </h2>
 
       <div style={{
         display: "flex", alignItems: "center", justifyContent: "space-between",
         gap: 12, padding: "10px 12px",
-        background: "var(--bg-lift)", border: "1px solid var(--line)", borderRadius: 14, marginBottom: 20,
+        background: BC.paper2, border: `1.5px solid ${BC.line}`, borderRadius: 14, marginBottom: 20,
       }}>
         <button onClick={() => go(-1)} disabled={viewDay <= 1} style={{
           width: 32, height: 32, borderRadius: 999,
-          background: "transparent", border: "1px solid var(--line)",
-          color: viewDay <= 1 ? "var(--text-faint)" : "var(--text-dim)",
+          background: "transparent", border: `1.5px solid ${BC.line}`,
+          color: viewDay <= 1 ? BC.line : BC.soft,
           cursor: viewDay <= 1 ? "default" : "pointer",
           display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
         }}><ChevronLeft /></button>
         <div style={{ textAlign: "center", flex: 1 }}>
-          <div style={{
-            fontFamily: "var(--serif)", fontStyle: "italic",
-            fontSize: 17, color: isToday ? "var(--brand)" : "var(--text)", lineHeight: 1.15,
-          }}>
+          <div style={{ fontFamily: BSER, fontStyle: "italic", fontSize: 17, color: isToday ? BC.green : BC.ink, lineHeight: 1.15 }}>
             {isToday ? "Aujourd'hui · " : ""}jour {viewDay}
           </div>
-          <div style={{ fontSize: 11, color: "var(--text-mute)", marginTop: 3 }}>{chapter.sub}</div>
+          <div style={{ fontSize: 11, color: BC.soft, marginTop: 3 }}>{chapter.sub}</div>
         </div>
         <button onClick={() => go(1)} disabled={viewDay >= 21} style={{
           width: 32, height: 32, borderRadius: 999,
-          background: "transparent", border: "1px solid var(--line)",
-          color: viewDay >= 21 ? "var(--text-faint)" : "var(--text-dim)",
+          background: "transparent", border: `1.5px solid ${BC.line}`,
+          color: viewDay >= 21 ? BC.line : BC.soft,
           cursor: viewDay >= 21 ? "default" : "pointer",
           display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
         }}><ChevronRight /></button>
       </div>
 
-      <div>
-        {prog.meals.map((m, i) => {
-          const open = openIdx === i
-          return (
-            <div key={i} style={{
-              borderTop: "1px solid var(--line)",
-              borderBottom: i === prog.meals.length - 1 ? "1px solid var(--line)" : "none",
-            }}>
-              <button onClick={() => setOpenIdx(open ? null : i)} style={{
-                width: "100%", background: "transparent", border: 0, cursor: "pointer",
-                padding: "16px 2px",
-                display: "flex", alignItems: "baseline", gap: 16, textAlign: "left",
-              }}>
-                <span style={{
-                  fontFamily: "var(--serif)", fontStyle: "italic",
-                  fontSize: 14, color: "var(--text-mute)", width: 36, flexShrink: 0,
-                }}>{m.time}</span>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 15, color: "var(--text)", marginBottom: 4 }}>{m.label}</div>
-                  <div style={{
-                    fontSize: 12.5, color: "var(--text-dim)", lineHeight: 1.5,
-                    display: "-webkit-box", WebkitLineClamp: open ? "unset" : "2",
-                    WebkitBoxOrient: "vertical" as const, overflow: "hidden",
-                  }}>{m.items}</div>
-                </div>
-                <span style={{
-                  color: "var(--text-faint)", fontSize: 11,
-                  transform: open ? "rotate(180deg)" : "rotate(0)",
-                  transition: "transform .25s ease",
-                }}>▾</span>
-              </button>
-              {open && m.alts && m.alts.length > 0 && (
-                <div style={{ padding: "0 2px 18px 54px", display: "flex", flexDirection: "column", gap: 6 }}>
-                  {m.alts.map((alt, ai) => (
-                    <p key={ai} style={{
-                      margin: 0, fontSize: 12.5,
-                      fontFamily: "var(--serif)", fontStyle: "italic",
-                      color: "var(--coach)", lineHeight: 1.55,
-                    }}>{alt}</p>
-                  ))}
-                  {m.note && (
-                    <div style={{
-                      background: "var(--bg-lift)", border: "1px solid var(--line)",
-                      borderRadius: 10, padding: "10px 12px", marginTop: 4,
-                    }}>
-                      <p style={{ margin: 0, fontSize: 12, color: "var(--text-dim)", lineHeight: 1.55 }}>{m.note}</p>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          )
-        })}
+      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        {meals.map(m =>
+          <MealCard key={m.key} m={m} open={openId === m.key}
+            onToggle={() => setOpenId(cur => cur === m.key ? null : m.key)}
+            onWhy={setWhy} onCook={setCook} />
+        )}
       </div>
     </div>
+    <WhySheet  meal={why}  onClose={() => setWhy(null)} />
+    <CookSheet meal={cook} onClose={() => setCook(null)} />
+    </>
   )
 }
 

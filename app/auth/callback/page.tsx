@@ -2,7 +2,7 @@
 
 import { useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
-import { hasProgramStarted, tomorrowParis } from "@/data/program"
+import { hasProgramStarted } from "@/data/program"
 
 export default function AuthCallbackPage() {
   useEffect(() => {
@@ -40,13 +40,7 @@ export default function AuthCallbackPage() {
           window.location.replace("/coach"); return
         }
 
-        let startDate = profile?.start_date ?? null
-        if (!startDate) {
-          startDate = tomorrowParis()
-          await supabase.from("profiles").update({ start_date: startDate }).eq("id", user.id)
-        }
-
-        window.location.replace(hasProgramStarted(startDate) ? "/jour" : "/bienvenue")
+        window.location.replace(hasProgramStarted(profile?.start_date) ? "/jour" : "/bienvenue")
         return
       }
 

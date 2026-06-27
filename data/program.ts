@@ -33,9 +33,23 @@ function todayParis(): string {
 
 // Lendemain en Europe/Paris au format YYYY-MM-DD
 export function tomorrowParis(): string {
-  const d = new Date()
-  d.setDate(d.getDate() + 1)
-  return d.toLocaleDateString('en-CA', { timeZone: 'Europe/Paris' })
+  const [y, m, d] = todayParis().split('-').map(Number)
+  const dt = new Date(Date.UTC(y, m - 1, d))
+  dt.setUTCDate(dt.getUTCDate() + 1)
+  return dt.toISOString().slice(0, 10)
+}
+
+// Première date sélectionnable dans le picker : aujourd'hui+1 (Europe/Paris)
+export function minSelectableDate(): string {
+  return tomorrowParis()
+}
+
+// Dernière date sélectionnable dans le picker : aujourd'hui+14 (Europe/Paris)
+export function maxSelectableDate(): string {
+  const [y, m, d] = todayParis().split('-').map(Number)
+  const dt = new Date(Date.UTC(y, m - 1, d))
+  dt.setUTCDate(dt.getUTCDate() + 14)
+  return dt.toISOString().slice(0, 10)
 }
 
 // true si aujourd'hui (Europe/Paris) >= startDate

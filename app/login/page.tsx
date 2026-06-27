@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { C, rgba, Ic, Wordmark } from "@/components/bte-ui"
-import { hasProgramStarted, tomorrowParis } from "@/data/program"
+import { hasProgramStarted } from "@/data/program"
 
 function useDesktop() {
   const [d, setD] = useState(false)
@@ -83,13 +83,7 @@ export default function LoginPage() {
       window.location.href = "/coach"; return
     }
 
-    let startDate = profile?.start_date ?? null
-    if (!startDate) {
-      startDate = tomorrowParis()
-      await supabase.from("profiles").update({ start_date: startDate }).eq("id", user.id)
-    }
-
-    window.location.href = hasProgramStarted(startDate) ? "/jour" : "/bienvenue"
+    window.location.href = hasProgramStarted(profile?.start_date) ? "/jour" : "/bienvenue"
   }
 
   const inner = (

@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Back to Energy — Aperçu des écrans</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700;800&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:#1C160C; font-family:'Hanken Grotesk',sans-serif; padding:40px 20px; }
+h2 { color:#EFE6CF; font-family:'Baloo 2',sans-serif; font-size:13px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; margin-bottom:20px; opacity:.5; }
+.row { display:flex; gap:32px; flex-wrap:wrap; margin-bottom:60px; align-items:flex-start; }
+.phone { width:390px; background:#EFE6CF; border-radius:40px; overflow:hidden; box-shadow:0 40px 80px rgba(0,0,0,.5); flex-shrink:0; }
+.phone-inner { display:flex; flex-direction:column; height:780px; }
+
+/* ── tokens ── */
+:root {
+  --bg:#EFE6CF; --bg-lift:#EAE0C7; --bg-surface:#FBF6EA; --bg-elev:#F5EFD8;
+  --line:#E2D4B5; --text:#1E1B14; --text-dim:#857A61; --text-mute:rgba(30,27,20,.45);
+  --leaf:#4E7A3C; --terra:#E8622A; --label:'Space Grotesk',sans-serif;
+  --heading:'Baloo 2',sans-serif; --sans:'Hanken Grotesk',sans-serif;
+}
+
+/* ── ACCUEIL ── */
+.home-header { padding:20px 24px 16px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--line); }
+.home-logo { font-family:var(--heading); font-weight:800; font-size:17px; color:var(--text); }
+.home-logo span { color:var(--leaf); }
+.home-hero { padding:36px 24px 24px; flex:1; }
+.home-eyebrow { font-family:var(--label); font-size:10px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--text-mute); margin-bottom:14px; }
+.home-title { font-family:var(--heading); font-size:36px; font-weight:800; color:var(--text); line-height:1.05; margin-bottom:6px; }
+.home-title em { color:var(--leaf); font-style:italic; }
+.home-sub { font-size:14px; color:var(--text-dim); line-height:1.55; margin-bottom:32px; }
+.btn-primary { background:var(--leaf); color:#fff; font-family:var(--sans); font-weight:600; font-size:14px; padding:14px 22px; border-radius:999px; border:none; cursor:pointer; display:inline-block; }
+.btn-ghost { background:transparent; color:var(--text-dim); font-family:var(--sans); font-size:14px; padding:14px 22px; border-radius:999px; border:1.5px solid var(--line); cursor:pointer; margin-left:10px; }
+.home-method { padding:0 24px 24px; }
+.home-method-title { font-family:var(--heading); font-size:22px; font-weight:700; color:var(--text); margin-bottom:20px; }
+.home-method-title em { color:var(--leaf); font-style:italic; }
+.phase { display:flex; gap:14px; margin-bottom:16px; align-items:flex-start; }
+.phase-label { font-family:var(--heading); font-style:italic; color:var(--leaf); font-size:16px; font-weight:700; min-width:70px; }
+.phase-days { font-family:var(--label); font-size:10px; color:var(--text-mute); margin-top:2px; }
+.phase-desc { font-size:13px; color:var(--text-dim); line-height:1.5; }
+
+/* ── LOGIN ── */
+.login-wrap { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:40px 32px; }
+.login-title { font-family:var(--heading); font-weight:800; font-size:26px; color:var(--text); margin-bottom:32px; }
+.field-label { font-family:var(--label); font-size:10px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--text-mute); margin-bottom:8px; display:block; }
+.field-input { width:100%; background:var(--bg-lift); border:1.5px solid var(--line); border-radius:14px; padding:14px 16px; font-family:var(--sans); font-size:15px; color:var(--text); margin-bottom:18px; outline:none; }
+.login-cta { width:100%; text-align:center; font-family:var(--sans); font-size:14px; color:var(--leaf); margin-top:8px; }
+
+/* ── DASHBOARD ── */
+.app-header { padding:14px 18px; border-bottom:1.5px solid var(--line); display:flex; align-items:center; justify-content:space-between; flex-shrink:0; }
+.app-header-left { display:flex; align-items:center; gap:10px; }
+.app-logo { font-family:var(--heading); font-weight:800; font-size:16px; color:var(--text); }
+.app-logo span { color:var(--leaf); }
+.day-badge { font-family:var(--label); font-size:11px; font-weight:700; background:var(--leaf); color:#fff; padding:3px 9px; border-radius:999px; }
+.avatar-sm { width:32px; height:32px; border-radius:999px; background:var(--leaf); color:#fff; font-family:var(--heading); font-weight:700; font-size:14px; display:flex; align-items:center; justify-content:center; }
+.tab-content { flex:1; overflow:hidden; padding:20px 18px; display:flex; flex-direction:column; gap:14px; }
+.card { background:var(--bg-surface); border:1.5px solid var(--line); border-radius:16px; padding:16px; }
+.eyebrow { font-family:var(--label); font-size:10px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--text-mute); margin-bottom:8px; }
+.card-title { font-family:var(--heading); font-size:22px; font-weight:700; color:var(--text); margin-bottom:4px; }
+.card-sub { font-size:13px; color:var(--text-dim); line-height:1.5; }
+.today-phase { font-family:var(--label); font-size:11px; font-weight:600; color:var(--leaf); background:rgba(78,122,60,.1); border:1px solid rgba(78,122,60,.25); border-radius:8px; padding:4px 10px; display:inline-block; margin-bottom:14px; }
+.meal-card { background:var(--bg-lift); border:1.5px solid var(--line); border-radius:14px; padding:14px; margin-bottom:10px; }
+.meal-time { font-family:var(--label); font-size:10px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--text-mute); margin-bottom:6px; }
+.meal-name { font-family:var(--heading); font-size:16px; font-weight:700; color:var(--text); margin-bottom:4px; }
+.meal-items { font-size:12.5px; color:var(--text-dim); line-height:1.5; }
+.coach-note { background:rgba(78,122,60,.08); border:1.5px solid rgba(78,122,60,.22); border-radius:14px; padding:14px 16px; }
+.coach-note-label { font-family:var(--label); font-size:10px; font-weight:700; color:var(--leaf); letter-spacing:.08em; text-transform:uppercase; margin-bottom:6px; }
+.coach-note-text { font-family:var(--heading); font-style:italic; font-size:15px; color:var(--text); line-height:1.5; }
+.tabbar { flex-shrink:0; border-top:1px solid var(--line); padding:10px 0 18px; display:flex; }
+.tabbar-item { flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; }
+.tabbar-label { font-family:var(--label); font-size:10px; font-weight:500; color:var(--text-mute); }
+.tabbar-item.active .tabbar-label { color:var(--terra); font-weight:700; }
+.tab-icon { width:24px; height:24px; }
+
+/* ── COACH CHAT ── */
+.chat-header { flex-shrink:0; border-bottom:1.5px solid var(--line); padding:14px 18px; display:flex; align-items:center; gap:13px; background:var(--bg); }
+.chat-avatar { width:46px; height:46px; border-radius:999px; background:var(--leaf); color:#fff; font-family:var(--heading); font-weight:700; font-size:22px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.chat-name { font-family:var(--heading); font-weight:700; font-size:20px; color:var(--text); letter-spacing:-.01em; line-height:1.05; }
+.chat-status { display:flex; align-items:center; gap:5px; margin-top:3px; font-family:var(--label); font-size:11.5px; color:var(--text-dim); font-weight:500; }
+.chat-thread { flex:1; overflow:hidden; padding:14px 16px 8px; display:flex; flex-direction:column; gap:11px; }
+.chat-intro { background:rgba(78,122,60,.10); border:1.5px solid rgba(78,122,60,.30); border-radius:14px; padding:11px 14px; font-size:12.5px; color:var(--leaf); font-weight:600; line-height:1.45; text-align:center; }
+.date-sep { display:flex; align-items:center; gap:12px; margin:4px 0; }
+.date-sep hr { flex:1; border:none; border-top:1px solid var(--line); }
+.date-sep span { font-family:var(--label); font-size:10.5px; font-weight:700; color:var(--text-dim); letter-spacing:.08em; text-transform:uppercase; }
+.bubble-row { display:flex; gap:9px; }
+.bubble-row.me { justify-content:flex-end; }
+.bubble-row.coach { justify-content:flex-start; align-items:flex-end; }
+.bubble-avatar { width:30px; height:30px; border-radius:999px; background:var(--leaf); color:#fff; font-family:var(--heading); font-weight:700; font-size:14px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.bubble-inner { max-width:76%; display:flex; flex-direction:column; gap:3px; }
+.bubble-inner.me { align-items:flex-end; }
+.bubble-inner.coach-inner { align-items:flex-start; }
+.bubble { padding:11px 14px; font-size:14.5px; line-height:1.45; }
+.bubble.me { background:var(--leaf); color:#fff; border-radius:18px 18px 6px 18px; box-shadow:0 10px 20px -14px rgba(78,122,60,.8); }
+.bubble.coach { background:var(--bg-surface); color:var(--text); border:1.5px solid var(--line); border-radius:18px 18px 18px 6px; box-shadow:0 8px 16px -14px rgba(28,22,12,.5); }
+.bubble-time { font-family:var(--label); font-size:10.5px; color:var(--text-dim); font-weight:500; padding:0 4px; }
+.chat-sent { text-align:center; font-family:var(--label); font-size:11px; color:var(--text-dim); font-weight:500; padding:2px 0 4px; }
+.chat-composer { flex-shrink:0; border-top:1.5px solid var(--line); padding:10px 14px; display:flex; align-items:flex-end; gap:10px; }
+.composer-input { flex:1; border:1.5px solid var(--line); background:var(--bg-surface); border-radius:22px; padding:12px 16px; font-family:var(--sans); font-size:15px; color:var(--text); resize:none; outline:none; }
+.composer-btn { width:46px; height:46px; border-radius:999px; background:var(--leaf); color:#fff; border:none; display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; }
+.composer-btn-empty { width:46px; height:46px; border-radius:999px; background:var(--bg-surface); color:var(--text-dim); border:1.5px solid var(--line); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+
+/* ── COACH ADMIN ── */
+.coach-bg { background:#15130E; height:100%; }
+.coach-header { padding:14px 18px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid rgba(247,234,205,.07); flex-shrink:0; }
+.coach-logo { font-family:'Baloo 2',sans-serif; font-weight:800; font-size:15px; color:#ECE4D2; }
+.coach-badge { font-size:10px; color:#5CB551; font-family:'Space Grotesk',sans-serif; font-weight:600; margin-left:6px; }
+.coach-btn { background:rgba(247,234,205,.07); border:1px solid rgba(247,234,205,.1); color:rgba(236,228,210,.6); font-size:11px; font-family:'Hanken Grotesk',sans-serif; padding:5px 12px; border-radius:8px; cursor:pointer; }
+.coach-main { padding:18px; flex:1; overflow:hidden; }
+.coach-stats { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:18px; }
+.coach-stat { background:#1C1A14; border:1px solid rgba(247,234,205,.07); border-radius:14px; padding:14px; text-align:center; }
+.coach-stat-val { font-family:'Baloo 2',sans-serif; font-size:22px; font-weight:800; color:#5CB551; }
+.coach-stat-label { font-family:'Space Grotesk',sans-serif; font-size:10px; color:rgba(236,228,210,.35); margin-top:2px; }
+.coach-collab { background:#1C1A14; border:1px solid rgba(247,234,205,.07); border-radius:14px; padding:14px; display:flex; align-items:center; gap:12px; margin-bottom:10px; }
+.coach-collab-av { width:40px; height:40px; border-radius:999px; background:rgba(78,122,60,.15); border:1px solid rgba(78,122,60,.3); color:#5CB551; font-family:'Baloo 2',sans-serif; font-weight:700; font-size:16px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.coach-collab-name { font-family:'Hanken Grotesk',sans-serif; font-weight:600; font-size:13.5px; color:#ECE4D2; }
+.coach-collab-email { font-family:'Space Grotesk',sans-serif; font-size:11px; color:rgba(236,228,210,.4); margin-top:1px; }
+.coach-collab-day { font-family:'Space Grotesk',sans-serif; font-size:11px; font-weight:700; background:rgba(78,122,60,.15); border:1px solid rgba(78,122,60,.3); color:#5CB551; padding:3px 9px; border-radius:8px; flex-shrink:0; margin-left:auto; }
+.progress-bar { height:3px; background:rgba(247,234,205,.08); border-radius:2px; margin-top:8px; }
+.progress-fill { height:3px; border-radius:2px; background:linear-gradient(90deg,#5CB551,rgba(92,181,81,.4)); }
+
+/* ── BIENVENUE ── */
+.bv-scroll { flex:1; overflow:hidden; padding:20px 20px 24px; display:flex; flex-direction:column; gap:0; }
+.bv-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; }
+.bv-badge { font-family:var(--label); font-weight:700; font-size:11px; color:var(--bg-surface); background:var(--text); padding:4px 11px; border-radius:999px; }
+.bv-badge span { color:#F2B431; }
+.bv-veille { font-family:var(--label); font-weight:700; font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--leaf); }
+.bv-title { font-family:var(--heading); font-size:32px; font-weight:600; line-height:1.05; letter-spacing:-.02em; margin-bottom:14px; color:var(--text); }
+.bv-title em { color:var(--terra); font-style:normal; }
+.bv-banner { background:var(--terra); border-radius:13px; padding:12px 14px; margin-bottom:18px; display:flex; align-items:flex-start; gap:11px; }
+.bv-banner-icon { flex-shrink:0; color:#fff; font-size:18px; line-height:1; margin-top:1px; }
+.bv-banner-div { width:1px; height:28px; background:rgba(255,255,255,.4); flex-shrink:0; margin-top:2px; }
+.bv-banner-text { color:#fff; font-size:12px; font-weight:600; line-height:1.35; }
+.bv-eyebrow { font-family:var(--label); font-size:10px; font-weight:700; color:var(--text-mute); letter-spacing:.18em; text-transform:uppercase; margin-bottom:8px; }
+.bv-h2 { font-family:var(--heading); font-size:22px; font-weight:600; letter-spacing:-.01em; color:var(--text); margin-bottom:4px; }
+.bv-weeks { border-top:1px solid var(--line); margin-bottom:18px; }
+.bv-week { border-bottom:1px solid var(--line); padding:12px 0; display:flex; gap:12px; align-items:flex-start; }
+.bv-week-num { font-family:var(--heading); font-weight:700; font-size:26px; line-height:1; width:30px; flex-shrink:0; }
+.bv-week-word { font-family:var(--heading); font-weight:600; font-size:17px; color:var(--text); line-height:1.1; margin-bottom:1px; }
+.bv-week-theme { font-family:var(--label); font-size:9px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; margin-bottom:4px; }
+.bv-week-desc { font-size:11.5px; color:var(--leaf); line-height:1.4; }
+.bv-laurent { background:var(--text); border-radius:16px; padding:16px 16px 18px; margin:16px 0 14px; }
+.bv-laurent-av { width:40px; height:40px; border-radius:999px; background:#F2B431; color:var(--text); font-family:var(--heading); font-weight:700; font-size:18px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.bv-laurent-name { font-family:var(--heading); font-weight:700; font-size:16px; color:var(--bg); line-height:1.2; }
+.bv-laurent-quote { font-size:14px; line-height:1.5; color:var(--bg); margin-top:10px; opacity:.9; }
+.bv-cta-block { background:var(--leaf); border-radius:18px; padding:18px 16px 15px; text-align:center; }
+.bv-cta-eyebrow { font-family:var(--label); font-size:10px; font-weight:700; letter-spacing:.16em; text-transform:uppercase; color:#F2B431; margin-bottom:8px; }
+.bv-cta-date { font-family:var(--heading); font-weight:600; font-size:24px; color:#FBF6EA; letter-spacing:-.01em; line-height:1.05; margin-bottom:5px; }
+.bv-cta-sub { font-size:12px; color:rgba(251,246,234,.8); line-height:1.4; margin-bottom:13px; }
+.bv-cta-btn { background:var(--terra); color:#fff; font-family:var(--label); font-weight:700; font-size:13.5px; padding:13px 18px; border-radius:999px; border:none; width:100%; cursor:pointer; }
+
+/* labels */
+.screen-label { color:rgba(239,230,207,.5); font-family:'Space Grotesk',sans-serif; font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.08em; margin-top:14px; text-align:center; }
+</style>
+</head>
+<body>
+
+<h2>Accueil publique</h2>
+<div class="row">
+  <div>
+    <div class="phone">
+      <div class="phone-inner" style="background:var(--bg)">
+        <div class="home-header">
+          <div class="home-logo">Backt<span>o</span>energy</div>
+          <div style="font-family:var(--sans);font-size:13px;color:var(--leaf)">Connexion →</div>
+        </div>
+        <div class="home-hero">
+          <div class="home-eyebrow">Programme 21 jours · Méthode Verissimo</div>
+          <div class="home-title">Retrouver ton<br><em>énergie naturelle.</em></div>
+          <div class="home-sub" style="margin-top:12px">Pas un régime. Une manière de manger qui respecte ton corps — associations simples, aliments bruts, accompagnement personnalisé.</div>
+          <button class="btn-primary">Accéder à mon programme →</button>
+          <button class="btn-ghost">Espace coach</button>
+        </div>
+        <div class="home-method">
+          <div class="home-method-title">Ce que tu vas vivre <em>en 21 jours</em></div>
+          <div class="phase"><div><div class="phase-label">Détox</div><div class="phase-days">Jours 1–7</div></div><div class="phase-desc">Le corps ralentit, évacue. Tu manges simple, tu bois beaucoup.</div></div>
+          <div class="phase"><div><div class="phase-label">Énergie</div><div class="phase-days">Jours 8–14</div></div><div class="phase-desc">Le brouillard se lève. L'énergie remonte.</div></div>
+          <div class="phase"><div><div class="phase-label">Ancrage</div><div class="phase-days">Jours 15–21</div></div><div class="phase-desc">Les habitudes s'installent d'elles-mêmes.</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="screen-label">/ — Page d'accueil</div>
+  </div>
+
+  <div>
+    <div class="phone">
+      <div class="phone-inner" style="background:var(--bg)">
+        <div class="login-wrap">
+          <div class="login-title">Backtoenergy</div>
+          <div style="width:100%">
+            <label class="field-label">Email</label>
+            <div class="field-input" style="color:var(--text-mute)">ton@email.com</div>
+            <label class="field-label">Mot de passe</label>
+            <div class="field-input" style="letter-spacing:.2em;color:var(--text-dim)">••••••••</div>
+          </div>
+          <div class="login-cta">Se connecter →</div>
+          <div style="margin-top:24px;font-size:13px;color:var(--text-mute);font-family:var(--sans)">Vous êtes coach ? →</div>
+        </div>
+      </div>
+    </div>
+    <div class="screen-label">/login — Connexion collaborateur</div>
+  </div>
+
+  <div>
+    <div class="phone">
+      <div class="phone-inner" style="background:var(--bg)">
+        <div style="display:flex;flex-direction:column;align-items:center;padding:60px 32px 0">
+          <div style="width:56px;height:56px;border-radius:14px;background:var(--leaf);color:#fff;font-family:var(--heading);font-weight:800;font-size:26px;display:flex;align-items:center;justify-content:center;margin-bottom:14px">B</div>
+          <div style="font-family:var(--heading);font-weight:800;font-size:24px;color:var(--text)">Backtoenergy</div>
+          <div style="font-family:var(--label);font-size:12px;color:var(--leaf);font-weight:600;margin-bottom:36px">Espace coach</div>
+        </div>
+        <div class="login-wrap" style="padding-top:0">
+          <div style="width:100%">
+            <div style="font-family:var(--heading);font-weight:700;font-size:18px;color:var(--text);margin-bottom:22px">Connexion Coach</div>
+            <label class="field-label">Email</label>
+            <div class="field-input" style="color:var(--text-mute)">coach@btenergy.fr</div>
+            <label class="field-label">Mot de passe</label>
+            <div class="field-input" style="letter-spacing:.2em;color:var(--text-dim)">••••••••</div>
+          </div>
+          <div class="login-cta">Accéder au dashboard →</div>
+          <div style="margin-top:12px;font-size:12px;color:var(--text-mute);font-family:var(--sans)">Mot de passe oublié ?</div>
+          <div style="margin-top:24px;font-size:12px;color:var(--text-mute);font-family:var(--sans)">← Espace collaborateur</div>
+        </div>
+      </div>
+    </div>
+    <div class="screen-label">/login/coach — Connexion coach</div>
+  </div>
+</div>
+
+<h2>Dashboard collaborateur</h2>
+<div class="row">
+  <!-- Aujourd'hui -->
+  <div>
+    <div class="phone">
+      <div class="phone-inner" style="background:var(--bg)">
+        <div class="app-header">
+          <div class="app-header-left">
+            <div class="app-logo">Backt<span>o</span>energy</div>
+            <div class="day-badge">J7</div>
+          </div>
+          <div class="avatar-sm">S</div>
+        </div>
+        <div class="tab-content">
+          <div class="today-phase">S1 · Détox & Purification</div>
+          <div class="card">
+            <div class="eyebrow">Aujourd'hui · Jour 7</div>
+            <div class="card-title" style="font-size:20px">Premier engagement</div>
+            <div class="card-sub">Poser les bases alimentaires, ressentir l'effet des premières heures.</div>
+          </div>
+          <div class="coach-note">
+            <div class="coach-note-label">Note de Laurent · aujourd'hui</div>
+            <div class="coach-note-text">« Tu fais le plus dur aujourd'hui. Bois bien, marche si tu peux. Profite bien de ton velouté ce soir. »</div>
+          </div>
+          <div style="font-size:12.5px;color:var(--text-mute);font-family:var(--label);font-weight:600;text-transform:uppercase;letter-spacing:.08em;margin-top:2px">Tes repas du jour</div>
+          <div class="meal-card">
+            <div class="meal-time">Petit-déjeuner</div>
+            <div class="meal-name">Jus vert + œufs</div>
+            <div class="meal-items">2 kiwis + 1 orange · 2 œufs mollets · une poignée de noix</div>
+          </div>
+          <div class="meal-card">
+            <div class="meal-time">Déjeuner</div>
+            <div class="meal-name">Poulet & légumes verts</div>
+            <div class="meal-items">Blanc de poulet · haricots verts · huile d'olive</div>
+          </div>
+        </div>
+        <div class="tabbar">
+          <div class="tabbar-item active">
+            <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="#E8622A" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4"/></svg>
+            <div class="tabbar-label active" style="color:var(--terra)">Aujourd'hui</div>
+          </div>
+          <div class="tabbar-item">
+            <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="#857A61" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 6.5A1.5 1.5 0 0 1 6.5 5h11A1.5 1.5 0 0 1 19 6.5v7A1.5 1.5 0 0 1 17.5 15H10l-4 3.5V15H6.5A1.5 1.5 0 0 1 5 13.5z"/></svg>
+            <div class="tabbar-label">Coach</div>
+          </div>
+          <div class="tabbar-item">
+            <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="#857A61" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8h14l-1.2 10.5a1.5 1.5 0 0 1-1.5 1.3H7.7a1.5 1.5 0 0 1-1.5-1.3z"/><path d="M8.5 8a3.5 3.5 0 0 1 7 0"/></svg>
+            <div class="tabbar-label">Repas</div>
+          </div>
+          <div class="tabbar-item">
+            <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="#857A61" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            <div class="tabbar-label">Parcours</div>
+          </div>
+          <div class="tabbar-item">
+            <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="#857A61" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 5.5A1.5 1.5 0 0 1 6.5 4H18v16H6.5A1.5 1.5 0 0 0 5 21z"/><path d="M18 4v16"/></svg>
+            <div class="tabbar-label">Principes</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="screen-label">/dashboard — Onglet Aujourd'hui</div>
+  </div>
+
+  <!-- Coach chat -->
+  <div>
+    <div class="phone">
+      <div class="phone-inner" style="background:var(--bg)">
+        <div class="chat-header">
+          <div class="chat-avatar">L</div>
+          <div>
+            <div class="chat-name">Laurent</div>
+            <div class="chat-status">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#4E7A3C" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l2.5 2"/></svg>
+              Écris-moi, je te réponds rapidement
+            </div>
+          </div>
+        </div>
+        <div class="chat-thread">
+          <div class="chat-intro">Ici c'est moi, Laurent — pas un robot. Écris-moi comme à un ami.</div>
+          <div class="date-sep"><hr><span>Samedi</span><hr></div>
+          <div class="bubble-row coach">
+            <div class="bubble-avatar">L</div>
+            <div class="bubble-inner coach-inner">
+              <div class="bubble coach">Salut ! Bienvenue dans ta cure. Je suis là tout du long — une question, un doute : tu m'écris, je te réponds vite.</div>
+              <span class="bubble-time">9:05</span>
+            </div>
+          </div>
+          <div class="bubble-row me">
+            <div class="bubble-inner me">
+              <div class="bubble me">Merci ! J'avoue que le premier jour me fait un peu peur.</div>
+              <span class="bubble-time">9:12</span>
+            </div>
+          </div>
+          <div class="bubble-row coach">
+            <div class="bubble-avatar">L</div>
+            <div class="bubble-inner coach-inner">
+              <div class="bubble coach">Normal, et c'est bon signe que tu te lances. Rien à réussir aujourd'hui.</div>
+              <span class="bubble-time">9:20</span>
+            </div>
+          </div>
+          <div class="date-sep"><hr><span>Aujourd'hui</span><hr></div>
+          <div class="bubble-row me">
+            <div class="bubble-inner me">
+              <div class="bubble me">Petit coup de mou ce matin, c'est normal ?</div>
+              <span class="bubble-time">8:40</span>
+            </div>
+          </div>
+          <div class="bubble-row coach">
+            <div class="bubble-avatar">L</div>
+            <div class="bubble-inner coach-inner">
+              <div class="bubble coach">Oui, très. Au jour 7 c'est classique. Bois bien, marche un peu si tu peux. Ça passe d'ici demain.</div>
+              <span class="bubble-time">8:58</span>
+            </div>
+          </div>
+          <div class="bubble-row me">
+            <div class="bubble-inner me">
+              <div class="bubble me">Ok, merci Laurent !</div>
+              <span class="bubble-time">9:03</span>
+            </div>
+          </div>
+          <div class="chat-sent">Envoyé · Laurent te répond rapidement</div>
+        </div>
+        <div class="chat-composer">
+          <textarea class="composer-input" rows="1" placeholder="Écris à Laurent…"></textarea>
+          <div class="composer-btn-empty">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l14-7-5 16-3.5-6.5z"/><path d="M10.5 14.5L19 5"/></svg>
+          </div>
+        </div>
+        <div class="tabbar">
+          <div class="tabbar-item">
+            <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="#857A61" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2"/></svg>
+            <div class="tabbar-label">Aujourd'hui</div>
+          </div>
+          <div class="tabbar-item active">
+            <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="#E8622A" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M5 6.5A1.5 1.5 0 0 1 6.5 5h11A1.5 1.5 0 0 1 19 6.5v7A1.5 1.5 0 0 1 17.5 15H10l-4 3.5V15H6.5A1.5 1.5 0 0 1 5 13.5z"/></svg>
+            <div class="tabbar-label" style="color:var(--terra);font-weight:700">Coach</div>
+          </div>
+          <div class="tabbar-item">
+            <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="#857A61" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8h14l-1.2 10.5a1.5 1.5 0 0 1-1.5 1.3H7.7a1.5 1.5 0 0 1-1.5-1.3z"/></svg>
+            <div class="tabbar-label">Repas</div>
+          </div>
+          <div class="tabbar-item">
+            <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="#857A61" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            <div class="tabbar-label">Parcours</div>
+          </div>
+          <div class="tabbar-item">
+            <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="#857A61" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 5.5A1.5 1.5 0 0 1 6.5 4H18v16H6.5A1.5 1.5 0 0 0 5 21z"/></svg>
+            <div class="tabbar-label">Principes</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="screen-label">/dashboard — Onglet Coach (nouveau design)</div>
+  </div>
+
+  <!-- Bienvenue -->
+  <div>
+    <div class="phone">
+      <div class="phone-inner" style="background:var(--bg)">
+        <div class="bv-scroll">
+          <!-- badge + veille -->
+          <div class="bv-top">
+            <span class="bv-badge">JOUR 00<span> / 21</span></span>
+            <span class="bv-veille">La veille</span>
+          </div>
+          <!-- titre -->
+          <div class="bv-title">Bienvenue <em>Cécile</em></div>
+          <!-- bandeau orange -->
+          <div class="bv-banner">
+            <span class="bv-banner-icon">✦</span>
+            <div class="bv-banner-div"></div>
+            <div class="bv-banner-text">Salut Cécile&nbsp;! Voilà ton programme pour relancer le moteur — une cuisine gourmande, avec un max de bio&nbsp;: on désintoxique, pas question de se remplir de pesticides.</div>
+          </div>
+          <!-- 3 semaines -->
+          <div class="bv-eyebrow">Ton parcours · 3 semaines</div>
+          <div class="bv-h2">21 jours, trois temps</div>
+          <div class="bv-weeks">
+            <div class="bv-week">
+              <div class="bv-week-num" style="color:#4E7A3C">01</div>
+              <div style="flex:1">
+                <div class="bv-week-word">Nettoie</div>
+                <div class="bv-week-theme" style="color:#4E7A3C">Détox &amp; Purification</div>
+                <div class="bv-week-desc">Comme une vidange en douceur, le corps se nettoie. Maux de tête ou petit coup de mou ? Bon signe.</div>
+              </div>
+            </div>
+            <div class="bv-week">
+              <div class="bv-week-num" style="color:#E2A21E">02</div>
+              <div style="flex:1">
+                <div class="bv-week-word">Ça remonte</div>
+                <div class="bv-week-theme" style="color:#E2A21E">Énergie &amp; Vitalité</div>
+                <div class="bv-week-desc">L'énergie remonte, le sommeil s'allège — un vrai apaisement s'installe.</div>
+              </div>
+            </div>
+            <div class="bv-week">
+              <div class="bv-week-num" style="color:#C2552A">03</div>
+              <div style="flex:1">
+                <div class="bv-week-word">Ancre</div>
+                <div class="bv-week-theme" style="color:#C2552A">Ancrage &amp; Performance</div>
+                <div class="bv-week-desc">Les bons réflexes deviennent les tiens : tu ressens enfin ta vitalité.</div>
+              </div>
+            </div>
+          </div>
+          <!-- carte Laurent -->
+          <div class="bv-laurent">
+            <div style="display:flex;align-items:center;gap:10px">
+              <div class="bv-laurent-av">L</div>
+              <div>
+                <div class="bv-laurent-name">Laurent</div>
+                <div style="font-family:var(--label);font-size:9.5px;font-weight:700;color:rgba(239,230,207,.45);letter-spacing:.08em;text-transform:uppercase;margin-top:1px">Coach certifié</div>
+              </div>
+            </div>
+            <div class="bv-laurent-quote">« À ta dispo tout au long du parcours — pour tes questions, et pour les ressentis que tu pourras avoir. »</div>
+          </div>
+          <!-- CTA vert -->
+          <div class="bv-cta-block">
+            <div class="bv-cta-eyebrow">✦ On commence demain</div>
+            <div class="bv-cta-date">Vendredi 13 juin</div>
+            <div class="bv-cta-sub">Ton Jour 1 s'ouvre demain matin. D'ici là, profite de ta soirée — tu as déjà fait le plus important : dire oui.</div>
+            <button class="bv-cta-btn">Découvrir mon Jour 1 →</button>
+          </div>
+        </div>
+        <!-- tab bar -->
+        <div class="tabbar">
+          <div class="tabbar-item active"><svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--terra)"><circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2"/></svg><span class="tabbar-label">Jour</span></div>
+          <div class="tabbar-item"><svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--text-mute)"><path d="M5 8h14l-1.2 10.5a1.5 1.5 0 0 1-1.5 1.3H7.7a1.5 1.5 0 0 1-1.5-1.3z"/><path d="M8.5 8a3.5 3.5 0 0 1 7 0"/></svg><span class="tabbar-label">Courses</span></div>
+          <div class="tabbar-item"><svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--text-mute)"><path d="M4 13a8 8 0 0 0 16 0z"/><path d="M12 5c-1.6 0-2.6 1-2.6 2.6M12 5c1.6 0 2.6 1 2.6 2.6"/></svg><span class="tabbar-label">Recettes</span></div>
+          <div class="tabbar-item"><svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--text-mute)"><path d="M5 5.5A1.5 1.5 0 0 1 6.5 4H18v16H6.5A1.5 1.5 0 0 0 5 21z"/></svg><span class="tabbar-label">Méthode</span></div>
+          <div class="tabbar-item"><svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--text-mute)"><path d="M5 6.5A1.5 1.5 0 0 1 6.5 5h11A1.5 1.5 0 0 1 19 6.5v7A1.5 1.5 0 0 1 17.5 15H10l-4 3.5V15H6.5A1.5 1.5 0 0 1 5 13.5z"/></svg><span class="tabbar-label">Coach</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="screen-label">/bienvenue — Jour 00 · La veille</div>
+  </div>
+</div>
+
+<h2>Espace coach (thème sombre)</h2>
+<div class="row">
+  <!-- Coach dashboard -->
+  <div>
+    <div class="phone">
+      <div class="phone-inner coach-bg" style="display:flex;flex-direction:column">
+        <div class="coach-header">
+          <div>
+            <span class="coach-logo">Backtoenergy</span>
+            <span class="coach-badge">Coach</span>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button class="coach-btn">Cockpit</button>
+            <button class="coach-btn">Déconnexion</button>
+          </div>
+        </div>
+        <div class="coach-main">
+          <div class="coach-stats">
+            <div class="coach-stat"><div class="coach-stat-val">6</div><div class="coach-stat-label">👥 Collaborateurs</div></div>
+            <div class="coach-stat"><div class="coach-stat-val">4</div><div class="coach-stat-label">🔥 En cours</div></div>
+            <div class="coach-stat"><div class="coach-stat-val">1</div><div class="coach-stat-label">🎯 Terminés</div></div>
+            <div class="coach-stat"><div class="coach-stat-val" style="color:#f59e0b">7.4/10</div><div class="coach-stat-label">⚡ Énergie moy.</div></div>
+          </div>
+          <div style="display:flex;gap:8px;margin-bottom:14px">
+            <button style="background:linear-gradient(135deg,rgba(78,122,60,.3),rgba(92,181,81,.2));border:none;color:#ECE4D2;font-family:'Space Grotesk',sans-serif;font-size:11px;font-weight:700;padding:6px 12px;border-radius:8px;cursor:pointer">tous</button>
+            <button style="background:#1C1A14;border:1px solid rgba(247,234,205,.07);color:rgba(236,228,210,.5);font-family:'Space Grotesk',sans-serif;font-size:11px;padding:6px 12px;border-radius:8px;cursor:pointer">actifs</button>
+            <button style="background:#1C1A14;border:1px solid rgba(247,234,205,.07);color:rgba(236,228,210,.5);font-family:'Space Grotesk',sans-serif;font-size:11px;padding:6px 12px;border-radius:8px;cursor:pointer">inactifs</button>
+            <button style="margin-left:auto;background:#5CB551;border:none;color:#fff;font-family:'Hanken Grotesk',sans-serif;font-size:11px;font-weight:600;padding:6px 12px;border-radius:8px;cursor:pointer">+ Inviter</button>
+          </div>
+          <div class="coach-collab">
+            <div class="coach-collab-av">S</div>
+            <div style="flex:1;min-width:0">
+              <div class="coach-collab-name">Sophie</div>
+              <div class="coach-collab-email">sophie@example.com</div>
+              <div class="progress-bar"><div class="progress-fill" style="width:33%"></div></div>
+            </div>
+            <div class="coach-collab-day">J7/21</div>
+          </div>
+          <div class="coach-collab">
+            <div class="coach-collab-av" style="background:rgba(226,162,30,.12);border-color:rgba(226,162,30,.3);color:#E2A21E">M</div>
+            <div style="flex:1;min-width:0">
+              <div class="coach-collab-name">Marc</div>
+              <div class="coach-collab-email">marc@example.com</div>
+              <div class="progress-bar"><div class="progress-fill" style="width:57%;background:linear-gradient(90deg,#E2A21E,rgba(226,162,30,.4))"></div></div>
+            </div>
+            <div class="coach-collab-day" style="background:rgba(226,162,30,.12);border-color:rgba(226,162,30,.3);color:#E2A21E">J12/21</div>
+          </div>
+          <div class="coach-collab">
+            <div class="coach-collab-av" style="background:rgba(194,85,42,.12);border-color:rgba(194,85,42,.3);color:#C2552A">A</div>
+            <div style="flex:1;min-width:0">
+              <div class="coach-collab-name">Anna</div>
+              <div class="coach-collab-email">anna@example.com</div>
+              <div class="progress-bar"><div class="progress-fill" style="width:90%;background:linear-gradient(90deg,#C2552A,rgba(194,85,42,.4))"></div></div>
+            </div>
+            <div class="coach-collab-day" style="background:rgba(194,85,42,.12);border-color:rgba(194,85,42,.3);color:#C2552A">J19/21</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="screen-label">/coach — Dashboard coach</div>
+  </div>
+
+  <!-- Messages coach -->
+  <div>
+    <div class="phone">
+      <div class="phone-inner coach-bg" style="display:flex;flex-direction:column">
+        <div class="coach-header">
+          <div><span class="coach-logo">Messages</span></div>
+          <button class="coach-btn">← Retour</button>
+        </div>
+        <div style="padding:14px 16px;flex:1;overflow:hidden;display:flex;flex-direction:column;gap:10px">
+          <div style="background:#1C1A14;border:1px solid rgba(247,234,205,.07);border-radius:14px;padding:12px 14px;display:flex;align-items:flex-start;gap:12px">
+            <div style="width:36px;height:36px;border-radius:999px;background:rgba(78,122,60,.15);border:1px solid rgba(78,122,60,.3);color:#5CB551;font-family:'Baloo 2',sans-serif;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">S</div>
+            <div style="flex:1;min-width:0">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+                <span style="font-family:'Hanken Grotesk',sans-serif;font-weight:600;font-size:13.5px;color:#ECE4D2">Sophie</span>
+                <span style="font-family:'Space Grotesk',sans-serif;font-size:10px;color:rgba(236,228,210,.35)">9:03</span>
+              </div>
+              <div style="font-size:12.5px;color:rgba(236,228,210,.55);font-family:'Hanken Grotesk',sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Petit coup de mou ce matin, c'est normal ?</div>
+            </div>
+            <div style="width:18px;height:18px;border-radius:999px;background:#5CB551;color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">1</div>
+          </div>
+          <div style="background:#1C1A14;border:1px solid rgba(247,234,205,.07);border-radius:14px;padding:12px 14px;display:flex;align-items:flex-start;gap:12px">
+            <div style="width:36px;height:36px;border-radius:999px;background:rgba(226,162,30,.12);border:1px solid rgba(226,162,30,.3);color:#E2A21E;font-family:'Baloo 2',sans-serif;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">M</div>
+            <div style="flex:1">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+                <span style="font-family:'Hanken Grotesk',sans-serif;font-weight:600;font-size:13.5px;color:#ECE4D2">Marc</span>
+                <span style="font-family:'Space Grotesk',sans-serif;font-size:10px;color:rgba(236,228,210,.35)">hier</span>
+              </div>
+              <div style="font-size:12.5px;color:rgba(236,228,210,.35);font-family:'Hanken Grotesk',sans-serif">Merci pour le conseil sur le tamari !</div>
+            </div>
+          </div>
+          <div style="background:#1C1A14;border:1px solid rgba(247,234,205,.07);border-radius:14px;padding:12px 14px;display:flex;align-items:flex-start;gap:12px">
+            <div style="width:36px;height:36px;border-radius:999px;background:rgba(194,85,42,.12);border:1px solid rgba(194,85,42,.3);color:#C2552A;font-family:'Baloo 2',sans-serif;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">A</div>
+            <div style="flex:1">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+                <span style="font-family:'Hanken Grotesk',sans-serif;font-weight:600;font-size:13.5px;color:#ECE4D2">Anna</span>
+                <span style="font-family:'Space Grotesk',sans-serif;font-size:10px;color:rgba(236,228,210,.35)">lun</span>
+              </div>
+              <div style="font-size:12.5px;color:rgba(236,228,210,.35);font-family:'Hanken Grotesk',sans-serif">J'ai terminé ! C'était incroyable.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="screen-label">/coach/messages — Fils de messages</div>
+  </div>
+</div>
+
+</body>
+</html>

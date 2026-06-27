@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { createClient } from "@/lib/supabase/client"
+import { minSelectableDate, maxSelectableDate } from "@/data/program"
 
 // ── Couleurs (miroir des tokens CSS) ────────────────────────────────────────
 const C = {
@@ -109,9 +110,8 @@ function PrimaryBtn({ children, href, onClick }: { children: React.ReactNode; hr
 }
 
 // ── Utils ─────────────────────────────────────────────────────────────────────
-function tomorrowLabel() {
-  const d = new Date()
-  d.setDate(d.getDate() + 1)
+function formatDateFR(dateStr: string) {
+  const d = new Date(dateStr + "T00:00:00")
   const s = d.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })
   return s.charAt(0).toUpperCase() + s.slice(1)
 }
@@ -142,8 +142,16 @@ function BottomNav() {
 }
 
 // ── Contenu mobile (J0Step) ───────────────────────────────────────────────────
-function J0Mobile({ prenom }: { prenom: string }) {
-  const start = tomorrowLabel()
+type DateCardProps = {
+  startDate: string | null
+  showPicker: boolean
+  pendingDate: string
+  onPendingDateChange: (d: string) => void
+  onConfirm: (d: string) => void
+  onEdit: () => void
+}
+
+function J0Mobile({ prenom, startDate, showPicker, pendingDate, onPendingDateChange, onConfirm, onEdit }: { prenom: string } & DateCardProps) {
   return (
     <div style={{ display: "flex", flexDirection: "column", minHeight: "100%", background: C.bg, color: C.ink }}>
       <div style={{ flex: 1, padding: "24px 22px 30px" }}>
@@ -255,17 +263,40 @@ function J0Mobile({ prenom }: { prenom: string }) {
         </div>
 
         {/* CTA démarrage */}
-        <div style={{ background: C.leaf, borderRadius: 20, padding: "22px 18px 18px", textAlign: "center", boxShadow: `0 22px 46px -26px ${rgba(C.leaf, 0.7)}` }}>
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 7, fontFamily: "var(--label)", fontSize: 10.5, fontWeight: 700, letterSpacing: "0.16em", textTransform: "uppercase" as const, color: C.amber, marginBottom: 11 }}>
-            <Ic name="spark" col={C.amber} sw={2} s={15} /> On commence demain
+        {showPicker ? (
+          <div style={{ background: C.leaf, borderRadius: 20, padding: "22px 18px 18px", textAlign: "center", boxShadow: `0 22px 46px -26px ${rgba(C.leaf, 0.7)}` }}>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 7, fontFamily: "var(--label)", fontSize: 10.5, fontWeight: 700, letterSpacing: "0.16em", textTransform: "uppercase" as const, color: C.amber, marginBottom: 11 }}>
+              <Ic name="spark" col={C.amber} sw={2} s={15} /> Choisis ta date
+            </div>
+            <div style={{ fontFamily: "var(--heading)", fontWeight: 600, fontSize: 24, color: "#FBF6EA", letterSpacing: "-0.01em", lineHeight: 1.15, marginBottom: 14 }}>
+              Quand veux-tu commencer ?
+            </div>
+            <input
+              type="date"
+              value={pendingDate}
+              min={minSelectableDate()}
+              max={maxSelectableDate()}
+              onChange={(e) => onPendingDateChange(e.target.value)}
+              style={{ width: "100%", fontFamily: "var(--label)", fontSize: 15, fontWeight: 600, color: C.ink, background: "#FBF6EA", border: "none", borderRadius: 12, padding: "12px 14px", marginBottom: 14 }}
+            />
+            <PrimaryBtn onClick={() => onConfirm(pendingDate)}>Confirmer ma date <Ic name="arrow" col="#fff" sw={2.2} s={19} /></PrimaryBtn>
           </div>
-          <div style={{ fontFamily: "var(--heading)", fontWeight: 600, fontSize: 30, color: "#FBF6EA", letterSpacing: "-0.01em", lineHeight: 1.06, marginBottom: 6 }}>{start}</div>
-          <div style={{ fontSize: 13.5, color: "rgba(251,246,234,0.85)", lineHeight: 1.5, marginBottom: 16 }}>
-            Ton Jour 1 s'ouvre demain matin. D'ici là, profite de ta soirée — tu as déjà fait le plus important : dire oui.
+        ) : (
+          <div style={{ background: C.leaf, borderRadius: 20, padding: "22px 18px 18px", textAlign: "center", boxShadow: `0 22px 46px -26px ${rgba(C.leaf, 0.7)}` }}>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 7, fontFamily: "var(--label)", fontSize: 10.5, fontWeight: 700, letterSpacing: "0.16em", textTransform: "uppercase" as const, color: C.amber, marginBottom: 11 }}>
+              <Ic name="spark" col={C.amber} sw={2} s={15} /> Date choisie
+            </div>
+            <div style={{ fontFamily: "var(--heading)", fontWeight: 600, fontSize: 24, color: "#FBF6EA", letterSpacing: "-0.01em", lineHeight: 1.15, marginBottom: 10 }}>
+              Ton programme démarre le {formatDateFR(startDate!)}
+            </div>
+            <div style={{ fontSize: 13.5, color: "rgba(251,246,234,0.85)", lineHeight: 1.5, marginBottom: 16 }}>
+              D'ici là, profite de ton temps — tu as déjà fait le plus important : dire oui.
+            </div>
+            <button onClick={onEdit} style={{ background: "transparent", border: "none", cursor: "pointer", fontFamily: "var(--label)", fontWeight: 700, fontSize: 13, color: "#FBF6EA", textDecoration: "underline", padding: 0 }}>
+              Modifier
+            </button>
           </div>
-          <PrimaryBtn href="/jour">Découvrir mon Jour 1 <Ic name="arrow" col="#fff" sw={2.2} s={19} /></PrimaryBtn>
-          <div style={{ marginTop: 11, fontFamily: "var(--label)", fontSize: 11, color: "rgba(251,246,234,0.6)" }}>Aperçu — le programme s'ouvre vraiment demain.</div>
-        </div>
+        )}
       </div>
 
       <BottomNav />
@@ -274,8 +305,7 @@ function J0Mobile({ prenom }: { prenom: string }) {
 }
 
 // ── Contenu desktop ──────────────────────────────────────────────────────────
-function J0Desktop({ prenom }: { prenom: string }) {
-  const start = tomorrowLabel()
+function J0Desktop({ prenom, startDate, showPicker, pendingDate, onPendingDateChange, onConfirm, onEdit }: { prenom: string } & DateCardProps) {
   const h2: React.CSSProperties = { fontFamily: "var(--heading)", fontWeight: 600, fontSize: 32, letterSpacing: "-0.015em", lineHeight: 1.05, marginBottom: 18 }
   const sec: React.CSSProperties = { marginBottom: 56 }
 
@@ -407,19 +437,42 @@ function J0Desktop({ prenom }: { prenom: string }) {
             <span style={{ flexShrink: 0, transform: "rotate(-90deg)" }}><Ic name="chevron" col={C.terra} sw={2.2} s={22} /></span>
           </Link>
 
-          <div style={{ background: C.leaf, borderRadius: 20, padding: "26px 24px 22px", textAlign: "center", display: "flex", flexDirection: "column", justifyContent: "center", boxShadow: `0 22px 46px -26px ${rgba(C.leaf, 0.7)}` }}>
-            <div style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 7, fontFamily: "var(--label)", fontSize: 10.5, fontWeight: 700, letterSpacing: "0.16em", textTransform: "uppercase" as const, color: C.amber, marginBottom: 11 }}>
-              <Ic name="spark" col={C.amber} sw={2} s={15} /> On commence demain
+          {showPicker ? (
+            <div style={{ background: C.leaf, borderRadius: 20, padding: "26px 24px 22px", textAlign: "center", display: "flex", flexDirection: "column", justifyContent: "center", boxShadow: `0 22px 46px -26px ${rgba(C.leaf, 0.7)}` }}>
+              <div style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 7, fontFamily: "var(--label)", fontSize: 10.5, fontWeight: 700, letterSpacing: "0.16em", textTransform: "uppercase" as const, color: C.amber, marginBottom: 11 }}>
+                <Ic name="spark" col={C.amber} sw={2} s={15} /> Choisis ta date
+              </div>
+              <div style={{ fontFamily: "var(--heading)", fontWeight: 600, fontSize: 26, color: "#FBF6EA", letterSpacing: "-0.01em", lineHeight: 1.1, marginBottom: 16 }}>
+                Quand veux-tu commencer ?
+              </div>
+              <div style={{ maxWidth: 320, width: "100%", marginLeft: "auto", marginRight: "auto" }}>
+                <input
+                  type="date"
+                  value={pendingDate}
+                  min={minSelectableDate()}
+                  max={maxSelectableDate()}
+                  onChange={(e) => onPendingDateChange(e.target.value)}
+                  style={{ width: "100%", fontFamily: "var(--label)", fontSize: 15, fontWeight: 600, color: C.ink, background: "#FBF6EA", border: "none", borderRadius: 12, padding: "12px 14px", marginBottom: 14 }}
+                />
+                <PrimaryBtn onClick={() => onConfirm(pendingDate)}>Confirmer ma date <Ic name="arrow" col="#fff" sw={2.2} s={19} /></PrimaryBtn>
+              </div>
             </div>
-            <div style={{ fontFamily: "var(--heading)", fontWeight: 600, fontSize: 32, color: "#FBF6EA", letterSpacing: "-0.01em", lineHeight: 1.06, marginBottom: 7 }}>{start}</div>
-            <div style={{ fontSize: 14, color: "rgba(251,246,234,0.85)", lineHeight: 1.5, marginBottom: 18, maxWidth: 360, marginLeft: "auto", marginRight: "auto" }}>
-              Ton Jour 1 s'ouvre demain matin. D'ici là, profite de ta soirée — tu as déjà fait le plus important : dire oui.
+          ) : (
+            <div style={{ background: C.leaf, borderRadius: 20, padding: "26px 24px 22px", textAlign: "center", display: "flex", flexDirection: "column", justifyContent: "center", boxShadow: `0 22px 46px -26px ${rgba(C.leaf, 0.7)}` }}>
+              <div style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 7, fontFamily: "var(--label)", fontSize: 10.5, fontWeight: 700, letterSpacing: "0.16em", textTransform: "uppercase" as const, color: C.amber, marginBottom: 11 }}>
+                <Ic name="spark" col={C.amber} sw={2} s={15} /> Date choisie
+              </div>
+              <div style={{ fontFamily: "var(--heading)", fontWeight: 600, fontSize: 26, color: "#FBF6EA", letterSpacing: "-0.01em", lineHeight: 1.1, marginBottom: 10 }}>
+                Ton programme démarre le {formatDateFR(startDate!)}
+              </div>
+              <div style={{ fontSize: 14, color: "rgba(251,246,234,0.85)", lineHeight: 1.5, marginBottom: 16, maxWidth: 360, marginLeft: "auto", marginRight: "auto" }}>
+                D'ici là, profite de ton temps — tu as déjà fait le plus important : dire oui.
+              </div>
+              <button onClick={onEdit} style={{ background: "transparent", border: "none", cursor: "pointer", fontFamily: "var(--label)", fontWeight: 700, fontSize: 13, color: "#FBF6EA", textDecoration: "underline", padding: 0 }}>
+                Modifier
+              </button>
             </div>
-            <div style={{ maxWidth: 320, width: "100%", marginLeft: "auto", marginRight: "auto" }}>
-              <PrimaryBtn href="/jour">Découvrir mon Jour 1 <Ic name="arrow" col="#fff" sw={2.2} s={19} /></PrimaryBtn>
-            </div>
-            <div style={{ marginTop: 11, fontFamily: "var(--label)", fontSize: 11, color: "rgba(251,246,234,0.6)" }}>Aperçu — le programme s'ouvre vraiment demain.</div>
-          </div>
+          )}
         </div>
       </div>
     </div>
@@ -430,6 +483,9 @@ function J0Desktop({ prenom }: { prenom: string }) {
 export default function BienvenuePage() {
   const router = useRouter()
   const [prenom, setPrenom] = useState<string | null>(null)
+  const [startDate, setStartDate] = useState<string | null>(null)
+  const [editing, setEditing] = useState(false)
+  const [pendingDate, setPendingDate] = useState(minSelectableDate())
   const [loading, setLoading] = useState(true)
   const isDesktop = useIsDesktop()
 
@@ -439,14 +495,31 @@ export default function BienvenuePage() {
       if (!user) { router.replace("/login"); return }
       const { data } = await supabase
         .from("profiles")
-        .select("prenom")
+        .select("prenom, start_date")
         .eq("id", user.id)
         .maybeSingle()
       const p = data?.prenom ?? ""
       setPrenom(p ? p.charAt(0).toUpperCase() + p.slice(1).toLowerCase() : "toi")
+      setStartDate(data?.start_date ?? null)
       setLoading(false)
     })
   }, []) // eslint-disable-line
+
+  async function handleConfirm(date: string) {
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+    await supabase.from("profiles").update({ start_date: date, program_start: date }).eq("id", user.id)
+    setStartDate(date)
+    setEditing(false)
+  }
+
+  function handleEdit() {
+    setPendingDate(startDate ?? minSelectableDate())
+    setEditing(true)
+  }
+
+  const showPicker = !startDate || editing
 
   if (loading) return (
     <div style={{ minHeight: "100svh", background: C.bg, display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -455,12 +528,30 @@ export default function BienvenuePage() {
     </div>
   )
 
-  if (isDesktop) return <J0Desktop prenom={prenom!} />
+  if (isDesktop) return (
+    <J0Desktop
+      prenom={prenom!}
+      startDate={startDate}
+      showPicker={showPicker}
+      pendingDate={pendingDate}
+      onPendingDateChange={setPendingDate}
+      onConfirm={handleConfirm}
+      onEdit={handleEdit}
+    />
+  )
 
   return (
     <div style={{ minHeight: "100svh", background: C.chassis, display: "flex", justifyContent: "center" }}>
       <div style={{ width: "100%", maxWidth: 440, minHeight: "100svh", background: C.bg, display: "flex", flexDirection: "column" }}>
-        <J0Mobile prenom={prenom!} />
+        <J0Mobile
+          prenom={prenom!}
+          startDate={startDate}
+          showPicker={showPicker}
+          pendingDate={pendingDate}
+          onPendingDateChange={setPendingDate}
+          onConfirm={handleConfirm}
+          onEdit={handleEdit}
+        />
       </div>
     </div>
   )
