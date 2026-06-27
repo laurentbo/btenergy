@@ -3,8 +3,38 @@ import { useState, useEffect, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import { calcCurrentDay } from "@/data/program"
-import { C, rgba, Ic } from "@/components/bte-ui"
+import { C, rgba, Ic, weekAccent } from "@/components/bte-ui"
 import Link from "next/link"
+
+const WEEK_LABELS = [
+  "Semaine 1 · Détox & Purification",
+  "Semaine 2 · Énergie & Vitalité",
+  "Semaine 3 · Ancrage & Performance",
+]
+const weekIdx = (day: number) => day <= 7 ? 0 : day <= 14 ? 1 : 2
+
+function PfProgress({ day }: { day: number }) {
+  const total = 21
+  const pct = Math.round(day / total * 100)
+  const accent = weekAccent(day)
+  const r = 26, circ = 2 * Math.PI * r
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 18, background: C.surface, border: `1.5px solid ${C.line}`, borderRadius: 18, padding: "18px 18px", marginBottom: 16 }}>
+      <div style={{ flexShrink: 0, position: "relative", width: 64, height: 64 }}>
+        <svg width="64" height="64" viewBox="0 0 64 64">
+          <circle cx="32" cy="32" r={r} fill="none" stroke={C.line} strokeWidth="6" />
+          <circle cx="32" cy="32" r={r} fill="none" stroke={accent} strokeWidth="6" strokeLinecap="round" strokeDasharray={`${pct / 100 * circ} ${circ}`} transform="rotate(-90 32 32)" />
+        </svg>
+        <span style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "var(--heading)", fontWeight: 700, fontSize: 17, color: accent }}>J{day}</span>
+      </div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontFamily: "var(--heading)", fontWeight: 600, fontSize: 19, letterSpacing: "-0.01em", color: C.ink, marginBottom: 3 }}>Ta progression</div>
+        <div style={{ fontSize: 13.5, lineHeight: 1.5, color: C.soft }}>Jour {day} sur {total} — tu avances bien.</div>
+        <div style={{ fontFamily: "var(--label)", fontWeight: 700, fontSize: 10.5, letterSpacing: "0.08em", textTransform: "uppercase" as const, color: accent, marginTop: 8 }}>{WEEK_LABELS[weekIdx(day)]}</div>
+      </div>
+    </div>
+  )
+}
 
 type WeightEntry = {
   id: string
@@ -103,7 +133,7 @@ export default function ProfilPage() {
               <Ic name="arrow" col={C.ink} sw={2} s={19} />
             </span>
           </button>
-          <span style={{ fontFamily: "var(--label)", fontWeight: 700, fontSize: 12, letterSpacing: "0.14em", textTransform: "uppercase" as const, color: C.soft }}>Ton profil</span>
+          <span style={{ fontFamily: "var(--label)", fontWeight: 700, fontSize: 12, letterSpacing: "0.14em", textTransform: "uppercase" as const, color: C.soft }}>Moi</span>
         </div>
 
         {/* Identité */}
@@ -114,8 +144,11 @@ export default function ProfilPage() {
           </div>
         </div>
 
+        {/* Ta progression */}
+        <PfProgress day={currentDay} />
+
         {/* Note à moi-même */}
-        <div style={{ background: C.surface, border: `1.5px solid ${C.line}`, borderRadius: 18, padding: "20px 18px 18px", marginBottom: 16 }}>
+        <div style={{ background: rgba(C.leaf, 0.07), border: `1.5px solid ${rgba(C.leaf, 0.45)}`, borderRadius: 18, padding: "20px 18px 18px", marginBottom: 16 }}>
           <div style={{ fontFamily: "var(--heading)", fontWeight: 600, fontSize: 19, letterSpacing: "-0.01em", color: C.ink, marginBottom: 6 }}>Note à moi-même</div>
           <p style={{ margin: "0 0 14px", fontSize: 13.5, lineHeight: 1.55, color: C.soft }}>Si tu veux noter un truc, un objectif, ce que tu veux ;)</p>
           <textarea
@@ -135,7 +168,7 @@ export default function ProfilPage() {
         </div>
 
         {/* Évolution du poids */}
-        <div style={{ background: C.surface, border: `1.5px solid ${C.line}`, borderRadius: 18, padding: "20px 18px 18px", marginBottom: 16 }}>
+        <div style={{ background: rgba(C.amber, 0.10), border: `1.5px solid ${rgba(C.amber, 0.55)}`, borderRadius: 18, padding: "20px 18px 18px", marginBottom: 16 }}>
           <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 6 }}>
             <span style={{ fontFamily: "var(--heading)", fontWeight: 600, fontSize: 19, letterSpacing: "-0.01em", color: C.ink }}>L'évolution de ton poids</span>
             <span style={{ fontFamily: "var(--label)", fontWeight: 700, fontSize: 10, letterSpacing: "0.12em", textTransform: "uppercase" as const, color: "#A9742A", background: rgba(C.amber, 0.22), padding: "4px 10px", borderRadius: 999 }}>Si tu veux</span>

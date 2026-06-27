@@ -298,7 +298,6 @@ export default function JourPage() {
 
   const wk = WEEKS_INFO[weekIdx(day)]
   const acc = wk.accent
-  const pct = Math.round(day / TOTAL * 100)
   const passage = passageFor(day)
   const meals = BTE_DAYS[day - 1]?.meals ?? []
   const showFresh = day % 7 === 4
@@ -326,15 +325,8 @@ export default function JourPage() {
                 <div style={{ fontFamily: SER, fontWeight: 600, fontSize: 30, color: C.ink, letterSpacing: "-0.01em", lineHeight: 1.0, marginTop: 12 }}>Bonjour{prenom ? ` ${prenom}` : ""}</div>
                 <div style={{ fontFamily: SER, fontSize: 14.5, color: C.green, lineHeight: 1.35, marginTop: 5 }}>{wk.sub}</div>
               </div>
-              <Link href="/profil" aria-label="Mon profil" style={{ flex: "0 0 auto", display: "flex", flexDirection: "column", alignItems: "center", gap: 3, textDecoration: "none" }}>
-                <span style={{ position: "relative", width: 54, height: 54, display: "block" }}>
-                  <svg width="54" height="54" viewBox="0 0 54 54">
-                    <circle cx="27" cy="27" r="22" fill="none" stroke={C.line} strokeWidth="5" />
-                    <circle cx="27" cy="27" r="22" fill="none" stroke={acc} strokeWidth="5" strokeLinecap="round" strokeDasharray={`${pct / 100 * 138} 138`} transform="rotate(-90 27 27)" />
-                  </svg>
-                  <span style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: SER, fontWeight: 700, fontSize: 13, color: acc }}>{pct}%</span>
-                </span>
-                <span style={{ fontFamily: GRO, fontSize: 9.5, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase" as const, color: C.soft }}>Profil</span>
+              <Link href="/profil" aria-label="Mon profil" style={{ flex: "0 0 auto", textDecoration: "none", width: 48, height: 48, borderRadius: 999, background: C.accent, color: "#fff", display: "inline-flex", alignItems: "center", justifyContent: "center", fontFamily: GRO, fontWeight: 700, fontSize: 12, letterSpacing: "0.04em", textTransform: "uppercase" as const, lineHeight: 1, boxShadow: `0 2px 8px ${rgba(C.accent, 0.3)}` }}>
+                Moi
               </Link>
             </div>
 

@@ -127,6 +127,17 @@ function useIsDesktop(bp = 880) {
   return desktop
 }
 
+// largeur réelle de la fenêtre — sert à replier les grilles 2 colonnes entre 880 et 1000px
+function useWinW() {
+  const [w, setW] = useState(() => typeof window !== "undefined" ? window.innerWidth : 0)
+  useEffect(() => {
+    const check = () => setW(window.innerWidth)
+    window.addEventListener("resize", check)
+    return () => window.removeEventListener("resize", check)
+  }, [])
+  return w
+}
+
 // ── Barre de nav basse ────────────────────────────────────────────────────────
 function BottomNav() {
   return (
@@ -306,6 +317,7 @@ function J0Mobile({ prenom, startDate, showPicker, pendingDate, onPendingDateCha
 
 // ── Contenu desktop ──────────────────────────────────────────────────────────
 function J0Desktop({ prenom, startDate, showPicker, pendingDate, onPendingDateChange, onConfirm, onEdit }: { prenom: string } & DateCardProps) {
+  const wide = useWinW() >= 1000
   const h2: React.CSSProperties = { fontFamily: "var(--heading)", fontWeight: 600, fontSize: 32, letterSpacing: "-0.015em", lineHeight: 1.05, marginBottom: 18 }
   const sec: React.CSSProperties = { marginBottom: 56 }
 
@@ -329,7 +341,7 @@ function J0Desktop({ prenom, startDate, showPicker, pendingDate, onPendingDateCh
       <div style={{ maxWidth: 1080, margin: "0 auto", padding: "44px 40px 64px" }}>
 
         {/* hero */}
-        <div style={{ display: "grid", gridTemplateColumns: "1.25fr 0.85fr", gap: 44, alignItems: "center", ...sec }}>
+        <div style={{ display: "grid", gridTemplateColumns: wide ? "1.25fr 0.85fr" : "1fr", gap: 44, alignItems: "center", ...sec }}>
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: 11, marginBottom: 18 }}>
               <span style={{ fontFamily: "var(--label)", fontWeight: 700, fontSize: 12, color: C.bg, background: C.ink, padding: "5px 12px", borderRadius: 999 }}>
@@ -425,7 +437,7 @@ function J0Desktop({ prenom, startDate, showPicker, pendingDate, onPendingDateCh
         </div>
 
         {/* courses + CTA départ */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1.1fr", gap: 24, alignItems: "stretch" }}>
+        <div style={{ display: "grid", gridTemplateColumns: wide ? "1fr 1.1fr" : "1fr", gap: 24, alignItems: "stretch" }}>
           <Link href="/courses" style={{ display: "flex", alignItems: "center", gap: 14, textDecoration: "none", background: C.surface, border: `1.5px solid ${C.line}`, borderRadius: 18, padding: "20px" }}>
             <span style={{ flexShrink: 0, width: 48, height: 48, borderRadius: 13, background: rgba(C.leaf, 0.14), display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
               <Ic name="courses" col={C.leaf} sw={1.9} s={25} />
