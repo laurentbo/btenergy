@@ -103,7 +103,7 @@ export default function LoginPage() {
         margin: "0 0 28px", textAlign: "center",
         fontSize: 15.5, lineHeight: 1.55, color: C.soft,
       }}>
-        Tes identifiants sont dans le mail d'invitation de Laurent.
+        Tes identifiants sont dans le mail que je t'ai envoyé.
       </p>
 
       <Field id="cx-email" label="Ton email" type="email" icon="mail"

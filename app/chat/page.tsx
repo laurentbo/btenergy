@@ -177,7 +177,7 @@ export default function ChatPage() {
 
           {lastIsMe && (
             <div style={{ textAlign: "center", fontFamily: "var(--label)", fontSize: 11, color: C.soft, fontWeight: 500, padding: "2px 0 6px" }}>
-              Envoyé · Laurent te répond rapidement
+              Envoyé · je te réponds rapidement
             </div>
           )}
         </div>
@@ -190,7 +190,7 @@ export default function ChatPage() {
               onChange={e => setDraft(e.target.value)}
               onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send() } }}
               rows={1}
-              placeholder="Écris à Laurent…"
+              placeholder="Écris-moi…"
               style={{ flex: 1, resize: "none", border: `1.5px solid ${C.line}`, background: C.surface, borderRadius: 22, padding: "12px 16px", fontFamily: "var(--sans)", fontSize: 15, color: C.ink, outline: "none", lineHeight: 1.4, maxHeight: 120 }}
             />
             <button onClick={send} disabled={!draft.trim()} aria-label="Envoyer" style={{

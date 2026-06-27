@@ -257,7 +257,7 @@ function MoodPicker({ day }: { day: number }) {
       {sel && (
         <div style={{ marginTop: 12, paddingTop: 11, borderTop: `1px solid ${C.line}`, display: "flex", alignItems: "center", gap: 7, fontSize: 12, color: C.soft }}>
           <span style={{ color: C.green, display: "inline-flex" }}><Ic name="check" col={C.green} sw={2.4} s={15} /></span>
-          <span>Noté — transmis à Laurent.</span>
+          <span>Noté — je le reçois.</span>
         </div>
       )}
     </div>
