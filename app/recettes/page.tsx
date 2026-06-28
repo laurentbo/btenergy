@@ -15,21 +15,21 @@ const TYPES: Record<string, { label: string; color: string }> = {
 
 type Recipe = {
   key: string; type: keyof typeof TYPES; week: number; time?: string; title: string
-  alt: string; sensation: string; ingredients: [string, string][]; swaps: string[]; why: string
+  alt: string; sensation: string; ingredients: [string, string][]; swaps: string[]; why: string; image?: string
 }
 
 const RECIPES: Recipe[] = [
-  { key: "jus-vert", type: "jus", week: 1, time: "3 min", title: "Jus vert du réveil", alt: "2 alternatives",
+  { key: "jus-vert", type: "jus", week: 1, time: "3 min", title: "Jus vert du réveil", alt: "2 alternatives", image: "/recettes/jus-vert-du-reveil.webp",
     sensation: "Une gorgée fraîche, presque végétale, qui réveille sans secouer. En quelques minutes le corps s'allège et la tête s'éclaircit.",
     ingredients: [["Concombre","1"],["Céleri branche","2 branches"],["Épinards frais","1 poignée"],["Citron","½"],["Pomme verte","1"],["Gingembre","1 cm"]],
     swaps: ["Pas de céleri ? → fenouil, même fraîcheur","Trop relevé ? → enlève le gingembre"],
     why: "Le jus, c'est ton repas du matin à lui seul : pressé et bu à jeun, il passe vite et te laisse léger. La pomme reste un fruit — ici isolée, jamais en fin de repas." },
-  { key: "tonic", type: "jus", week: 2, time: "4 min", title: "Tonic carotte-curcuma", alt: "1 alternative",
+  { key: "tonic", type: "jus", week: 2, time: "4 min", title: "Tonic carotte-curcuma", alt: "1 alternative", image: "/recettes/tonic-carotte-curcuma.webp",
     sensation: "Doux, légèrement épicé, ça réchauffe de l'intérieur. Un petit coup de boost tranquille pour la matinée.",
     ingredients: [["Carottes","3"],["Curcuma frais","1 cm"],["Citron","½"],["Pomme","1"],["Eau","10 cl"]],
     swaps: ["Sans pomme ? → un peu de fenouil pour la douceur"],
     why: "Un jus de légumes-racines pris seul, à jeun. Le curcuma se réveille avec le citron ; rien d'autre dans l'estomac pour le ralentir." },
-  { key: "jus-betterave", type: "jus", week: 3, time: "5 min", title: "Jus betterave & pomme", alt: "1 alternative",
+  { key: "jus-betterave", type: "jus", week: 3, time: "5 min", title: "Jus betterave & pomme", alt: "1 alternative", image: "/recettes/jus-betterave-pomme.webp",
     sensation: "Terreux et sucré-doux, une belle couleur qui réveille l'œil autant que le corps. Tu te sens posé, ancré.",
     ingredients: [["Betterave crue","1"],["Pomme verte","1"],["Citron","½"],["Gingembre","1 cm"]],
     swaps: ["Trop puissant ? → moitié betterave, moitié carotte"],
@@ -59,7 +59,7 @@ const RECIPES: Recipe[] = [
     ingredients: [["Émincé de dinde","120 g"],["Haricots verts","1 poignée"],["Courgette","1"],["Ail","1 gousse"],["Huile d'olive","filet"]],
     swaps: ["Pas de dinde ? → poulet","Sans haricots ? → brocoli"],
     why: "Volaille maigre + légumes verts, sans féculent : léger et rassasiant. Une seule protéine animale au repas." },
-  { key: "buddha", type: "vege", week: 1, title: "Buddha bowl de printemps", alt: "2 alternatives",
+  { key: "buddha", type: "vege", week: 1, title: "Buddha bowl de printemps", alt: "2 alternatives", image: "/recettes/buddha-bowl-de-printemps.webp",
     sensation: "Du croquant, du fondant, des couleurs : ça nourrit pour de vrai. Tu sors de table calé mais léger, sans le coup de barre de 14 h.",
     ingredients: [["Quinoa cuit","80 g"],["Avocat","½"],["Radis","4"],["Jeunes pousses","1 poignée"],["Graines de courge","1 c. à s."],["Huile d'olive + citron","filet"]],
     swaps: ["Pas de quinoa ? → sarrasin, même moelleux","Sans avocat ? → pois chiches rôtis"],
@@ -126,8 +126,8 @@ function RecipeDetail({ r, onClose }: { r: Recipe; onClose: () => void }) {
           <span style={{ fontFamily: "var(--heading)", fontWeight: 600, fontSize: 16, color: C.ink }}>Recette</span>
         </div>
 
-        {/* Photo placeholder */}
-        <div style={{ width: "100%", height: 220, background: C.line, filter: "saturate(1.05) brightness(1.02)" }} />
+        {/* Photo */}
+        <div style={{ width: "100%", height: 220, background: C.line, filter: "saturate(1.05) brightness(1.02)", backgroundImage: r.image ? `url(${r.image})` : undefined, backgroundSize: "cover", backgroundPosition: "center" }} />
 
         <div style={{ padding: "16px 18px 40px" }}>
           {/* Tags */}
@@ -186,7 +186,7 @@ function RecipeCard({ r, onOpen }: { r: Recipe; onOpen: (r: Recipe) => void }) {
   return (
     <button onClick={() => onOpen(r)} style={{ width: "100%", textAlign: "left", cursor: "pointer", border: `1.5px solid ${C.line}`, background: C.surface, borderRadius: 18, padding: 0, overflow: "hidden", display: "flex", flexDirection: "column" }}>
       {/* Photo pleine largeur */}
-      <div style={{ width: "100%", height: 160, background: C.line, position: "relative", flexShrink: 0 }}>
+      <div style={{ width: "100%", height: 160, background: C.line, backgroundImage: r.image ? `url(${r.image})` : undefined, backgroundSize: "cover", backgroundPosition: "center", position: "relative", flexShrink: 0 }}>
         <span style={{ position: "absolute", top: 10, left: 10, width: 10, height: 10, borderRadius: 999, background: t.color, boxShadow: `0 0 0 2.5px ${rgba(C.surface, 0.9)}` }} />
       </div>
       {/* Infos */}
