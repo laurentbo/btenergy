@@ -92,18 +92,11 @@ export default function LoginPage() {
         <Wordmark s={22} />
       </div>
 
-      <h1 style={{
-        margin: "0 0 10px", textAlign: "center",
-        fontFamily: "var(--heading)", fontWeight: 700, fontSize: 38,
-        lineHeight: 1.05, letterSpacing: "-0.015em", color: C.ink,
-      }}>
-        Content de te <span style={{ color: C.terra }}>retrouver.</span>
-      </h1>
       <p style={{
         margin: "0 0 28px", textAlign: "center",
         fontSize: 15.5, lineHeight: 1.55, color: C.soft,
       }}>
-        Tes identifiants sont dans le mail que je t'ai envoyé.
+        Pour te connecter, saisis le mot de passe qui était dans le mail que tu viens de recevoir.
       </p>
 
       <Field id="cx-email" label="Ton email" type="email" icon="mail"
@@ -137,10 +130,8 @@ export default function LoginPage() {
         borderTop: `1.5px solid ${C.line}`, marginTop: 28, paddingTop: 20,
         textAlign: "center", fontSize: 13, lineHeight: 1.55, color: C.soft,
       }}>
-        Première fois ici ? Tout part de l'invitation que{" "}
-        <b style={{ color: C.ink, fontWeight: 600 }}>Laurent</b> t'a envoyée par mail.<br />
         Mot de passe égaré ou un souci pour entrer ?{" "}
-        <a href="mailto:laurent.bocle@gmail.com" style={{ color: C.leaf, fontWeight: 600 }}>Écris-lui, il te répond.</a>
+        <a href="mailto:laurent.bocle@gmail.com" style={{ color: C.leaf, fontWeight: 600 }}>Écris-moi, je te réponds.</a>
       </div>
     </div>
   )
