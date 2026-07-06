@@ -352,7 +352,9 @@ export function invitationEmail(prenom: string | null, url: string, email = "", 
         <tr><td style="font-family: 'Space Grotesk', 'Trebuchet MS', Arial, sans-serif; font-weight: 700; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: #4E7A3C; padding-bottom: 12px;">Ton accès est prêt</td></tr>
         <tr><td style="font-family: 'Baloo 2', 'Trebuchet MS', Arial, sans-serif; font-weight: 700; font-size: 34px; line-height: 1.05; color: #1E1B14; padding-bottom: 16px;">Bienvenue <span style="color: #E8622A;">${displayPrenom}</span></td></tr>
         <tr><td style="font-family: 'Hanken Grotesk', Helvetica, Arial, sans-serif; font-size: 15.5px; line-height: 1.6; color: #1E1B14; padding-bottom: 24px;">
-          Ça y est, ton programme est prêt — je te l'ai préparé repas par repas. Trois semaines pour nettoyer ton corps en profondeur : tu élimines ce qui t'encrasse, tu allèges ta digestion, et ton énergie revient… tout en te régalant. Je suis là à chaque étape, tu m'écris quand tu veux.
+          Ça y est, ton accès est prêt. Une fois connectée, je te présente en détail comment se déroule ton programme, et c'est toi qui choisis ta date de démarrage — tu commences quand tu es prête. Trois semaines pour nettoyer ton corps en profondeur : tu élimines ce qui t'encrasse, tu allèges ta digestion, et ton énergie revient… tout en te régalant.
+          <br /><br />
+          Tu es ma toute première testeuse officielle : c'est ton expérience qui me dira si tout fonctionne comme prévu. Le site a été construit avec de l'IA, alors si tu croises une boulette ou un truc qui cloche, dis-le-moi sans hésiter. Je suis là à chaque étape, tu m'écris quand tu veux.
         </td></tr>
         ${email || tempPassword ? `<tr><td style="padding-bottom: 26px;">
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #E9E9D8; border: 1.5px solid #BECBAD; border-radius: 14px;">
