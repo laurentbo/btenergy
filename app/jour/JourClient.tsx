@@ -3,6 +3,19 @@ import { useState, useEffect } from "react"
 import Link from "next/link"
 import { BTE_DAYS, type BteMeal } from "@/data/bte-days"
 
+export type DayOverride = {
+  coach_note: string | null
+  meal_overrides: Record<string, string[]> | null
+}
+
+// Moments de ProgramEditor → slots des repas BTE_DAYS
+const MOMENT_TO_SLOT: Record<string, string> = {
+  matin: "Petit-déjeuner",
+  midi: "Déjeuner",
+  "après-midi": "Collation",
+  soir: "Dîner",
+}
+
 // ── Couleurs ──────────────────────────────────────────────────────────────────
 const C = {
   chassis:  "#1C160C",
@@ -231,6 +244,25 @@ function MealCard({ m, open, onToggle, onWhy, onCook }: {
   )
 }
 
+// ── Carte repas personnalisé par le coach ─────────────────────────────────────
+function CustomMealCard({ slot, items }: { slot: string; items: string[] }) {
+  return (
+    <div style={{ background: C.paper2, border: `1.5px solid ${rgba(C.accent, 0.45)}`, borderRadius: 18, padding: "14px 16px 16px" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+        <span style={{ fontFamily: GRO, fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase" as const, color: C.soft }}>{slot}</span>
+        <span style={{ fontFamily: GRO, fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" as const, color: C.accent, background: rgba(C.accent, 0.12), padding: "4px 10px", borderRadius: 999 }}>Adapté pour toi</span>
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
+        {items.map((it, i) =>
+          <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 10, fontSize: 14, lineHeight: 1.45, color: C.ink }}>
+            <span style={{ flex: "0 0 auto", width: 6, height: 6, borderRadius: 999, background: C.accent, marginTop: 7 }} />{it}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 // ── MoodPicker ────────────────────────────────────────────────────────────────
 function MoodPicker({ day }: { day: number }) {
   const lsKey = `bte-mood-j${day}`
@@ -263,7 +295,11 @@ function MoodPicker({ day }: { day: number }) {
 }
 
 // ── Page principale ───────────────────────────────────────────────────────────
-export function JourClient({ initialDay, prenom }: { initialDay: number; prenom: string | null }) {
+export function JourClient({ initialDay, prenom, overrides = {} }: {
+  initialDay: number
+  prenom: string | null
+  overrides?: Record<number, DayOverride>
+}) {
   const [day, setDayState] = useState(initialDay)
   const [openId, setOpenId] = useState<string | null>(null)
   const [why, setWhy] = useState<BteMeal | null>(null)
@@ -280,6 +316,15 @@ export function JourClient({ initialDay, prenom }: { initialDay: number; prenom:
   const passage = passageFor(day)
   const meals = BTE_DAYS[day - 1]?.meals ?? []
   const showFresh = day % 7 === 4
+  const dayOverride = overrides[day]
+  const mealOverrideFor = (slot: string): string[] | null => {
+    const mo = dayOverride?.meal_overrides
+    if (!mo) return null
+    for (const [moment, items] of Object.entries(mo)) {
+      if (MOMENT_TO_SLOT[moment] === slot && items?.length) return items
+    }
+    return null
+  }
 
   const NAV = [
     { label: "Jour",     icon: "jour",     href: "/jour",     active: true  },
@@ -366,14 +411,29 @@ export function JourClient({ initialDay, prenom }: { initialDay: number; prenom:
               </Link>
             )}
 
+            {/* Note personnalisée du coach */}
+            {dayOverride?.coach_note && (
+              <div style={{ border: `1.5px solid ${rgba(C.accent, 0.45)}`, background: rgba(C.accent, 0.09), borderRadius: 16, padding: "14px 15px", marginBottom: 18, display: "flex", gap: 12 }}>
+                <span style={{ flex: "0 0 auto", width: 38, height: 38, borderRadius: 11, background: rgba(C.accent, 0.16), display: "inline-flex", alignItems: "center", justifyContent: "center" }}><Ic name="coach" col={C.accent} sw={1.9} s={21} /></span>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontFamily: GRO, fontSize: 10.5, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase" as const, color: C.accent, marginBottom: 9 }}>Un mot de ton coach</div>
+                  <div style={{ fontSize: 14, lineHeight: 1.48, color: C.ink }}>{dayOverride.coach_note}</div>
+                </div>
+              </div>
+            )}
+
             {/* Repas */}
             <div style={{ fontFamily: GRO, fontSize: 10.5, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase" as const, color: C.soft, marginBottom: 9 }}>Tes repas du jour</div>
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-              {meals.map(m =>
-                <MealCard key={m.key} m={m} open={openId === m.key}
-                  onToggle={() => setOpenId(cur => cur === m.key ? null : m.key)}
-                  onWhy={setWhy} onCook={setCook} />
-              )}
+              {meals.map(m => {
+                const custom = mealOverrideFor(m.slot)
+                if (custom) return <CustomMealCard key={m.key} slot={m.slot} items={custom} />
+                return (
+                  <MealCard key={m.key} m={m} open={openId === m.key}
+                    onToggle={() => setOpenId(cur => cur === m.key ? null : m.key)}
+                    onWhy={setWhy} onCook={setCook} />
+                )
+              })}
             </div>
 
             {/* Note encas */}

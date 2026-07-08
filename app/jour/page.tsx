@@ -1,7 +1,8 @@
 import { createClient } from "@/lib/supabase/server"
+import { createServiceClient } from "@/lib/supabase/service"
 import { redirect } from "next/navigation"
 import { calcCurrentDay, hasProgramStarted } from "@/data/program"
-import { JourClient } from "./JourClient"
+import { JourClient, type DayOverride } from "./JourClient"
 
 // Résolu côté serveur avant le premier rendu : la page ne doit jamais
 // afficher un jour qui n'est pas celui de l'utilisateur.
@@ -19,5 +20,15 @@ export default async function JourPage() {
   // dayIndex > 21 clampé à 21 — écran "programme terminé" à créer (TODO)
   const day = calcCurrentDay(profile?.start_date)
 
-  return <JourClient initialDay={day} prenom={prenom} />
+  // Personnalisations du coach (service client : le collaborateur lit ses propres overrides)
+  const { data: rows } = await createServiceClient()
+    .from("program_overrides")
+    .select("day, coach_note, meal_overrides")
+    .eq("collaborateur_id", user.id)
+  const overrides: Record<number, DayOverride> = {}
+  for (const r of rows ?? []) {
+    overrides[r.day] = { coach_note: r.coach_note, meal_overrides: r.meal_overrides }
+  }
+
+  return <JourClient initialDay={day} prenom={prenom} overrides={overrides} />
 }
