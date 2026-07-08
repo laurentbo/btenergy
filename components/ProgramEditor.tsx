@@ -27,6 +27,7 @@ export default function ProgramEditor({ collaborateurId, collaborateurPrenom, co
   const [overrides, setOverrides]     = useState<Record<number, Override>>({})
   const [saving, setSaving]           = useState(false)
   const [saved, setSaved]             = useState(false)
+  const [saveError, setSaveError]     = useState<string | null>(null)
   const supabase = createClient()
 
   const day = PROGRAM[selectedDay - 1]
@@ -39,7 +40,18 @@ export default function ProgramEditor({ collaborateurId, collaborateurPrenom, co
         .eq("collaborateur_id", collaborateurId)
       if (data) {
         const map: Record<number, Override> = {}
-        data.forEach((o: Override) => { map[o.day] = o })
+        // Les colonnes vides sont stockées en null — normalise pour les inputs contrôlés
+        data.forEach((o: Override) => {
+          map[o.day] = {
+            day: o.day,
+            coach_note:            o.coach_note ?? "",
+            tip_override:          o.tip_override ?? "",
+            intention_override:    o.intention_override ?? "",
+            meal_overrides:        o.meal_overrides ?? {},
+            ritual_matin_override: o.ritual_matin_override ?? "",
+            ritual_soir_override:  o.ritual_soir_override ?? "",
+          }
+        })
         setOverrides(map)
       }
     }
@@ -71,22 +83,32 @@ export default function ProgramEditor({ collaborateurId, collaborateurPrenom, co
 
   const handleSave = async () => {
     setSaving(true)
-    const payload = {
-      coach_id:               coachId,
-      collaborateur_id:       collaborateurId,
-      day:                    selectedDay,
-      coach_note:             current.coach_note || null,
-      tip_override:           current.tip_override || null,
-      intention_override:     current.intention_override || null,
-      meal_overrides:         Object.keys(current.meal_overrides).length ? current.meal_overrides : null,
-      ritual_matin_override:  current.ritual_matin_override || null,
-      ritual_soir_override:   current.ritual_soir_override || null,
-      updated_at:             new Date().toISOString(),
+    setSaveError(null)
+    try {
+      const payload = {
+        coach_id:               coachId,
+        collaborateur_id:       collaborateurId,
+        day:                    selectedDay,
+        coach_note:             current.coach_note || null,
+        tip_override:           current.tip_override || null,
+        intention_override:     current.intention_override || null,
+        meal_overrides:         Object.keys(current.meal_overrides ?? {}).length ? current.meal_overrides : null,
+        ritual_matin_override:  current.ritual_matin_override || null,
+        ritual_soir_override:   current.ritual_soir_override || null,
+        updated_at:             new Date().toISOString(),
+      }
+      const { error } = await supabase.from("program_overrides").upsert(payload, { onConflict: "collaborateur_id,day" })
+      if (error) {
+        setSaveError(error.message)
+        return
+      }
+      setSaved(true)
+      setTimeout(() => setSaved(false), 2500)
+    } catch (e) {
+      setSaveError(e instanceof Error ? e.message : "Erreur inattendue")
+    } finally {
+      setSaving(false)
     }
-    await supabase.from("program_overrides").upsert(payload, { onConflict: "collaborateur_id,day" })
-    setSaving(false)
-    setSaved(true)
-    setTimeout(() => setSaved(false), 2500)
   }
 
   const hasOverride = (d: number) => !!overrides[d] && (
@@ -118,8 +140,8 @@ export default function ProgramEditor({ collaborateurId, collaborateurPrenom, co
               className="w-full mb-1.5 rounded-xl py-2 text-xs font-bold flex flex-col items-center gap-0.5 transition-all"
               style={{
                 background: selectedDay === d ? "linear-gradient(135deg, var(--green-dim), var(--blue-dim))" : "transparent",
-                color: selectedDay === d ? "#070d0f" : hasOverride(d) ? "var(--green)" : "var(--text-muted)",
-                border: hasOverride(d) && selectedDay !== d ? "1px solid rgba(76,201,240,0.3)" : "1px solid transparent",
+                color: selectedDay === d ? "#FBF6EA" : hasOverride(d) ? "var(--green)" : "var(--text-muted)",
+                border: hasOverride(d) && selectedDay !== d ? "1px solid rgba(78,122,60,0.35)" : "1px solid transparent",
               }}>
               {d}
               {hasOverride(d) && <span style={{ fontSize: "6px" }}>●</span>}
@@ -131,7 +153,7 @@ export default function ProgramEditor({ collaborateurId, collaborateurPrenom, co
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
 
           {/* Titre du jour */}
-          <div className="rounded-xl p-3" style={{ background: "rgba(76,201,240,0.06)", border: "1px solid rgba(76,201,240,0.15)" }}>
+          <div className="rounded-xl p-3" style={{ background: "rgba(78,122,60,0.08)", border: "1px solid rgba(78,122,60,0.25)" }}>
             <p className="text-xs font-bold gradient-text">Jour {selectedDay} — {day.theme}</p>
             <p className="text-xs mt-0.5 italic" style={{ color: "var(--text-muted)" }}>"{day.intention}"</p>
           </div>
@@ -213,7 +235,7 @@ export default function ProgramEditor({ collaborateurId, collaborateurPrenom, co
             </label>
             <div className="space-y-3">
               <div className="card p-3">
-                <p className="text-xs font-semibold mb-1.5" style={{ color: "#f59e0b" }}>
+                <p className="text-xs font-semibold mb-1.5" style={{ color: "#A9742A" }}>
                   🌅 Rituel matin
                 </p>
                 <p className="text-xs mb-2 italic" style={{ color: "var(--text-muted)" }}>
@@ -228,7 +250,7 @@ export default function ProgramEditor({ collaborateurId, collaborateurPrenom, co
                 />
               </div>
               <div className="card p-3">
-                <p className="text-xs font-semibold mb-1.5" style={{ color: "#a78bfa" }}>
+                <p className="text-xs font-semibold mb-1.5" style={{ color: "#6D4AC2" }}>
                   🌙 Rituel soir
                 </p>
                 <p className="text-xs mb-2 italic" style={{ color: "var(--text-muted)" }}>
@@ -246,6 +268,11 @@ export default function ProgramEditor({ collaborateurId, collaborateurPrenom, co
           </div>
 
           {/* Save */}
+          {saveError && (
+            <p className="text-xs text-red-700 text-center">
+              ❌ L&apos;enregistrement a échoué : {saveError}
+            </p>
+          )}
           <button onClick={handleSave} disabled={saving}
             className="btn-primary w-full text-sm mb-4"
             style={{ opacity: saving ? 0.7 : 1 }}>
