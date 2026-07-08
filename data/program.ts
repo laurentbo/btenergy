@@ -641,9 +641,9 @@ const WEEK3: DayProgram[] = [
 export const PROGRAM: DayProgram[] = [...WEEK1, ...WEEK2, ...WEEK3]
 
 export const WEEK_THEMES: Record<1 | 2 | 3, { title: string; color: string; desc: string }> = {
-  1: { title: "Fondations", color: "#9fd76d", desc: "Poser les bases, adopter le nouveau rythme alimentaire, sans gluten, sans lactose, sans sucre raffiné." },
-  2: { title: "Équilibre", color: "#26c5ce", desc: "Approfondir la détox, explorer les saveurs umami, renforcer le microbiote." },
-  3: { title: "Ancrage", color: "#BF7D2C", desc: "Consolider les acquis, réintroduire la volaille bio, ancrer les nouvelles habitudes." },
+  1: { title: "Fondations", color: "#4E7A3C", desc: "Poser les bases, adopter le nouveau rythme alimentaire, sans gluten, sans lactose, sans sucre raffiné." },
+  2: { title: "Équilibre", color: "#2F7E90", desc: "Approfondir la détox, explorer les saveurs umami, renforcer le microbiote." },
+  3: { title: "Ancrage", color: "#A9742A", desc: "Consolider les acquis, réintroduire la volaille bio, ancrer les nouvelles habitudes." },
 }
 
 // calcIMC, calcBesoinsBase, portionMultiplier supprimés (voir ÉTAPE 7 évolutions)

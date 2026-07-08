@@ -103,9 +103,9 @@ export default function CoachDashboard() {
   }, []) // eslint-disable-line
 
   const filtered = collabs.filter(c => {
-    const day = calcCurrentDay(c.program_start)
+    const day = calcCurrentDay(c.start_date)
     if (filter === "actifs")   return day > 0 && day <= 21
-    if (filter === "inactifs") return !c.program_start
+    if (filter === "inactifs") return !c.start_date
     return true
   })
 
@@ -192,7 +192,7 @@ export default function CoachDashboard() {
                 </div>
 
                 {inviteResult && !inviteResult.ok && (
-                  <p className="text-xs text-red-400">❌ Erreur : {inviteResult.message}</p>
+                  <p className="text-xs text-red-700">❌ Erreur : {inviteResult.message}</p>
                 )}
 
                 <button
@@ -235,9 +235,9 @@ export default function CoachDashboard() {
         <div className="grid grid-cols-2 gap-3 mb-6 sm:grid-cols-4">
           {[
             { label: "Participants",   value: collabs.length.toString(), color: "var(--green)" },
-            { label: "En cours",       value: collabs.filter(c => { const d = calcCurrentDay(c.program_start); return d > 0 && d < 21 }).length.toString(), color: "var(--blue)" },
-            { label: "Terminés",       value: collabs.filter(c => calcCurrentDay(c.program_start) >= 21).length.toString(), color: "#818cf8" },
-            { label: "Actifs ce mois", value: collabs.filter(c => c.program_start != null).length.toString(), color: "#f59e0b" },
+            { label: "En cours",       value: collabs.filter(c => { const d = calcCurrentDay(c.start_date); return d > 0 && d < 21 }).length.toString(), color: "var(--blue)" },
+            { label: "Terminés",       value: collabs.filter(c => calcCurrentDay(c.start_date) >= 21).length.toString(), color: "#5B5BD6" },
+            { label: "Actifs ce mois", value: collabs.filter(c => c.start_date != null).length.toString(), color: "#A9742A" },
           ].map(({ label, value, color }) => (
             <div key={label} className="card p-4 text-center">
               <div className="text-xl font-black" style={{ color }}>{value}</div>
@@ -254,7 +254,7 @@ export default function CoachDashboard() {
               style={{
                 background: filter === f ? "linear-gradient(135deg, var(--green-dim), var(--blue-dim))" : "var(--bg-card)",
                 border: `1px solid ${filter === f ? "transparent" : "var(--border)"}`,
-                color: filter === f ? "#070d0f" : "var(--text-secondary)",
+                color: filter === f ? "#FBF6EA" : "var(--text-secondary)",
               }}>
               {f}
             </button>
@@ -286,7 +286,7 @@ export default function CoachDashboard() {
         ) : (
           <div className="space-y-3">
             {filtered.map(c => {
-              const day = calcCurrentDay(c.program_start)
+              const day = calcCurrentDay(c.start_date)
               const week = day <= 7 ? 1 : day <= 14 ? 2 : 3
               const wInfo = WEEK_THEMES[week as 1 | 2 | 3]
               const progress = Math.min(100, Math.round((day / 21) * 100))
@@ -341,7 +341,7 @@ export default function CoachDashboard() {
                       </div>
 
                       {c.last_entry && (
-                        <div className="rounded-xl p-3" style={{ background: "rgba(76,201,240,0.05)", border: "1px solid rgba(76,201,240,0.15)" }}>
+                        <div className="rounded-xl p-3" style={{ background: "rgba(78,122,60,0.08)", border: "1px solid rgba(78,122,60,0.25)" }}>
                           <p className="text-xs mb-2 font-semibold" style={{ color: "var(--green)" }}>Dernier journal ({lastSeen})</p>
                           <div className="grid grid-cols-4 gap-2 text-center">
                             {[
@@ -374,21 +374,21 @@ export default function CoachDashboard() {
                         )
                         if (!logs || logs.length === 0) return null
                         return (
-                          <div className="rounded-xl overflow-hidden" style={{ border: "1px solid rgba(167,139,250,0.2)" }}>
+                          <div className="rounded-xl overflow-hidden" style={{ border: "1px solid rgba(109,74,194,0.3)" }}>
                             <div className="px-3 py-2.5 flex items-center gap-2"
-                              style={{ background: "rgba(167,139,250,0.08)", borderBottom: "1px solid rgba(167,139,250,0.15)" }}>
+                              style={{ background: "rgba(109,74,194,0.08)", borderBottom: "1px solid rgba(109,74,194,0.2)" }}>
                               <span style={{ fontSize: "13px" }}>✎</span>
-                              <p className="text-xs font-bold" style={{ color: "#a78bfa" }}>
+                              <p className="text-xs font-bold" style={{ color: "#6D4AC2" }}>
                                 Modifications repas — {logs.length} entrée{logs.length > 1 ? "s" : ""}
                               </p>
                             </div>
-                            <div className="divide-y divide-white/5">
+                            <div className="divide-y divide-[rgba(30,27,20,0.08)]">
                               {logs.map((log, i) => {
                                 const planned = PROGRAM[log.day - 1]?.meals.find(m => m.moment === log.moment)
                                 return (
                                   <div key={i} className="px-3 py-3 space-y-2">
                                     <div className="flex items-center justify-between">
-                                      <span className="text-xs font-semibold" style={{ color: "#a78bfa" }}>
+                                      <span className="text-xs font-semibold" style={{ color: "#6D4AC2" }}>
                                         J{log.day} · {MOMENT_LABEL[log.moment] ?? log.moment}
                                       </span>
                                       <span className="text-xs" style={{ color: "var(--text-muted)" }}>
@@ -400,15 +400,15 @@ export default function CoachDashboard() {
                                         <p className="text-xs mb-1.5" style={{ color: "var(--text-muted)" }}>Prévu</p>
                                         <ul className="space-y-0.5">
                                           {planned?.items.map((it, j) => (
-                                            <li key={j} className="text-xs" style={{ color: "rgba(240,246,255,0.45)" }}>· {it}</li>
+                                            <li key={j} className="text-xs" style={{ color: "rgba(30,27,20,0.55)" }}>· {it}</li>
                                           ))}
                                         </ul>
                                       </div>
                                       <div>
-                                        <p className="text-xs mb-1.5" style={{ color: "#a78bfa" }}>Mangé</p>
+                                        <p className="text-xs mb-1.5" style={{ color: "#6D4AC2" }}>Mangé</p>
                                         <ul className="space-y-0.5">
                                           {log.items.map((it, j) => (
-                                            <li key={j} className="text-xs" style={{ color: "rgba(240,246,255,0.8)" }}>· {it}</li>
+                                            <li key={j} className="text-xs" style={{ color: "var(--text-primary)" }}>· {it}</li>
                                           ))}
                                         </ul>
                                       </div>
@@ -445,7 +445,7 @@ export default function CoachDashboard() {
                               onClick={e => { e.stopPropagation(); deleteCollab(c.id) }}
                               disabled={deleteLoading}
                               className="flex-1 text-xs rounded-xl font-semibold"
-                              style={{ padding: "8px", background: "rgba(239,68,68,0.15)", border: "1px solid rgba(239,68,68,0.4)", color: "#f87171" }}>
+                              style={{ padding: "8px", background: "rgba(179,55,42,0.12)", border: "1px solid rgba(179,55,42,0.45)", color: "#B3372A" }}>
                               {deleteLoading ? "Suppression…" : "Confirmer la suppression"}
                             </button>
                             <button
@@ -459,7 +459,7 @@ export default function CoachDashboard() {
                           <button
                             onClick={e => { e.stopPropagation(); setDeleteConfirm(c.id) }}
                             className="w-full text-xs rounded-xl font-semibold transition-all"
-                            style={{ padding: "8px", background: "transparent", border: "1px solid rgba(239,68,68,0.25)", color: "rgba(239,68,68,0.7)" }}>
+                            style={{ padding: "8px", background: "transparent", border: "1px solid rgba(179,55,42,0.35)", color: "#B3372A" }}>
                             🗑 Supprimer ce profil
                           </button>
                         )}

@@ -79,17 +79,17 @@
 /* ── Thème clair — espace coach (routes /coach et /admin) ────────────────── */
 .theme-coach {
   --bg:          #F0EBE0;
-  --bg-lift:     #E9E3D6;
-  --bg-surface:  #FAF7F1;
+  --bg-lift:     #E7E0D0;
+  --bg-surface:  #FBF8F2;
   --bg-elev:     #F5F0E6;
 
-  --line:        #DDD4BC;
-  --line-soft:   rgba(200,188,165,0.50);
+  --line:        #D3C7AA;
+  --line-soft:   rgba(184,170,140,0.55);
 
   --text:        #1E1B14;
-  --text-dim:    #6B6050;
-  --text-mute:   rgba(30,27,20,0.45);
-  --text-faint:  rgba(30,27,20,0.22);
+  --text-dim:    #57503F;
+  --text-mute:   rgba(30,27,20,0.60);
+  --text-faint:  rgba(30,27,20,0.32);
 
   --accent:      #4E7A3C;
   --accent-soft: rgba(78,122,60,0.12);
@@ -229,6 +229,67 @@ html, body {
 .dnav-day { padding: 16px 14px 0; border-top: 1px solid var(--line-soft); }
 .dnav-day-label { font-family: var(--heading); font-size: 17px; color: var(--brand); line-height: 1.1; }
 .dnav-day-meta { font-size: 11.5px; color: var(--text-mute); margin-top: 5px; }
+
+/* ── Composants espace coach ──────────────────────────────────────────────── */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  box-shadow: 0 1px 3px rgba(30,27,20,0.06);
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: var(--label);
+  background: var(--bg-lift);
+  border: 1px solid var(--line);
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+
+.btn-primary {
+  background: var(--terra, #E8622A);
+  color: #FFF8EC;
+  border: none;
+  border-radius: 12px;
+  padding: 10px 16px;
+  font-weight: 700;
+  font-family: var(--sans);
+  cursor: pointer;
+  transition: filter 0.15s ease;
+}
+.btn-primary:hover { filter: brightness(0.94); }
+
+.gradient-text {
+  background: linear-gradient(90deg, var(--leaf, #4E7A3C), var(--terra-ink, #C2552A));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.progress-bar {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--line-soft);
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.3s ease;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.fade-up { animation: fadeUp 0.25s ease forwards; }
 
 /* ── Animations ───────────────────────────────────────────────────────────── */
 @keyframes fadeIn {
