@@ -18,6 +18,7 @@ export type Database = {
           current_day: number
           program_start: string | null
           start_date: string | null
+          emails_enabled: boolean
           created_at: string
         }
         Insert: Omit<Database["public"]["Tables"]["profiles"]["Row"], "created_at">

@@ -55,6 +55,19 @@ export default function CoachDashboard() {
     if (!res.ok) setEmailsEnabled(!next) // rollback si échec
   }
 
+  const toggleCollabEmails = async (collabId: string, current: boolean) => {
+    const next = !current
+    setCollabs(prev => prev.map(c => c.id === collabId ? { ...c, emails_enabled: next } : c)) // optimiste
+    const res = await fetch("/api/coach/collab-emails", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ collabId, emails_enabled: next }),
+    })
+    if (!res.ok) {
+      setCollabs(prev => prev.map(c => c.id === collabId ? { ...c, emails_enabled: current } : c)) // rollback
+    }
+  }
+
   const deleteCollab = async (collabId: string) => {
     setDeleteLoading(true)
     const res = await fetch(`/api/coach/delete-collab?id=${collabId}`, { method: "DELETE" })
@@ -246,7 +259,7 @@ export default function CoachDashboard() {
             <button
               onClick={toggleEmails}
               aria-pressed={emailsEnabled}
-              title={emailsEnabled ? "Emails quotidiens actifs — cliquer pour couper" : "Emails quotidiens coupés — cliquer pour réactiver"}
+              title={emailsEnabled ? "Emails quotidiens actifs pour tous — cliquer pour couper globalement" : "Emails quotidiens coupés pour tous — cliquer pour réactiver globalement"}
               className="tag flex items-center gap-1.5 cursor-pointer"
               style={{ border: "none" }}>
               <span style={{
@@ -260,7 +273,7 @@ export default function CoachDashboard() {
                   transition: "left 0.15s", boxShadow: "0 1px 2px rgba(0,0,0,0.3)",
                 }} />
               </span>
-              ✉️ Emails {emailsEnabled ? "actifs" : "coupés"}
+              ✉️ Emails (tous) {emailsEnabled ? "actifs" : "coupés"}
             </button>
             <a href="/coach/menus" className="tag" style={{ textDecoration: "none", cursor: "pointer" }}>🍽 Menus</a>
             <a href="/admin/cockpit" className="tag" style={{ textDecoration: "none", cursor: "pointer" }}>Cockpit</a>
@@ -476,6 +489,25 @@ export default function CoachDashboard() {
                           👁 Voir l&apos;espace
                         </button>
                       </div>
+
+                      {/* Toggle emails pour ce participant */}
+                      <button
+                        onClick={e => { e.stopPropagation(); toggleCollabEmails(c.id, c.emails_enabled) }}
+                        className="w-full flex items-center justify-between text-xs rounded-xl font-semibold transition-all mt-2"
+                        style={{ padding: "8px 12px", background: "var(--bg-secondary)", border: "1px solid var(--border)", color: "var(--text-secondary)" }}>
+                        <span>✉️ Emails quotidiens {c.emails_enabled ? "actifs" : "coupés"}</span>
+                        <span style={{
+                          width: 30, height: 17, borderRadius: 999, position: "relative" as const,
+                          background: c.emails_enabled ? "var(--green)" : "var(--border)",
+                          transition: "background 0.15s", flexShrink: 0, display: "inline-block",
+                        }}>
+                          <span style={{
+                            position: "absolute" as const, top: 2, left: c.emails_enabled ? 15 : 2,
+                            width: 13, height: 13, borderRadius: "50%", background: "#fff",
+                            transition: "left 0.15s", boxShadow: "0 1px 2px rgba(0,0,0,0.3)",
+                          }} />
+                        </span>
+                      </button>
 
                       {/* Suppression */}
                       <div className="mt-2">

@@ -52,13 +52,15 @@ export async function GET(request: NextRequest) {
 
   const { data: profiles } = await db
     .from("profiles")
-    .select("id, email, prenom, start_date")
+    .select("id, email, prenom, start_date, emails_enabled")
     .eq("role", "collaborateur")
     .not("start_date", "is", null)
 
   let sent = 0, skipped = 0, failed = 0
 
   for (const profile of profiles ?? []) {
+    if (profile.emails_enabled === false) { skipped++; continue }
+
     const jour = calcRawDay(profile.start_date)
     if (jour < 1 || jour > 21) { skipped++; continue }
 
