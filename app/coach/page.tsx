@@ -41,6 +41,20 @@ export default function CoachDashboard() {
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
   const [deleteLoading, setDeleteLoading] = useState(false)
 
+  // ── Emails quotidiens ────────────────────────────────────────────────────
+  const [emailsEnabled, setEmailsEnabled] = useState(true)
+
+  const toggleEmails = async () => {
+    const next = !emailsEnabled
+    setEmailsEnabled(next) // optimiste
+    const res = await fetch("/api/coach/email-settings", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ emails_enabled: next }),
+    })
+    if (!res.ok) setEmailsEnabled(!next) // rollback si échec
+  }
+
   const deleteCollab = async (collabId: string) => {
     setDeleteLoading(true)
     const res = await fetch(`/api/coach/delete-collab?id=${collabId}`, { method: "DELETE" })
@@ -97,6 +111,13 @@ export default function CoachDashboard() {
 
       const collabRes = await fetch("/api/collabs")
       if (collabRes.ok) setCollabs(await collabRes.json())
+
+      const emailRes = await fetch("/api/coach/email-settings")
+      if (emailRes.ok) {
+        const { emails_enabled } = await emailRes.json()
+        setEmailsEnabled(emails_enabled)
+      }
+
       setLoading(false)
     }
     load()
@@ -222,6 +243,25 @@ export default function CoachDashboard() {
           </div>
           <div className="flex items-center gap-2">
             <span className="text-xs" style={{ color: "var(--text-muted)" }}>{coachProfile?.prenom}</span>
+            <button
+              onClick={toggleEmails}
+              aria-pressed={emailsEnabled}
+              title={emailsEnabled ? "Emails quotidiens actifs — cliquer pour couper" : "Emails quotidiens coupés — cliquer pour réactiver"}
+              className="tag flex items-center gap-1.5 cursor-pointer"
+              style={{ border: "none" }}>
+              <span style={{
+                width: 30, height: 17, borderRadius: 999, position: "relative" as const,
+                background: emailsEnabled ? "var(--green)" : "var(--border)",
+                transition: "background 0.15s", flexShrink: 0, display: "inline-block",
+              }}>
+                <span style={{
+                  position: "absolute" as const, top: 2, left: emailsEnabled ? 15 : 2,
+                  width: 13, height: 13, borderRadius: "50%", background: "#fff",
+                  transition: "left 0.15s", boxShadow: "0 1px 2px rgba(0,0,0,0.3)",
+                }} />
+              </span>
+              ✉️ Emails {emailsEnabled ? "actifs" : "coupés"}
+            </button>
             <a href="/coach/menus" className="tag" style={{ textDecoration: "none", cursor: "pointer" }}>🍽 Menus</a>
             <a href="/admin/cockpit" className="tag" style={{ textDecoration: "none", cursor: "pointer" }}>Cockpit</a>
             <button onClick={signOut} className="tag cursor-pointer">Déconnexion</button>
