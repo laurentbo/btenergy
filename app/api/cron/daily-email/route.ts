@@ -40,16 +40,26 @@ export async function GET(request: NextRequest) {
     { auth: { autoRefreshToken: false, persistSession: false } }
   )
 
+  const { data: settings } = await db
+    .from("coach_settings")
+    .select("emails_enabled")
+    .limit(1)
+    .maybeSingle()
+
+  if (settings && settings.emails_enabled === false) {
+    return NextResponse.json({ ok: true, sent: 0, skipped: 0, failed: 0, disabled: true })
+  }
+
   const { data: profiles } = await db
     .from("profiles")
-    .select("id, email, prenom, program_start")
+    .select("id, email, prenom, start_date")
     .eq("role", "collaborateur")
-    .not("program_start", "is", null)
+    .not("start_date", "is", null)
 
   let sent = 0, skipped = 0, failed = 0
 
   for (const profile of profiles ?? []) {
-    const jour = calcRawDay(profile.program_start)
+    const jour = calcRawDay(profile.start_date)
     if (jour < 1 || jour > 21) { skipped++; continue }
 
     // Dédoublonnage : un seul envoi par (user, jour)

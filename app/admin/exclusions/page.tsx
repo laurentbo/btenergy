@@ -13,6 +13,7 @@ export default function AdminExclusions() {
     ail: false, fenouil: false, oignon: false, poireau: false,
     oeuf: false, soja: false, levure: false, autres: [],
   })
+  const [emailsEnabled, setEmailsEnabled] = useState(true)
   const [autreInput, setAutreInput] = useState("")
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
@@ -44,6 +45,9 @@ export default function AdminExclusions() {
     if (data.exclusions && Object.keys(data.exclusions).length > 0) {
       setExclusions(data.exclusions)
     }
+    if (typeof data.emails_enabled === "boolean") {
+      setEmailsEnabled(data.emails_enabled)
+    }
     setLoading(false)
   }
 
@@ -67,6 +71,20 @@ export default function AdminExclusions() {
 
   function toggleOptional(key: string) {
     setExclusions(prev => ({ ...prev, [key]: !prev[key] }))
+  }
+
+  async function toggleEmails() {
+    const next = !emailsEnabled
+    setEmailsEnabled(next) // optimiste
+    const res = await fetch("/api/admin/exclusions", {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        "x-admin-secret": adminSecret,
+      },
+      body: JSON.stringify({ emails_enabled: next }),
+    })
+    if (!res.ok) setEmailsEnabled(!next) // rollback si échec
   }
 
   function addAutre() {
@@ -150,8 +168,38 @@ export default function AdminExclusions() {
   return (
     <div style={S.page}>
       <div style={S.wrap}>
-        <h1 style={S.h1}>Gestion des exclusions alimentaires</h1>
+        <h1 style={S.h1}>Backoffice coach</h1>
         <p style={{ ...S.muted, marginBottom: 28 }}>Ces réglages s&apos;appliquent à tous les participants.</p>
+
+        {/* Emails quotidiens */}
+        <div style={S.card}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <div>
+              <p style={{ fontSize: 14, fontWeight: 700, color: "#2B2D2E", marginBottom: 4 }}>
+                Emails quotidiens du programme
+              </p>
+              <p style={S.muted}>
+                {emailsEnabled
+                  ? "Actifs — envoyés chaque matin aux participants en cours."
+                  : "Coupés — aucun envoi tant que c'est désactivé."}
+              </p>
+            </div>
+            <button
+              onClick={toggleEmails}
+              aria-pressed={emailsEnabled}
+              style={{
+                width: 48, height: 28, borderRadius: 999, border: "none", cursor: "pointer",
+                background: emailsEnabled ? "#2A9D8F" : "#d8d4cc",
+                position: "relative" as const, flexShrink: 0, transition: "background 0.15s",
+              }}>
+              <span style={{
+                position: "absolute" as const, top: 3, left: emailsEnabled ? 23 : 3,
+                width: 22, height: 22, borderRadius: "50%", background: "#fff",
+                transition: "left 0.15s", boxShadow: "0 1px 3px rgba(0,0,0,0.25)",
+              }} />
+            </button>
+          </div>
+        </div>
 
         {/* Exclusions fixes */}
         <div style={S.card}>

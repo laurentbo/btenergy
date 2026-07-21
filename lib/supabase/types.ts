@@ -92,10 +92,11 @@ export type Database = {
         Row: {
           id: string
           exclusions: Record<string, boolean | string[]>
+          emails_enabled: boolean
           updated_at: string
         }
-        Insert: { exclusions?: Record<string, boolean | string[]> }
-        Update: { exclusions?: Record<string, boolean | string[]>; updated_at?: string }
+        Insert: { exclusions?: Record<string, boolean | string[]>; emails_enabled?: boolean }
+        Update: { exclusions?: Record<string, boolean | string[]>; emails_enabled?: boolean; updated_at?: string }
       }
       journal: {
         Row: {

@@ -9,14 +9,14 @@ const supabase = createClient(
 export async function GET() {
   const { data, error } = await supabase
     .from("coach_settings")
-    .select("exclusions")
+    .select("exclusions, emails_enabled")
     .limit(1)
     .maybeSingle()
 
   if (error || !data) {
-    return NextResponse.json({ exclusions: {} })
+    return NextResponse.json({ exclusions: {}, emails_enabled: true })
   }
-  return NextResponse.json({ exclusions: data.exclusions })
+  return NextResponse.json({ exclusions: data.exclusions, emails_enabled: data.emails_enabled })
 }
 
 export async function PATCH(req: NextRequest) {
@@ -26,8 +26,10 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: "Non autorisé" }, { status: 401 })
   }
 
-  const { exclusions } = await req.json()
-  if (!exclusions) return NextResponse.json({ error: "Données manquantes" }, { status: 400 })
+  const { exclusions, emails_enabled } = await req.json()
+  if (!exclusions && emails_enabled === undefined) {
+    return NextResponse.json({ error: "Données manquantes" }, { status: 400 })
+  }
 
   // Upsert : met à jour la première ligne ou insère si vide
   const { data: existing } = await supabase
@@ -36,14 +38,20 @@ export async function PATCH(req: NextRequest) {
     .limit(1)
     .maybeSingle()
 
+  const patch: { exclusions?: typeof exclusions; emails_enabled?: boolean; updated_at: string } = {
+    updated_at: new Date().toISOString(),
+  }
+  if (exclusions) patch.exclusions = exclusions
+  if (emails_enabled !== undefined) patch.emails_enabled = emails_enabled
+
   let error
   if (existing?.id) {
     ;({ error } = await supabase
       .from("coach_settings")
-      .update({ exclusions, updated_at: new Date().toISOString() })
+      .update(patch)
       .eq("id", existing.id))
   } else {
-    ;({ error } = await supabase.from("coach_settings").insert({ exclusions }))
+    ;({ error } = await supabase.from("coach_settings").insert(patch))
   }
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
