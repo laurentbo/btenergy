@@ -3,6 +3,9 @@ import fs from 'fs'
 import path from 'path'
 
 export async function GET(req: NextRequest) {
+  if (req.headers.get('x-admin-secret') !== process.env.ADMIN_SECRET) {
+    return new Response('Non autorisé', { status: 401 })
+  }
   const filePath = req.nextUrl.searchParams.get('path')
   if (!filePath) return new Response('No path', { status: 400 })
 

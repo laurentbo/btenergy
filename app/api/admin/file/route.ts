@@ -9,7 +9,12 @@ function guardPath(filePath: string): string | null {
   return resolved
 }
 
+function checkAuth(req: NextRequest): boolean {
+  return req.headers.get('x-admin-secret') === process.env.ADMIN_SECRET
+}
+
 export async function GET(req: NextRequest) {
+  if (!checkAuth(req)) return Response.json({ error: 'Non autorisé' }, { status: 401 })
   const filePath = req.nextUrl.searchParams.get('path')
   if (!filePath) return Response.json({ error: 'No path' }, { status: 400 })
 
@@ -25,6 +30,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  if (!checkAuth(req)) return Response.json({ error: 'Non autorisé' }, { status: 401 })
   const { path: filePath, content } = await req.json()
   if (!filePath || content === undefined) {
     return Response.json({ error: 'Missing params' }, { status: 400 })
@@ -51,6 +57,7 @@ export async function POST(req: NextRequest) {
 }
 
 export async function PUT(req: NextRequest) {
+  if (!checkAuth(req)) return Response.json({ error: 'Non autorisé' }, { status: 401 })
   const { path: filePath, content = '' } = await req.json()
   if (!filePath) return Response.json({ error: 'No path' }, { status: 400 })
 

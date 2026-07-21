@@ -1,3 +1,4 @@
+import { NextRequest } from 'next/server'
 import fs from 'fs'
 import path from 'path'
 
@@ -37,7 +38,10 @@ function scan(dir: string, root: string, results: TemplateFile[]) {
   }
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  if (req.headers.get('x-admin-secret') !== process.env.ADMIN_SECRET) {
+    return Response.json({ error: 'Non autorisé' }, { status: 401 })
+  }
   const root = process.cwd()
   const files: TemplateFile[] = []
   scan(root, root, files)

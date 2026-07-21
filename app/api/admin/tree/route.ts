@@ -1,3 +1,4 @@
+import { NextRequest } from 'next/server'
 import fs from 'fs'
 import path from 'path'
 
@@ -38,6 +39,9 @@ function buildTree(dir: string): Node[] {
   })
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+  if (req.headers.get('x-admin-secret') !== process.env.ADMIN_SECRET) {
+    return Response.json({ error: 'Non autorisé' }, { status: 401 })
+  }
   return Response.json({ tree: buildTree(process.cwd()) })
 }
